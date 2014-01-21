@@ -1,9 +1,19 @@
 
+tasks
+=====
+
+   * embed python
+   * proper model view control architecture.. sooner rather than later
+   * dump a stack trace on error
+   * parallax, fake 3d tunnels, snow etc
+   * animation and proper sprite architecture
+   * screens/view contexts.. need an intro, main menu, etc
+   * ui widget library
 
 
- i) embed python
- ii) add blocks
- iii) sort out a repo
- iv) dump a stack trace on error
+done
+====
 
+  * add blocks
+  * sort out a repo
 
