@@ -16,4 +16,5 @@ done
 
   * add blocks
   * sort out a repo
+  * fix memory bug .. use gdb, run turkey, where.
 

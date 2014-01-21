@@ -35,7 +35,8 @@ Check the output of ./configure and install any missing libs otherwise it might 
 
 Sound doesn't work on my work machine but it does at home.  There's a flag to turn it off in src/view/view.cpp till I work out what's up.
 
-
+If you're getting memory errors on linux run: gdb, run turkey, kill the turkey prog, where.
+(not literally)
 
 
       

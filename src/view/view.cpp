@@ -56,6 +56,7 @@ View::View(Control * control) {
 
     // enable fps counter?
     //fps = new FPS();
+    fps = NULL;
     
     // display the cell grid.. for development and debugging
     grid_enabled = true;
@@ -256,10 +257,6 @@ int View::render() {
     // draw the character    
     x = GRID_CELL_WIDTH * character_pos.x - character_width / 2;
     y = GRID_CELL_HEIGHT * character_pos.y - character_height / 2;
-    std::cout << x << ", " << y << std::endl;
-    //exit();
-    // x = 30;
-    // y = 30;
     renderTexture(character, renderer, x, y);
 
     // draw some text
@@ -307,13 +304,15 @@ int View::clean_up() {
     SDL_DestroyTexture(texture);
 
     // cleanup the sound effects 
-    Mix_FreeChunk(scratch); 
-    Mix_FreeChunk(high); 
-    Mix_FreeChunk(med); 
-    Mix_FreeChunk(low); 
+    if (sound_enabled) {
+        Mix_FreeChunk(scratch); 
+        Mix_FreeChunk(high); 
+        Mix_FreeChunk(med); 
+        Mix_FreeChunk(low); 
 
-    // clean up the music 
-    Mix_FreeMusic(music); 
+        // clean up the music 
+        Mix_FreeMusic(music); 
+    }
 
     // clean up the font 
     TTF_CloseFont(font);

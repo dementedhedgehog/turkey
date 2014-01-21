@@ -8,12 +8,20 @@ SDL_LIB = -L/usr/local/lib -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer \
 	-Wl,-rpath=/usr/local/lib -lpython2.7
 SDL_INCLUDE = -I/usr/local/include
 
+# choose one of those 
+BUILD_FLAGS=-ggdb -g3
+#BUILD_FLAGS= -O2 -DNDEBUG 
+
+
 # You may need to change -std=c++11 to -std=c++0x if your compiler is a bit older
 # run python2.7-config --cflags to get the python flags you need
-CXXFLAGS = -g -Wall -c -Werror -std=c++0x $(SDL_INCLUDE) -I src \
-	-I/usr/include/python2.7 -I/usr/include/python2.7 -fno-strict-aliasing -DNDEBUG \
-	-fwrapv -O2  -g -fstack-protector --param=ssp-buffer-size=4 -Wformat -Wformat-security \
-	-Werror=format-security
+CXXFLAGS = $(BUILD_FLAGS) \
+	-Wall -Werror \
+	-c -std=c++0x \
+	$(SDL_INCLUDE) -I src -I/usr/include/python2.7 -I/usr/include/python2.7 \
+	-fno-strict-aliasing \
+	-fwrapv -fstack-protector \
+	--param=ssp-buffer-size=4 -Wformat -Wformat-security 
 
 
 LDFLAGS = $(SDL_LIB)
@@ -48,4 +56,5 @@ scripting.o: src/shared/scripting.cpp src/shared/scripting.h
 
 .PHONY: clean
 clean:
-	rm *.o && rm $(PROG)
+	rm -f *.o && rm -f $(PROG)	
+	find . -name '*~' -exec rm {} \; # clean up emacs temporary files
