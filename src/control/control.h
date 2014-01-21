@@ -1,0 +1,24 @@
+#ifndef CONTROL_H
+#define CONTROL_H
+
+#include <string>
+
+#include "model/model.h"
+
+
+/**
+ * Control for MVC
+ *
+ */
+class Control {
+ private:
+    Model * model;
+    
+    
+ public:
+    
+    Control(Model * model);    
+};
+
+
+#endif

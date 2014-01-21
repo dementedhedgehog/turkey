@@ -1,0 +1,51 @@
+
+CXX = g++
+
+# Update these paths to match your installation
+# You may also need to update the linker option rpath, which sets where to look for
+# the SDL2 libraries at runtime to match your install
+SDL_LIB = -L/usr/local/lib -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer \
+	-Wl,-rpath=/usr/local/lib -lpython2.7
+SDL_INCLUDE = -I/usr/local/include
+
+# You may need to change -std=c++11 to -std=c++0x if your compiler is a bit older
+# run python2.7-config --cflags to get the python flags you need
+CXXFLAGS = -g -Wall -c -Werror -std=c++0x $(SDL_INCLUDE) -I src \
+	-I/usr/include/python2.7 -I/usr/include/python2.7 -fno-strict-aliasing -DNDEBUG \
+	-fwrapv -O2  -g -fstack-protector --param=ssp-buffer-size=4 -Wformat -Wformat-security \
+	-Werror=format-security
+
+
+LDFLAGS = $(SDL_LIB)
+PROG = turkey
+
+
+all: $(PROG)
+
+$(PROG): main.o model.o control.o view.o utils.o fps.o scripting.o
+	$(CXX) $^ $(LDFLAGS) -o $@
+
+main.o: src/main.cpp
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+model.o: src/model/model.cpp src/model/model.h
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+control.o: src/control/control.cpp src/control/control.h
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+view.o: src/view/view.cpp src/view/view.h src/view/utils.h src/view/fps.h
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+fps.o: src/view/fps.cpp src/view/fps.h 
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+utils.o: src/view/utils.cpp src/view/utils.h
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+scripting.o: src/shared/scripting.cpp src/shared/scripting.h
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+.PHONY: clean
+clean:
+	rm *.o && rm $(PROG)
