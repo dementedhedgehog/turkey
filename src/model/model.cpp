@@ -1,16 +1,9 @@
 
 #include "model.h"
 
-// Model::Model() {
-//     map =  std::initializer_list<int>(
-//         {
-//             {1, 2, 0, 0, 1},
-//             {0, 2, 0, 0, 1},
-//             {0, 2, 0, 0, 1},
-//             {0, 2, 0, 0, 1},
-//             {0, 2, 0, 0, 1}
-//         });
-// }
+Model::Model() : CellMap() {
+    map[Position(10, 10)] = new Cell(STONE);
+}
 
 
 

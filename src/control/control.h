@@ -18,6 +18,8 @@ class Control {
  public:
     
     Control(Model * model);    
+
+    Model const * const get_model();
 };
 
 

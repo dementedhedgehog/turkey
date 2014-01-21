@@ -30,7 +30,7 @@ PROG = turkey
 
 all: $(PROG)
 
-$(PROG): main.o model.o control.o view.o utils.o fps.o scripting.o
+$(PROG): main.o model.o control.o view.o utils.o fps.o scripting.o cell.o position.o
 	$(CXX) $^ $(LDFLAGS) -o $@
 
 main.o: src/main.cpp
@@ -53,6 +53,13 @@ utils.o: src/view/utils.cpp src/view/utils.h
 
 scripting.o: src/shared/scripting.cpp src/shared/scripting.h
 	$(CXX) $(CXXFLAGS) $< -o $@
+
+cell.o: src/model/cell.cpp src/model/cell.h
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+position.o: src/model/position.cpp src/model/position.h
+	$(CXX) $(CXXFLAGS) $< -o $@
+
 
 .PHONY: clean
 clean:

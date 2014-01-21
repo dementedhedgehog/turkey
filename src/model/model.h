@@ -1,30 +1,23 @@
 #ifndef MODEL_H
 #define MODEL_H
 
-#include <string>
+#include <map>
+
+#include "cell.h"
+#include "position.h"
+
+typedef std::map<Position, Cell * > CellMap;
 
 /**
  * Model for MVC
  *
  */
-class Model {
+class Model : private CellMap {
  private:
-    /* int map[5][5]; */
-
- /* = { */
- /*            {1, 2, 0, 0, 1}, */
- /*            {0, 2, 0, 0, 1}, */
- /*            {0, 2, 0, 0, 1}, */
- /*            {0, 2, 0, 0, 1}, */
- /*            {0, 2, 0, 0, 1} */
- /*        }; */
-
+    CellMap map;
 
  public: 
-    /* Model(); */
-
-    /* int const * const * get_map(); */
-    
+    Model();    
 };
 
 

@@ -233,6 +233,11 @@ int View::render() {
     }
                 
 
+
+
+
+    
+
     // hard coded dungen
     int sx;
     y = 17 * GRID_CELL_HEIGHT;
@@ -588,3 +593,5 @@ void View::toggle_fullscreen() {
         }
     }
 }
+
+
