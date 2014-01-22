@@ -10,6 +10,8 @@
 
 #include "control/control.h"
 #include "view/fps.h"
+#include "view/intro_component/intro_component.h"
+#include "view/game_component/game_component.h"
 
 /**
  * View for MVC
@@ -83,6 +85,13 @@ class View {
     Mix_Chunk * high; 
     Mix_Chunk * med; 
     Mix_Chunk * low; 
+
+    // all the game components
+    IntroComponent * intro;
+    GameComponent * game;
+
+    // the current game component
+    IComponent * current_component;
        
  public:    
 

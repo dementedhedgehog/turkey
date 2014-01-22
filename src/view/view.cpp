@@ -66,6 +66,12 @@ View::View(Control * control) {
 
     character_xvel = 0;
     character_yvel = 0;
+
+    // setup the game components
+    intro = new IntroComponent();
+    game = new GameComponent();
+    current_component = intro;
+
 }
 
 
@@ -138,7 +144,6 @@ int View::display_window() {
         return 5;
     }
 
-
     // 
     SDL_Color fg = { 255, 255, 0, 255 };
     //text = TTF_RenderText_Solid(font, "frog", fg);
@@ -184,7 +189,11 @@ int View::display_window() {
             return 9; 
         }
     }
+        
 
+    // FIXME: 
+    current_component->init(renderer); // RENAME!!
+    
     // draw the screen
     render();
 
@@ -233,11 +242,6 @@ int View::render() {
     }
                 
 
-
-
-
-    
-
     // hard coded dungen
     int sx;
     y = 17 * GRID_CELL_HEIGHT;
@@ -276,6 +280,9 @@ int View::render() {
     // SDL_Rect dst = { 0, 0, 10, 10}; //textureX->w, textureX->h };
     //SDL_RenderCopy(renderer, texture, &src, &dst);
     SDL_RenderCopy(renderer, texture, &src, &dest);
+
+
+    current_component->render(renderer, window); // RENAME!!
 
     // display what we've just rendered
     SDL_RenderPresent(renderer);
