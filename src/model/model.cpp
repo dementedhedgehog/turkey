@@ -2,7 +2,7 @@
 #include "model.h"
 
 Model::Model() : CellMap() {
-    map[Position(10, 10)] = new Cell(STONE);
+    //map[new Position(10, 10)] = new Cell(STONE);
 }
 
 

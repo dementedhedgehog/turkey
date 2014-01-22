@@ -1,5 +1,8 @@
 #ifndef SPRITE
 #define SPRITE
+
+#include <string>
+
 /*
  * A class that encapsulates a sprite and all its animation information.
  *

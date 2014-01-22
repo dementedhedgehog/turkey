@@ -2,13 +2,19 @@
 tasks
 =====
 
-   * embed python
    * proper model view control architecture.. sooner rather than later
    * dump a stack trace on error
-   * parallax, fake 3d tunnels, snow etc
    * animation and proper sprite architecture
    * screens/view contexts.. need an intro, main menu, etc
+
+
+later
+====
+   * embed python
    * ui widget library
+   * parallax, fake 3d tunnels, snow etc
+   * quad tree for collision detection
+   * particle system for flashy stuff
 
 
 done

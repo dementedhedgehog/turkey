@@ -30,13 +30,14 @@ PROG = turkey
 
 all: $(PROG)
 
-$(PROG): main.o model.o control.o view.o utils.o fps.o scripting.o cell.o position.o
+$(PROG): main.o model.o control.o view.o utils.o fps.o scripting.o cell.o position.o \
+	intro_component.o sprite.o
 	$(CXX) $^ $(LDFLAGS) -o $@
 
 main.o: src/main.cpp
 	$(CXX) $(CXXFLAGS) $< -o $@
 
-model.o: src/model/model.cpp src/model/model.h
+model.o: src/model/model.cpp src/model/model.h src/model/position.h
 	$(CXX) $(CXXFLAGS) $< -o $@
 
 control.o: src/control/control.cpp src/control/control.h
@@ -58,6 +59,12 @@ cell.o: src/model/cell.cpp src/model/cell.h
 	$(CXX) $(CXXFLAGS) $< -o $@
 
 position.o: src/model/position.cpp src/model/position.h
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+sprite.o: src/view/sprite.cpp src/view/sprite.h
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+intro_component.o: src/view/intro_component/intro_component.cpp src/view/intro_component/intro_component.h src/view/i_component.h
 	$(CXX) $(CXXFLAGS) $< -o $@
 
 
