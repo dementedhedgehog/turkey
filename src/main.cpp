@@ -40,16 +40,14 @@
 int main(int argc, char **argv){
     int result;
 
-    // // install an exception handler
+    // install an exception handler
     // signal(SIGSEGV, error_handler);   
-
 
     Scripting * scripting = new Scripting();
     Model * model = new Model();
     Control * control = new Control(model);
     View * view = new View(control);
     
-
     
     scripting->print_time();
 

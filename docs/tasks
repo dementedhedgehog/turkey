@@ -6,7 +6,8 @@ tasks
    * dump a stack trace on error
    * animation and proper sprite architecture
    * screens/view contexts.. need an intro, main menu, etc
-
+   * sound manager
+   * resource cache
 
 later
 ====

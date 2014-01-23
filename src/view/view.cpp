@@ -41,9 +41,11 @@ View::View(Control * control) {
     //fps = new FPS();
     fps = NULL;
     
-
     // play sound 
     sound_enabled = false;
+
+    // character_xvel = 0;
+    // character_yvel = 0;
 
     // setup the game components
     intro = new IntroComponent(control);
@@ -157,7 +159,7 @@ int View::display_window() {
         
 
     // FIXME: 
-    current_component->init(renderer); 
+    current_component->init(renderer); // RENAME!!
     
     // draw the screen
     render();
@@ -174,6 +176,80 @@ int View::render() {
     SDL_RenderClear(renderer);
 
     current_component->render(renderer, window); 
+    // // tile background
+    // int backgroundWidth, backgroundHeight;
+    // SDL_QueryTexture(background, NULL, NULL, &backgroundWidth, &backgroundHeight);
+    // renderTexture(background, renderer, 0, 0);
+    // renderTexture(background, renderer, backgroundWidth, 0);
+    // renderTexture(background, renderer, 0, backgroundHeight);
+    // renderTexture(background, renderer, backgroundWidth, backgroundHeight);
+
+    // draw parallax background
+    // int iW, iH;
+    // SDL_QueryTexture(background_parallax, NULL, NULL, &iW, &iH);
+    // int x = SCREEN_WIDTH / 2 - iW / 2;
+    // int y = SCREEN_HEIGHT / 2 - iH / 2;
+    // renderTexture(background_parallax, renderer, x, y);
+
+
+    // // draw the cell lines
+    // if (grid_enabled) {
+        
+    //     int sx;
+    //     for (x = 0; x < N_CELLS_WIDE; x++) {
+    //         sx = x * GRID_CELL_WIDTH;         
+    //         SDL_RenderDrawLine(renderer, sx, 0, sx , SCREEN_HEIGHT);
+    //     }
+
+    //     int sy;
+    //     for (y = 0; y < N_CELLS_HIGH; y++) {
+    //         sy = y * GRID_CELL_HEIGHT;
+    //         SDL_RenderDrawLine(renderer, 0, sy, SCREEN_WIDTH, sy);
+    //     }
+    // }
+                
+
+    // // hard coded dungen
+    // int sx;
+    // y = 17 * GRID_CELL_HEIGHT;
+    // for (x = 0; x < 15; x += 1) {
+    //     sx = x * GRID_CELL_WIDTH;
+    //     renderTexture(stone, renderer, sx, y);
+    // }
+
+    // y = 23 * GRID_CELL_HEIGHT;
+    // for (x = 26; x < 35; x += 1) {
+    //     sx = x * GRID_CELL_WIDTH;
+    //     renderTexture(stone, renderer, sx, y);
+    // }
+
+    // y = 13 * GRID_CELL_HEIGHT;
+    // for (x = 22; x < 27; x += 1) {
+    //     sx = x * GRID_CELL_WIDTH;
+    //     renderTexture(stone, renderer, sx, y);
+    // }
+
+
+    // // draw the character    
+    // x = GRID_CELL_WIDTH * character_pos.x - character_width / 2;
+    // y = GRID_CELL_HEIGHT * character_pos.y - character_height / 2;
+    // renderTexture(character, renderer, x, y);
+
+    // draw some text
+    //SDL_Rect destination_rect = { info->w, info->h, 0, 0 };
+    //SDL_BlitSurface(info, 0, place, &destination_rect);
+    //SDL_Rect dest = { 100, 100, 0, 0 };
+    //SDL_BlitSurface(text, 0, place, &dest);
+    //SDL_BlitSurface(text, NULL, screen, &dest);
+
+    SDL_Rect src = { 0, 0, title_text->w, title_text->h };
+    SDL_Rect dest = { 30, 30, title_text->w, title_text->h};
+    // SDL_Rect dst = { 0, 0, 10, 10}; //textureX->w, textureX->h };
+    //SDL_RenderCopy(renderer, texture, &src, &dst);
+    SDL_RenderCopy(renderer, title_texture, &src, &dest);
+
+
+    current_component->render(renderer, window); // RENAME!!
 
     // display what we've just rendered
     SDL_RenderPresent(renderer);

@@ -20,6 +20,7 @@ void IntroComponent::init(SDL_Renderer * renderer) {
 }
 
 
+
 void IntroComponent::render(
         SDL_Renderer * renderer,
         SDL_Window * window) {

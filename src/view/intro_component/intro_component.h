@@ -23,7 +23,6 @@ class IntroComponent : public IComponent {
     void clean_up();
 
 
-
     // keyboard
     void key_f1_down();
     void key_f1_up();
