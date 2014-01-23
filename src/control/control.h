@@ -22,6 +22,8 @@ class Control {
     Model const * const get_model();
 
     void toggle_fullscreen();
+
+    void change_state(State new_state);
 };
 
 

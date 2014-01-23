@@ -47,7 +47,9 @@ int main(int argc, char **argv){
     Model * model = new Model();
     Control * control = new Control(model);
     View * view = new View(control);
-    
+
+    // the view gets change notifications from the model
+    model->register_state_listener(view);
     
     scripting->print_time();
 

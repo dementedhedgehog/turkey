@@ -23,8 +23,17 @@ class GameComponent : public IComponent {
     // a grid cell posn, positive down and left (like sdl coords) 
     // velocity?, scripts etc.
 
-    // FIXME: move to view
 
+    // example text
+    // FIXME: add to its own object
+    SDL_Surface * title_text;
+    SDL_Texture * title_texture;
+
+    // an example of a ttf font
+    TTF_Font * font;  // FIXME get the font from a loader object..
+
+
+    // FIXME: move to view
     bool grid_enabled;
 
     // character position

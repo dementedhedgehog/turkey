@@ -20,7 +20,7 @@ const int GRID_CELL_HEIGHT = SCREEN_HEIGHT / N_CELLS_HIGH;
 
 
 GameComponent::GameComponent(Control * control) {
-    control = control;
+    this->control = control;
 
     // init character position 
     // FIXME: move this stuff into a sprite or some other object
@@ -50,6 +50,27 @@ void GameComponent::init(SDL_Renderer * renderer) {
         //return 4;
     }
 
+    // load font.ttf at size 16 into font
+    font = TTF_OpenFont("./res/hobbiton_brush_hand.ttf", 128);
+    if (!font) {
+        std::cout << "TTF_OpenFont: " << TTF_GetError() << std::endl;
+        //return 5;
+    }
+       
+    // 
+    SDL_Color fg = { 255, 255, 0, 255 };
+    title_text = TTF_RenderText_Blended(font, get_name_cstr(), fg);
+    if (!title_text) {
+        std::cout << "TTF_RenderText: " << TTF_GetError() << std::endl;
+        //return 6;
+    }
+
+    title_texture = SDL_CreateTextureFromSurface(renderer, title_text);
+    if (!title_texture) {
+        std::cout << "SDL_CreateTextureFromSurface: " << SDL_GetError() << std::endl;
+        //return 7;
+    }        
+
     // load the main character image
     character = loadTexture("./res/dwarf.png", renderer);
 
@@ -62,8 +83,8 @@ void GameComponent::render(SDL_Renderer * renderer, SDL_Window * window) {
     int x, y;
 
     // tile background
-    int backgroundWidth, backgroundHeight;
-    SDL_QueryTexture(background, NULL, NULL, &backgroundWidth, &backgroundHeight);
+    //int backgroundWidth, backgroundHeight;
+    //SDL_QueryTexture(background, NULL, NULL, &backgroundWidth, &backgroundHeight);
     renderTexture(background, renderer, 0, 0);
     // renderTexture(background, renderer, backgroundWidth, 0);
     // renderTexture(background, renderer, 0, backgroundHeight);
@@ -120,6 +141,11 @@ void GameComponent::render(SDL_Renderer * renderer, SDL_Window * window) {
     y = GRID_CELL_HEIGHT * character_pos.y - character_height / 2;
     renderTexture(character, renderer, x, y);
 
+    SDL_Rect src = { 0, 0, title_text->w, title_text->h };
+    SDL_Rect dest = { 30, 30, title_text->w, title_text->h};
+    // SDL_Rect dst = { 0, 0, 10, 10}; //textureX->w, textureX->h };
+    //SDL_RenderCopy(renderer, texture, &src, &dst);
+    SDL_RenderCopy(renderer, title_texture, &src, &dest);
 
     // // draw some text
     // SDL_Rect src = { 0, 0, text->w, text->h };
@@ -141,6 +167,13 @@ void GameComponent::clean_up() {
     SDL_DestroyTexture(background);
     //SDL_DestroyTexture(background_parallax); 
     SDL_DestroyTexture(character); 
+
+    SDL_FreeSurface(title_text);
+    SDL_DestroyTexture(title_texture);
+    // clean up the font 
+    TTF_CloseFont(font);
+    font = NULL; // to be safe...
+
 }    
 
 
@@ -176,51 +209,29 @@ void  GameComponent::key_4_down() {}
 void  GameComponent::key_9_up() {}
 void  GameComponent::key_9_down() {}
 
-void GameComponent::key_left_down() {
-    start_moving_character_left();
-}
-void GameComponent::key_left_up() {
-    stop_moving_character_left();
-}
+void GameComponent::key_left_down() { start_moving_character_left(); }
+void GameComponent::key_left_up() { stop_moving_character_left(); }
 
-void GameComponent::key_right_down() {
-    start_moving_character_right();
-}
-void GameComponent::key_right_up() {
-    stop_moving_character_right();
-}
+void GameComponent::key_right_down() { start_moving_character_right(); }
+void GameComponent::key_right_up() { stop_moving_character_right(); }
 
-void  GameComponent::key_up_down() {
-    start_moving_character_left();
-}
-void  GameComponent::key_up_up() {
-    stop_moving_character_left();
-}
-void  GameComponent::key_down_up() {}
-void  GameComponent::key_down_down() {}
+void  GameComponent::key_up_down() { start_moving_character_up(); }
+void  GameComponent::key_up_up() { stop_moving_character_up(); }
 
+void  GameComponent::key_down_down() { start_moving_character_down(); }
+void  GameComponent::key_down_up() { stop_moving_character_down(); }
 
-void  GameComponent::key_a_down() {
-    start_moving_character_left();
-}
-void  GameComponent::key_a_up() {
-    stop_moving_character_left();
-}
+void  GameComponent::key_a_down() { start_moving_character_left(); }
+void  GameComponent::key_a_up() { stop_moving_character_left(); }
 
+void  GameComponent::key_d_down() { start_moving_character_right(); }
+void  GameComponent::key_d_up() { stop_moving_character_right(); }
 
-void  GameComponent::key_d_down() {
-    start_moving_character_right();
-}
-void  GameComponent::key_d_up() {
-    stop_moving_character_right();
-}
+void  GameComponent::key_w_down() { start_moving_character_up(); }
+void  GameComponent::key_w_up() { stop_moving_character_up(); }
 
-void  GameComponent::key_w_up() {}
-void  GameComponent::key_w_down() {
-    start_moving_character_up();
-}
-void  GameComponent::key_x_up() {}
-void  GameComponent::key_x_down() {}
+void  GameComponent::key_x_down() { start_moving_character_down(); }
+void  GameComponent::key_x_up() { stop_moving_character_down(); }
 
 void  GameComponent::mouse_button() {}
 
@@ -229,10 +240,10 @@ void  GameComponent::mouse_button() {}
 //
 // character movement
 //
-void GameComponent::start_moving_character_left() { character_xvel = +1; }
+void GameComponent::start_moving_character_left() { character_xvel = -1; }
 void GameComponent::stop_moving_character_left() { if (character_xvel < 0) character_xvel = 0; }
 
-void GameComponent::start_moving_character_right() { character_xvel = -1; }
+void GameComponent::start_moving_character_right() { character_xvel = +1; }
 void GameComponent::stop_moving_character_right() { if (character_xvel > 0) character_xvel = 0; }
 
 void GameComponent::start_moving_character_up() { character_yvel = -1; }

@@ -5,18 +5,48 @@
 #include "view/intro_component/intro_component.h"
 
 IntroComponent::IntroComponent(Control * control) {
-    control = control;
+    this->control = control;
 }
 
 
 void IntroComponent::init(SDL_Renderer * renderer) {
     std::cout << "intro init" << std::endl;
 
+
+    title_texture = SDL_CreateTextureFromSurface(renderer, title_text);
+    if (!title_texture) {
+        std::cout << "SDL_CreateTextureFromSurface: " << SDL_GetError() << std::endl;
+        //return 7;
+    }        
+
     background = loadTexture("./res/intro_background.jpg", renderer);
     if (background == nullptr) {
         logSDLError(std::cout, "LoadBMPX");
         //return 4;
     }
+
+
+    // load font.ttf at size 16 into font
+    font = TTF_OpenFont("./res/hobbiton_brush_hand.ttf", 128);
+    if (!font) {
+        std::cout << "TTF_OpenFont: " << TTF_GetError() << std::endl;
+        //return 5;
+    }
+       
+    // 
+    SDL_Color fg = { 255, 255, 0, 255 };
+    title_text = TTF_RenderText_Blended(font, get_name_cstr(), fg);
+    if (!title_text) {
+        std::cout << "TTF_RenderText: " << TTF_GetError() << std::endl;
+        //return 6;
+    }
+
+    title_texture = SDL_CreateTextureFromSurface(renderer, title_text);
+    if (!title_texture) {
+        std::cout << "SDL_CreateTextureFromSurface: " << SDL_GetError() << std::endl;
+        //return 7;
+    }        
+
 }
 
 
@@ -32,10 +62,9 @@ void IntroComponent::render(
     SDL_QueryTexture(background, NULL, NULL, &backgroundWidth, &backgroundHeight);
     renderTexture(background, renderer, 0, 0);
 
-    // // draw some text
-    // SDL_Rect src = { 0, 0, text->w, text->h };
-    // SDL_Rect dest = { 30, 30, text->w, text->h};
-    // SDL_RenderCopy(renderer, texture, &src, &dest);
+    SDL_Rect src = { 0, 0, title_text->w, title_text->h };
+    SDL_Rect dest = { 30, 30, title_text->w, title_text->h};
+    SDL_RenderCopy(renderer, title_texture, &src, &dest);
 }
 
 const char* IntroComponent::get_name_cstr() {
@@ -49,6 +78,13 @@ void IntroComponent::move() {
 void IntroComponent::clean_up() {
     // clean up the sdl objects
     SDL_DestroyTexture(background);
+
+    SDL_FreeSurface(title_text);
+    SDL_DestroyTexture(title_texture);
+
+    // clean up the font 
+    TTF_CloseFont(font);
+    font = NULL; // to be safe...
 }
 
 
@@ -61,7 +97,8 @@ void IntroComponent::key_f1_down() {
 }
 
 void  IntroComponent::key_0_up() {};
-void  IntroComponent::key_0_down() {};
+void  IntroComponent::key_0_down() {
+};
 void  IntroComponent::key_1_up() {};
 void  IntroComponent::key_1_down() {};
 void  IntroComponent::key_2_up() {};
@@ -91,7 +128,10 @@ void  IntroComponent::key_down_up() {};
 void  IntroComponent::key_down_down() {};
 
 void  IntroComponent::key_a_up() {};
-void  IntroComponent::key_a_down() {};
+void  IntroComponent::key_a_down() {
+    std::cout << "AAAAX" << std::endl;                            
+    control->change_state(State::GAME);
+};
 void  IntroComponent::key_d_up() {};
 void  IntroComponent::key_d_down() {};
 void  IntroComponent::key_w_up() {};

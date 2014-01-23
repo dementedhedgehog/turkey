@@ -44,8 +44,8 @@ View::View(Control * control) {
     // play sound 
     sound_enabled = false;
 
-    // character_xvel = 0;
-    // character_yvel = 0;
+    // set this true to stop looping in the message loop and quit the application
+    finished = false;
 
     // setup the game components
     intro = new IntroComponent(control);
@@ -108,35 +108,11 @@ int View::display_window() {
         return 3;
     }
 
-
-    // load font.ttf at size 16 into font
-    font = TTF_OpenFont("./res/hobbiton_brush_hand.ttf", 128);
-    if (!font) {
-        std::cout << "TTF_OpenFont: " << TTF_GetError() << std::endl;
-        return 5;
-    }
-
-    // 
-    SDL_Color fg = { 255, 255, 0, 255 };
-    title_text = TTF_RenderText_Blended(font, current_component->get_name_cstr(), fg);
-    if (!title_text) {
-        std::cout << "TTF_RenderText: " << TTF_GetError() << std::endl;
-        return 6;
-    }
-
-    title_texture = SDL_CreateTextureFromSurface(renderer, title_text);
-    if (!title_texture) {
-        std::cout << "SDL_CreateTextureFromSurface: " << SDL_GetError() << std::endl;
-        return 7;
-    }        
-        
-
     // background_parallax = loadTexture("./res/dungen_parallax.png", renderer);
     // if (background_parallax == nullptr) {
     //     logSDLError(std::cout, "LoadBMP");
     //     return 4;
     // }
-
 
 
     // load the music 
@@ -159,7 +135,8 @@ int View::display_window() {
         
 
     // FIXME: 
-    current_component->init(renderer); // RENAME!!
+    intro->init(renderer); // RENAME!!
+    game->init(renderer); // RENAME!!
     
     // draw the screen
     render();
@@ -175,81 +152,8 @@ int View::render() {
     // clear the display
     SDL_RenderClear(renderer);
 
+    // draw the screen for the current component
     current_component->render(renderer, window); 
-    // // tile background
-    // int backgroundWidth, backgroundHeight;
-    // SDL_QueryTexture(background, NULL, NULL, &backgroundWidth, &backgroundHeight);
-    // renderTexture(background, renderer, 0, 0);
-    // renderTexture(background, renderer, backgroundWidth, 0);
-    // renderTexture(background, renderer, 0, backgroundHeight);
-    // renderTexture(background, renderer, backgroundWidth, backgroundHeight);
-
-    // draw parallax background
-    // int iW, iH;
-    // SDL_QueryTexture(background_parallax, NULL, NULL, &iW, &iH);
-    // int x = SCREEN_WIDTH / 2 - iW / 2;
-    // int y = SCREEN_HEIGHT / 2 - iH / 2;
-    // renderTexture(background_parallax, renderer, x, y);
-
-
-    // // draw the cell lines
-    // if (grid_enabled) {
-        
-    //     int sx;
-    //     for (x = 0; x < N_CELLS_WIDE; x++) {
-    //         sx = x * GRID_CELL_WIDTH;         
-    //         SDL_RenderDrawLine(renderer, sx, 0, sx , SCREEN_HEIGHT);
-    //     }
-
-    //     int sy;
-    //     for (y = 0; y < N_CELLS_HIGH; y++) {
-    //         sy = y * GRID_CELL_HEIGHT;
-    //         SDL_RenderDrawLine(renderer, 0, sy, SCREEN_WIDTH, sy);
-    //     }
-    // }
-                
-
-    // // hard coded dungen
-    // int sx;
-    // y = 17 * GRID_CELL_HEIGHT;
-    // for (x = 0; x < 15; x += 1) {
-    //     sx = x * GRID_CELL_WIDTH;
-    //     renderTexture(stone, renderer, sx, y);
-    // }
-
-    // y = 23 * GRID_CELL_HEIGHT;
-    // for (x = 26; x < 35; x += 1) {
-    //     sx = x * GRID_CELL_WIDTH;
-    //     renderTexture(stone, renderer, sx, y);
-    // }
-
-    // y = 13 * GRID_CELL_HEIGHT;
-    // for (x = 22; x < 27; x += 1) {
-    //     sx = x * GRID_CELL_WIDTH;
-    //     renderTexture(stone, renderer, sx, y);
-    // }
-
-
-    // // draw the character    
-    // x = GRID_CELL_WIDTH * character_pos.x - character_width / 2;
-    // y = GRID_CELL_HEIGHT * character_pos.y - character_height / 2;
-    // renderTexture(character, renderer, x, y);
-
-    // draw some text
-    //SDL_Rect destination_rect = { info->w, info->h, 0, 0 };
-    //SDL_BlitSurface(info, 0, place, &destination_rect);
-    //SDL_Rect dest = { 100, 100, 0, 0 };
-    //SDL_BlitSurface(text, 0, place, &dest);
-    //SDL_BlitSurface(text, NULL, screen, &dest);
-
-    SDL_Rect src = { 0, 0, title_text->w, title_text->h };
-    SDL_Rect dest = { 30, 30, title_text->w, title_text->h};
-    // SDL_Rect dst = { 0, 0, 10, 10}; //textureX->w, textureX->h };
-    //SDL_RenderCopy(renderer, texture, &src, &dst);
-    SDL_RenderCopy(renderer, title_texture, &src, &dest);
-
-
-    current_component->render(renderer, window); // RENAME!!
 
     // display what we've just rendered
     SDL_RenderPresent(renderer);
@@ -266,7 +170,6 @@ int View::render() {
 
 // draw to the screen
 int View::move() {
-
     current_component->move();
 
     // success
@@ -276,9 +179,6 @@ int View::move() {
 
 // free everything.
 int View::clean_up() {
-
-    SDL_FreeSurface(title_text);
-    SDL_DestroyTexture(title_texture);
 
     // cleanup the sound effects 
     if (sound_enabled) {
@@ -291,9 +191,6 @@ int View::clean_up() {
         Mix_FreeMusic(music); 
     }
 
-    // clean up the font 
-    TTF_CloseFont(font);
-    font = NULL; // to be safe...
  	
     // clean up the ttf library
     TTF_Quit();
@@ -306,9 +203,6 @@ int View::clean_up() {
     game->clean_up();
 
     // clean up the sdl objects
-    //SDL_DestroyTexture(background);
-    //SDL_DestroyTexture(background_parallax); 
-    //SDL_DestroyTexture(character); 
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
 	SDL_Quit();
@@ -325,24 +219,20 @@ int View::clean_up() {
 
 int View::msg_loop() {    
     SDL_Event event;
-    bool done = false;
     int result = 0;
     uint time_now;
     uint last_frame_time = SDL_GetTicks();
     uint last_move_time = last_frame_time;
-
-    //std::cout <<  ms_per_frame << std::endl;
    
     // loop handling messages till someone exists the game 
-    while (!done) {
+    while (!finished) {
 
         // It's fine to poll here!  (trust me).
-        while (!done && SDL_PollEvent(&event)) {
-            switch(event.type) {
-            
+        while (!finished && SDL_PollEvent(&event)) {
+
+            switch (event.type) {            
                 case SDL_KEYDOWN: {
                     // Handle any key presses here.
-                    //std::cout << "key pressed" << std::endl;
 
                     /* Check the SDLKey values and move change the coords */
                     switch (event.key.keysym.sym) {
@@ -351,28 +241,28 @@ int View::msg_loop() {
                             current_component->key_left_down();
                             break;
 
-                        case SDLK_d:
-                            current_component->key_d_down();
-                            break;
-
                         case SDLK_RIGHT:
                             current_component->key_right_down();
-                            break;
-
-                        case SDLK_a:
-                            current_component->key_a_down();
                             break;
 
                         case SDLK_UP:
                             current_component->key_up_down();
                             break;
 
-                        case SDLK_w:
-                            current_component->key_w_down();
-                            break;
-
                         case SDLK_DOWN:
                             current_component->key_down_down();
+                            break;
+
+                        case SDLK_a:
+                            current_component->key_a_down();
+                            break;
+
+                        case SDLK_d:
+                            current_component->key_d_down();
+                            break;
+
+                        case SDLK_w:
+                            current_component->key_w_down();
                             break;
 
                         case SDLK_x:
@@ -384,33 +274,34 @@ int View::msg_loop() {
                             current_component->key_f1_down();
                             break;
 
-                        case SDLK_ESCAPE: {
+                        case SDLK_ESCAPE: 
                             current_component->key_d_down();
                             // don't overload this.. handle it here?
-                            done = true;
+                            finished = true;
                             break;
-                        }
 
-                        case SDLK_0: { 
+                        case SDLK_0:
                             current_component->key_0_down();
+
                             // if 0 was pressed stop the music 
                             if (sound_enabled) {
                                 Mix_HaltMusic(); 
                             }
-                        }                            
+                            break;
 
-                        case SDLK_1: { 
-                            current_component->key_d_down();
+                        case SDLK_1: 
+                            current_component->key_1_down();
+
                             // if 1 was pressed play the scratch effect 
                             if (sound_enabled) {
                                 if (Mix_PlayChannel(-1, scratch, 0 ) == -1) { 
                                     return 1; 
                                 } 
                             }
-                        } 
+                            break;
 
-                        case SDLK_2: {
-                            current_component->key_d_down();
+                        case SDLK_2: 
+                            current_component->key_2_down();
 
                             // if 2 was pressed play the high hit effect 
                             if (sound_enabled) {
@@ -418,10 +309,10 @@ int View::msg_loop() {
                                     return 1; 
                                 } 
                             }
-                        } 
+                            break;
 
-                        case SDLK_3: { 
-                            current_component->key_d_down();
+                        case SDLK_3: 
+                            current_component->key_3_down();
 
                             if (sound_enabled) {
                                 // if 3 was pressed play the medium hit effect 
@@ -429,10 +320,10 @@ int View::msg_loop() {
                                     return 1; 
                                 } 
                             }
-                        } 
+                            break;
 
-                        case SDLK_4: { 
-                            current_component->key_d_down();
+                        case SDLK_4: 
+                            current_component->key_4_down();
 
                             if (sound_enabled) {
                                 // if 4 was pressed play the low hit effect 
@@ -440,10 +331,10 @@ int View::msg_loop() {
                                     return 1; 
                                 } 
                             }
-                        } 
-
-                        case SDLK_9: { 
-                            current_component->key_d_down();
+                            break;
+                            
+                        case SDLK_9: 
+                            current_component->key_9_down();
 
                             // if 9 was pressed and there is no music playing 
                             if (sound_enabled) {
@@ -469,89 +360,93 @@ int View::msg_loop() {
                                         Mix_PauseMusic(); 
                                     } 
                                 }
-                            } 
-                        }                        
+                            }
+                            break;
 
                         default:
                             break;
                     }
                     break;
-                }
+                    
 
                     /* We must also use the SDL_KEYUP events to zero the x */
                     /* and y velocity variables. But we must also be       */
                     /* careful not to zero the velocities when we shouldn't*/
-                case SDL_KEYUP: {
-                    switch( event.key.keysym.sym ){
+                    case SDL_KEYUP: {
+                        switch (event.key.keysym.sym) {
 
-                        case SDLK_LEFT:
-                            current_component->key_left_up();
-                            break;
+                            case SDLK_LEFT:
+                                current_component->key_left_up();
+                                break;
 
-                        case SDLK_a:
-                            current_component->key_a_up();
-                           break;
+                            case SDLK_RIGHT:
+                                current_component->key_right_up();
+                                break;
 
-                        case SDLK_RIGHT:
-                            current_component->key_right_up();
-                            break;
+                            case SDLK_UP:
+                                current_component->key_up_up();
+                                break;
 
-                        case SDLK_d:
-                            current_component->key_a_up();
-                            break;
+                            case SDLK_DOWN:
+                                current_component->key_down_up();
+                                break;
 
-                        case SDLK_UP:
-                            current_component->key_up_up();
-                            break;
+                            case SDLK_a:
+                                current_component->key_a_up();
+                                break;
 
-                        case SDLK_w:
-                            current_component->key_w_up();
-                            break;
+                            case SDLK_d:
+                                current_component->key_d_up();
+                                break;
 
-                        case SDLK_DOWN:
-                            current_component->key_down_up();
-                            break;
+                            case SDLK_w:
+                                current_component->key_w_up();
+                                break;
 
-                        case SDLK_x:
-                            current_component->key_x_up();
-                            break;
-
-                        default:
-                            break;
+                            case SDLK_x:
+                                current_component->key_x_up();
+                                break;
+                            
+                            default: 
+                                std::cout << "we don't handle " << 
+                                    SDL_GetKeyName(event.key.keysym.sym) << std::endl;
+                                break;
+                        }
+                        break;
                     }
-                    break;
-                }
+                        
+                    case SDL_MOUSEBUTTONDOWN: {
+                        // Handle mouse clicks here.
+                        std::cout << "mouse button down" << std::endl;
+                        break;
+                    }
 
-                case SDL_MOUSEBUTTONDOWN: {
-                    // Handle mouse clicks here.
-                    std::cout << "mouse button down" << std::endl;
-                    break;
+                    case SDL_QUIT: {
+                        // closing the game window quits the game..
+                        finished = true;
+                        break;
+                    }
+                        
+                    default: {
+                        std::cout << "unknown event " << event.type << std::endl;
+                        break;
+                    }                
                 }
-
-                case SDL_QUIT: {
-                    // closing the game window quits the game..
-                    done = true;
-                    break;
-                }
-                
-                default: {
-                    std::cout << "unknown event " << event.type << std::endl;
-                    break;
-                }                
-            }            
+                break;
+            }
         }
-
+            
         // try to keep a constant number of moves per second
         time_now = SDL_GetTicks();
         if (time_now - last_move_time >= ms_per_move) {
-
+                
             // move objects
-            move();
+            move(); // FIXME RENAME
 
             // reset the move time
             last_move_time = time_now;
         }
-
+            
         // try and render at a constant number of frames per second
         if (time_now - last_frame_time >= ms_per_frame) {
 
@@ -570,4 +465,29 @@ int View::msg_loop() {
     return result;
 }
 
+
+void View::state_changed(State old_state, State current_state) {
+    
+    std::cout << "state changed!!!!!!!!!!!!!!!!" << std::endl;
+        
+    switch (current_state) {
+        case State::INTRO:
+            std::cout << "intro!!" << std::endl;
+            current_component = intro;
+            break;
+            
+        case State::GAME:
+            std::cout << "render!!" << std::endl;
+            current_component = game;
+            break;
+
+        case State::FATAL_ERROR:
+        default:
+            // log an error and bail
+            logSDLError(std::cout, "Unknown State!");
+            finished = true;
+            //return 2;
+            break;
+    }
+}
 

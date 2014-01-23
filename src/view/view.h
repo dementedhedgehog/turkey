@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "model/model.h"
 #include "control/control.h"
 #include "view/fps.h"
 #include "view/intro_component/intro_component.h"
@@ -17,7 +18,7 @@
  * View for MVC
  *
  */
-class View {
+class View : public IStateListener {
  private:
 
     // determines how many frames per second we get
@@ -35,13 +36,7 @@ class View {
     // turn on sound (for development)
     bool sound_enabled;
 
-    // an example of a ttf font
-    TTF_Font * font;
 
-    // example text
-    // FIXME: add to its own object
-    SDL_Surface * title_text;
-    SDL_Texture * title_texture;
 
     // the sdl renderer
     SDL_Renderer * renderer;
@@ -70,6 +65,10 @@ class View {
 
     // the current game component
     IComponent * current_component;
+    
+    // set this to true when we want to exit the message loop and hence the application
+    bool finished;
+
        
  public:    
 
@@ -95,6 +94,10 @@ class View {
 
     // free everything.
     int clean_up();
+
+    // notification that the state has changed
+    // (required by the IStateListener interface)
+    void state_changed(State old_state, State current_state);
 };
 
 #endif
