@@ -20,6 +20,8 @@ class Control {
     Control(Model * model);    
 
     Model const * const get_model();
+
+    void toggle_fullscreen();
 };
 
 

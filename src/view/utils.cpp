@@ -2,6 +2,7 @@
  * SDL utility fns
  *
  */
+#include <iostream>
 #include <SDL2/SDL_image.h>
 
 #include "utils.h"
@@ -102,3 +103,34 @@ void renderTexture(SDL_Texture *tex, SDL_Renderer * renderer, int x, int y,
 
 	renderTexture(tex, renderer, destination, clip);
 }
+
+
+// FIXME: need to move this somewhere!! or do it better .. we've got state lying around here.
+// should go through the control layer and get the value from there?
+// method on control!
+bool fullscreen = false;
+void toggle_fullscreen(SDL_Window * window) {
+    if (!fullscreen) {
+
+        if (SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN) == 0) {
+            // success
+            fullscreen = true;
+        }
+        else {
+            // failure
+            std::cerr << "Video initialization failed: " << SDL_GetError() << std::endl;
+        }
+    }
+    else {
+        if (SDL_SetWindowFullscreen(window, 0) == 0) {
+            // success
+            fullscreen = false;
+        }
+        else {
+            // failure
+            std::cerr << "Video initialization failed: " << SDL_GetError() << std::endl;
+        }
+    }
+}
+
+

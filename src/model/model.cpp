@@ -12,3 +12,7 @@ Model::Model() : CellMap() {
 // }
     
 
+void Model::toggle_fullscreen() {
+    // FIXME: WE SHOULD GET THIS STATE FROM SDL RATHER THAN DUPLICATE IT!??
+    // BUT WE NEED TO SAVE IT?
+}

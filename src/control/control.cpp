@@ -9,3 +9,8 @@ Control::Control(Model * model) {
 Model const * const Control::get_model() {
     return model;
 }
+
+
+void Control::toggle_fullscreen() {
+    model->toggle_fullscreen();
+}

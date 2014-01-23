@@ -18,6 +18,8 @@ class Model : private CellMap {
 
  public: 
     Model();    
+
+    void toggle_fullscreen();
 };
 
 

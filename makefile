@@ -31,7 +31,7 @@ PROG = turkey
 all: $(PROG)
 
 $(PROG): main.o model.o control.o view.o utils.o fps.o scripting.o cell.o position.o \
-	intro_component.o sprite.o
+	intro_component.o game_component.o sprite.o
 	$(CXX) $^ $(LDFLAGS) -o $@
 
 main.o: src/main.cpp
@@ -64,7 +64,10 @@ position.o: src/model/position.cpp src/model/position.h
 sprite.o: src/view/sprite.cpp src/view/sprite.h
 	$(CXX) $(CXXFLAGS) $< -o $@
 
-intro_component.o: src/view/intro_component/intro_component.cpp src/view/intro_component/intro_component.h src/view/i_component.h
+intro_component.o: src/view/intro_component/intro_component.cpp src/view/intro_component/intro_component.h src/view/i_component.h src/control/control.h
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+game_component.o: src/view/game_component/game_component.cpp src/view/game_component/game_component.h src/view/i_component.h src/control/control.h
 	$(CXX) $(CXXFLAGS) $< -o $@
 
 

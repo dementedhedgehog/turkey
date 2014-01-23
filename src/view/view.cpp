@@ -15,17 +15,6 @@ const int SCREEN_HEIGHT = 800;
 const int SCREEN_POS_X = 50;
 const int SCREEN_POS_Y = 20;
 
-// grid
-const int N_CELLS_WIDE = 80;
-const int N_CELLS_HIGH = 50;
-// const int N_CELLS_WIDE = 40;
-// const int N_CELLS_HIGH = 25;
-
-// grid size..
-const int GRID_CELL_WIDTH  = SCREEN_WIDTH / N_CELLS_WIDE;
-const int GRID_CELL_HEIGHT = SCREEN_HEIGHT / N_CELLS_HIGH;
-    
-
 // game name string
 const char * GAME_NAME = "Turkey";
 
@@ -45,27 +34,22 @@ View::View(Control * control) {
     ms_per_frame = 1000 / FRAMES_PER_SECOND;
     ms_per_move = 1000 / MOVES_PER_SECOND;
 
-    // init character position 
-    // FIXME: move this stuff into a sprite or some other object
-    character_pos = {3, 3}; 
-    character_width = 35;
-    character_height = 36; 
-
     // set the default value to run in fullscreen mode 
-    fullscreen = false;    
+    //fullscreen = false;    
 
     // enable fps counter?
     //fps = new FPS();
     fps = NULL;
     
-    // display the cell grid.. for development and debugging
-    grid_enabled = true;
 
     // play sound 
     sound_enabled = false;
 
-    character_xvel = 0;
-    character_yvel = 0;
+    // setup the game components
+    intro = new IntroComponent(control);
+    game = new GameComponent(control);
+    current_component = intro;
+
 }
 
 
@@ -122,34 +106,24 @@ int View::display_window() {
         return 3;
     }
 
-    // FIXME: all this should be done using config files? 
-    background = loadTexture("./res/background.jpg", renderer);
-    if (background == nullptr) {
-        logSDLError(std::cout, "LoadBMPX");
-        return 4;
-    }
-
 
     // load font.ttf at size 16 into font
-    //font = TTF_OpenFont("./res/verdana.ttf", 128);
     font = TTF_OpenFont("./res/hobbiton_brush_hand.ttf", 128);
     if (!font) {
         std::cout << "TTF_OpenFont: " << TTF_GetError() << std::endl;
         return 5;
     }
 
-
     // 
     SDL_Color fg = { 255, 255, 0, 255 };
-    //text = TTF_RenderText_Solid(font, "frog", fg);
-    text = TTF_RenderText_Blended(font, "meow", fg);
-    if (!text) {
+    title_text = TTF_RenderText_Blended(font, current_component->get_name_cstr(), fg);
+    if (!title_text) {
         std::cout << "TTF_RenderText: " << TTF_GetError() << std::endl;
         return 6;
     }
 
-    texture = SDL_CreateTextureFromSurface(renderer, text);
-    if (!texture) {
+    title_texture = SDL_CreateTextureFromSurface(renderer, title_text);
+    if (!title_texture) {
         std::cout << "SDL_CreateTextureFromSurface: " << SDL_GetError() << std::endl;
         return 7;
     }        
@@ -161,11 +135,7 @@ int View::display_window() {
     //     return 4;
     // }
 
-    // load the main character image
-    character = loadTexture("./res/dwarf.png", renderer);
 
-    // load a block of stone..
-    stone = loadTexture("./res/stone.png", renderer);
 
     // load the music 
     if (sound_enabled) {
@@ -184,7 +154,11 @@ int View::display_window() {
             return 9; 
         }
     }
+        
 
+    // FIXME: 
+    current_component->init(renderer); 
+    
     // draw the screen
     render();
 
@@ -195,87 +169,11 @@ int View::display_window() {
 
 // draw to the screen
 int View::render() {
-    int x, y;
 
     // clear the display
     SDL_RenderClear(renderer);
 
-    // tile background
-    int backgroundWidth, backgroundHeight;
-    SDL_QueryTexture(background, NULL, NULL, &backgroundWidth, &backgroundHeight);
-    renderTexture(background, renderer, 0, 0);
-    // renderTexture(background, renderer, backgroundWidth, 0);
-    // renderTexture(background, renderer, 0, backgroundHeight);
-    // renderTexture(background, renderer, backgroundWidth, backgroundHeight);
-
-    // draw parallax background
-    // int iW, iH;
-    // SDL_QueryTexture(background_parallax, NULL, NULL, &iW, &iH);
-    // int x = SCREEN_WIDTH / 2 - iW / 2;
-    // int y = SCREEN_HEIGHT / 2 - iH / 2;
-    // renderTexture(background_parallax, renderer, x, y);
-
-
-    // draw the cell lines
-    if (grid_enabled) {
-        
-        int sx;
-        for (x = 0; x < N_CELLS_WIDE; x++) {
-            sx = x * GRID_CELL_WIDTH;         
-            SDL_RenderDrawLine(renderer, sx, 0, sx , SCREEN_HEIGHT);
-        }
-
-        int sy;
-        for (y = 0; y < N_CELLS_HIGH; y++) {
-            sy = y * GRID_CELL_HEIGHT;
-            SDL_RenderDrawLine(renderer, 0, sy, SCREEN_WIDTH, sy);
-        }
-    }
-                
-
-
-
-
-    
-
-    // hard coded dungen
-    int sx;
-    y = 17 * GRID_CELL_HEIGHT;
-    for (x = 0; x < 15; x += 1) {
-        sx = x * GRID_CELL_WIDTH;
-        renderTexture(stone, renderer, sx, y);
-    }
-
-    y = 23 * GRID_CELL_HEIGHT;
-    for (x = 26; x < 35; x += 1) {
-        sx = x * GRID_CELL_WIDTH;
-        renderTexture(stone, renderer, sx, y);
-    }
-
-    y = 13 * GRID_CELL_HEIGHT;
-    for (x = 22; x < 27; x += 1) {
-        sx = x * GRID_CELL_WIDTH;
-        renderTexture(stone, renderer, sx, y);
-    }
-
-
-    // draw the character    
-    x = GRID_CELL_WIDTH * character_pos.x - character_width / 2;
-    y = GRID_CELL_HEIGHT * character_pos.y - character_height / 2;
-    renderTexture(character, renderer, x, y);
-
-    // draw some text
-    //SDL_Rect destination_rect = { info->w, info->h, 0, 0 };
-    //SDL_BlitSurface(info, 0, place, &destination_rect);
-    //SDL_Rect dest = { 100, 100, 0, 0 };
-    //SDL_BlitSurface(text, 0, place, &dest);
-    //SDL_BlitSurface(text, NULL, screen, &dest);
-
-    SDL_Rect src = { 0, 0, text->w, text->h };
-    SDL_Rect dest = { 30, 30, text->w, text->h};
-    // SDL_Rect dst = { 0, 0, 10, 10}; //textureX->w, textureX->h };
-    //SDL_RenderCopy(renderer, texture, &src, &dst);
-    SDL_RenderCopy(renderer, texture, &src, &dest);
+    current_component->render(renderer, window); 
 
     // display what we've just rendered
     SDL_RenderPresent(renderer);
@@ -293,9 +191,7 @@ int View::render() {
 // draw to the screen
 int View::move() {
 
-    // move stuff
-    character_pos.x += character_xvel;
-    character_pos.y += character_yvel;
+    current_component->move();
 
     // success
     return 0;
@@ -305,8 +201,8 @@ int View::move() {
 // free everything.
 int View::clean_up() {
 
-    SDL_FreeSurface(text);
-    SDL_DestroyTexture(texture);
+    SDL_FreeSurface(title_text);
+    SDL_DestroyTexture(title_texture);
 
     // cleanup the sound effects 
     if (sound_enabled) {
@@ -329,10 +225,14 @@ int View::clean_up() {
     // clean up the img library
     IMG_Quit();
 
+    // clean up the component specific resources
+    intro->clean_up();
+    game->clean_up();
+
     // clean up the sdl objects
-    SDL_DestroyTexture(background);
+    //SDL_DestroyTexture(background);
     //SDL_DestroyTexture(background_parallax); 
-    SDL_DestroyTexture(character); 
+    //SDL_DestroyTexture(character); 
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
 	SDL_Quit();
@@ -372,39 +272,51 @@ int View::msg_loop() {
                     switch (event.key.keysym.sym) {
 
                         case SDLK_LEFT:
+                            current_component->key_left_down();
+                            break;
+
                         case SDLK_d:
-                            character_xvel = -1;
-                            std::cout << "left" << std::endl;
+                            current_component->key_d_down();
                             break;
 
                         case SDLK_RIGHT:
+                            current_component->key_right_down();
+                            break;
+
                         case SDLK_a:
-                            character_xvel = +1;
-                            //std::cout << "-----------------------------------" << std::endl;
-                            std::cout << "right" << std::endl;
+                            current_component->key_a_down();
                             break;
 
                         case SDLK_UP:
+                            current_component->key_up_down();
+                            break;
+
                         case SDLK_w:
-                            character_yvel = -1;
+                            current_component->key_w_down();
                             break;
 
                         case SDLK_DOWN:
+                            current_component->key_down_down();
+                            break;
+
                         case SDLK_x:
-                            character_yvel = +1;
+                            current_component->key_x_down();
                             break;
 
                         case SDLK_F1:
-                            std::cout << "toggle fullscreen" << std::endl;
-                            toggle_fullscreen();
+                            // should toggle fullscreen
+                            current_component->key_f1_down();
                             break;
 
                         case SDLK_ESCAPE: {
+                            current_component->key_d_down();
+                            // don't overload this.. handle it here?
                             done = true;
                             break;
                         }
 
                         case SDLK_0: { 
+                            current_component->key_0_down();
                             // if 0 was pressed stop the music 
                             if (sound_enabled) {
                                 Mix_HaltMusic(); 
@@ -412,6 +324,7 @@ int View::msg_loop() {
                         }                            
 
                         case SDLK_1: { 
+                            current_component->key_d_down();
                             // if 1 was pressed play the scratch effect 
                             if (sound_enabled) {
                                 if (Mix_PlayChannel(-1, scratch, 0 ) == -1) { 
@@ -421,6 +334,8 @@ int View::msg_loop() {
                         } 
 
                         case SDLK_2: {
+                            current_component->key_d_down();
+
                             // if 2 was pressed play the high hit effect 
                             if (sound_enabled) {
                                 if (Mix_PlayChannel(-1, high, 0) == -1) { 
@@ -430,6 +345,8 @@ int View::msg_loop() {
                         } 
 
                         case SDLK_3: { 
+                            current_component->key_d_down();
+
                             if (sound_enabled) {
                                 // if 3 was pressed play the medium hit effect 
                                 if (Mix_PlayChannel(-1, med, 0) == -1) {
@@ -439,6 +356,8 @@ int View::msg_loop() {
                         } 
 
                         case SDLK_4: { 
+                            current_component->key_d_down();
+
                             if (sound_enabled) {
                                 // if 4 was pressed play the low hit effect 
                                 if (Mix_PlayChannel(-1, low, 0) == -1) { 
@@ -448,6 +367,8 @@ int View::msg_loop() {
                         } 
 
                         case SDLK_9: { 
+                            current_component->key_d_down();
+
                             // if 9 was pressed and there is no music playing 
                             if (sound_enabled) {
                                 if (Mix_PlayingMusic() == 0) {
@@ -488,30 +409,35 @@ int View::msg_loop() {
                     switch( event.key.keysym.sym ){
 
                         case SDLK_LEFT:
-                        case SDLK_a:
-                            /* We check to make sure the character is moving */
-                            /* to the left. If it is then we zero the    */
-                            /* velocity. If the character is moving to the   */
-                            /* right then the right key is still press   */
-                            /* so we don't tocuh the velocity            */
-                            if (character_xvel < 0) character_xvel = 0;
-                            std::cout << "XXX left" << std::endl;
+                            current_component->key_left_up();
                             break;
 
+                        case SDLK_a:
+                            current_component->key_a_up();
+                           break;
+
                         case SDLK_RIGHT:
+                            current_component->key_right_up();
+                            break;
+
                         case SDLK_d:
-                            if (character_xvel > 0) character_xvel = 0;
-                            std::cout << "XXX right" << std::endl;
+                            current_component->key_a_up();
                             break;
 
                         case SDLK_UP:
+                            current_component->key_up_up();
+                            break;
+
                         case SDLK_w:
-                            if (character_yvel < 0) character_yvel = 0;
+                            current_component->key_w_up();
                             break;
 
                         case SDLK_DOWN:
+                            current_component->key_down_up();
+                            break;
+
                         case SDLK_x:
-                            if (character_yvel > 0) character_yvel = 0;
+                            current_component->key_x_up();
                             break;
 
                         default:
@@ -566,32 +492,6 @@ int View::msg_loop() {
 
     // success
     return result;
-}
-
-
-
-void View::toggle_fullscreen() {
-    if (!fullscreen) {
-
-        if (SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN) == 0) {
-            // success
-            fullscreen = true;
-        }
-        else {
-            // failure
-            std::cerr << "Video initialization failed: " << SDL_GetError() << std::endl;
-        }
-    }
-    else {
-        if (SDL_SetWindowFullscreen(window, 0) == 0) {
-            // success
-            fullscreen = false;
-        }
-        else {
-            // failure
-            std::cerr << "Video initialization failed: " << SDL_GetError() << std::endl;
-        }
-    }
 }
 
 

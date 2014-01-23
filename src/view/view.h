@@ -10,6 +10,8 @@
 
 #include "control/control.h"
 #include "view/fps.h"
+#include "view/intro_component/intro_component.h"
+#include "view/game_component/game_component.h"
 
 /**
  * View for MVC
@@ -24,32 +26,11 @@ class View {
     // determines how many moves per second we get
     uint ms_per_move;
  
-    // some renderer textures
-    SDL_Texture * character;
-    SDL_Texture * background;
-    SDL_Texture * stone; // block of stone  - just hacking this in here for the moment
-    //SDL_Texture * background_parallax;
-
-    // FIXME: move these things to a sprite_image object.. sprites then contain 
-    // a bunch of sprite_images
-    // a grid cell posn, positive down and left (like sdl coords) 
-    // velocity?, scripts etc.
-
-    // character position
-    // (assumes we go with the cell based positioning platformer model).
-    SDL_Point character_pos; 
-    uint character_width;
-    uint character_height; 
-
-    // flags for handling character movement
-    int character_xvel;
-    int character_yvel;
-
     // fps counter
     FPS * fps;
 
     // turn on grid (for development)
-    bool grid_enabled;
+    //bool grid_enabled;
 
     // turn on sound (for development)
     bool sound_enabled;
@@ -59,9 +40,8 @@ class View {
 
     // example text
     // FIXME: add to its own object
-    SDL_Surface * text;
-    //SDL_Surface * place;
-    SDL_Texture * texture;
+    SDL_Surface * title_text;
+    SDL_Texture * title_texture;
 
     // the sdl renderer
     SDL_Renderer * renderer;
@@ -70,7 +50,7 @@ class View {
     SDL_Window * window;
 
     // run in fullscreen mode (use F1 to toggle).
-    bool fullscreen;
+    //bool fullscreen;
 
     // the MVC control object
     Control * control;
@@ -83,6 +63,13 @@ class View {
     Mix_Chunk * high; 
     Mix_Chunk * med; 
     Mix_Chunk * low; 
+
+    // all the game components
+    IntroComponent * intro;
+    GameComponent * game;
+
+    // the current game component
+    IComponent * current_component;
        
  public:    
 
