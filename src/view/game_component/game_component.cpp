@@ -41,20 +41,20 @@ const char * GameComponent::get_name_cstr() {
     
 
 
-void GameComponent::init(SDL_Renderer * renderer) {
+int GameComponent::init(SDL_Renderer * renderer) {
 
     // FIXME: all this should be done using config files? 
     background = loadTexture("./res/background.jpg", renderer);
     if (background == nullptr) {
         logSDLError(std::cout, "LoadBMPX");
-        //return 4;
+        return 1;
     }
 
     // load font.ttf at size 16 into font
     font = TTF_OpenFont("./res/hobbiton_brush_hand.ttf", 128);
     if (!font) {
         std::cout << "TTF_OpenFont: " << TTF_GetError() << std::endl;
-        //return 5;
+        return 2;
     }
        
     // 
@@ -62,13 +62,13 @@ void GameComponent::init(SDL_Renderer * renderer) {
     title_text = TTF_RenderText_Blended(font, get_name_cstr(), fg);
     if (!title_text) {
         std::cout << "TTF_RenderText: " << TTF_GetError() << std::endl;
-        //return 6;
+        return 3;
     }
 
     title_texture = SDL_CreateTextureFromSurface(renderer, title_text);
     if (!title_texture) {
         std::cout << "SDL_CreateTextureFromSurface: " << SDL_GetError() << std::endl;
-        //return 7;
+        return 4;
     }        
 
     // load the main character image
@@ -76,6 +76,9 @@ void GameComponent::init(SDL_Renderer * renderer) {
 
     // load a block of stone..
     stone = loadTexture("./res/stone.png", renderer);
+
+    // success
+    return 0;
 }
 
 
@@ -170,6 +173,7 @@ void GameComponent::clean_up() {
 
     SDL_FreeSurface(title_text);
     SDL_DestroyTexture(title_texture);
+
     // clean up the font 
     TTF_CloseFont(font);
     font = NULL; // to be safe...

@@ -26,7 +26,7 @@ public:
 
     // increment the count of the frames rendererd (do this each frame).
     //virtual void start(View & view) = 0;
-    virtual void init(SDL_Renderer * renderer) = 0;
+    virtual int init(SDL_Renderer * renderer) = 0;
     virtual void render(SDL_Renderer * renderer, SDL_Window * window) = 0;
 
     // get the name of the component

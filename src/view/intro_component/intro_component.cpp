@@ -9,44 +9,37 @@ IntroComponent::IntroComponent(Control * control) {
 }
 
 
-void IntroComponent::init(SDL_Renderer * renderer) {
+int IntroComponent::init(SDL_Renderer * renderer) {
     std::cout << "intro init" << std::endl;
-
-
-    title_texture = SDL_CreateTextureFromSurface(renderer, title_text);
-    if (!title_texture) {
-        std::cout << "SDL_CreateTextureFromSurface: " << SDL_GetError() << std::endl;
-        //return 7;
-    }        
 
     background = loadTexture("./res/intro_background.jpg", renderer);
     if (background == nullptr) {
         logSDLError(std::cout, "LoadBMPX");
-        //return 4;
+        return 2;
     }
-
 
     // load font.ttf at size 16 into font
     font = TTF_OpenFont("./res/hobbiton_brush_hand.ttf", 128);
     if (!font) {
         std::cout << "TTF_OpenFont: " << TTF_GetError() << std::endl;
-        //return 5;
+        return 3;
     }
        
-    // 
     SDL_Color fg = { 255, 255, 0, 255 };
     title_text = TTF_RenderText_Blended(font, get_name_cstr(), fg);
     if (!title_text) {
         std::cout << "TTF_RenderText: " << TTF_GetError() << std::endl;
-        //return 6;
+        return 4;
     }
 
     title_texture = SDL_CreateTextureFromSurface(renderer, title_text);
     if (!title_texture) {
         std::cout << "SDL_CreateTextureFromSurface: " << SDL_GetError() << std::endl;
-        //return 7;
+        return 5;
     }        
 
+    // success
+    return 0;
 }
 
 
@@ -54,8 +47,6 @@ void IntroComponent::init(SDL_Renderer * renderer) {
 void IntroComponent::render(
         SDL_Renderer * renderer,
         SDL_Window * window) {
-
-    std::cout << "render intro" << std::endl;
 
     // tile background
     int backgroundWidth, backgroundHeight;

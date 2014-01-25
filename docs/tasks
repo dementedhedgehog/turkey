@@ -2,7 +2,13 @@
 tasks
 =====
 
-   * proper model view control architecture.. sooner rather than later
+   * game_objects list with positions and bounding boxes
+   * collision detection
+   * collision handling
+   * particle system (to check the collision system)
+
+
+   * proper model view control architecture.. sooner rather than later (or does this make stuff slow for a simple and well-defined application?)
    * dump a stack trace on error
    * animation and proper sprite architecture
    * screens/view contexts.. need an intro, main menu, etc

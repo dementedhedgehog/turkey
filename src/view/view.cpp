@@ -47,11 +47,9 @@ View::View(Control * control) {
     // set this true to stop looping in the message loop and quit the application
     finished = false;
 
-    // setup the game components
     intro = new IntroComponent(control);
     game = new GameComponent(control);
     current_component = intro;
-
 }
 
 
@@ -81,6 +79,8 @@ int View::init_sdl() {
         std::cerr << "Mix_OpenAudio: \n" << Mix_GetError() << std::endl;
         return 4; 
     }
+
+    // setup the game components
 
     // success
     return 0;
@@ -114,7 +114,6 @@ int View::display_window() {
     //     return 4;
     // }
 
-
     // load the music 
     if (sound_enabled) {
         music = Mix_LoadMUS("./res/beat.wav"); 
@@ -134,10 +133,16 @@ int View::display_window() {
     }
         
 
-    // FIXME: 
-    intro->init(renderer); // RENAME!!
-    game->init(renderer); // RENAME!!
-    
+    // init the various renderers
+    int result;
+    if ((result = intro->init(renderer)) != 0) {
+        return result;
+    }
+
+    if ((result = game->init(renderer)) != 0) {
+        return result;
+    }
+        
     // draw the screen
     render();
 
@@ -179,6 +184,10 @@ int View::move() {
 
 // free everything.
 int View::clean_up() {
+   
+    // clean up the component specific resources
+    intro->clean_up();
+    game->clean_up();
 
     // cleanup the sound effects 
     if (sound_enabled) {
@@ -191,16 +200,11 @@ int View::clean_up() {
         Mix_FreeMusic(music); 
     }
 
- 	
     // clean up the ttf library
     TTF_Quit();
    
     // clean up the img library
     IMG_Quit();
-
-    // clean up the component specific resources
-    intro->clean_up();
-    game->clean_up();
 
     // clean up the sdl objects
     SDL_DestroyRenderer(renderer);

@@ -1,7 +1,7 @@
 #ifndef POSITION_H
 #define POSITION_H
 
-#include "cell.h"
+//#include "cell.h"
 
 
 /**

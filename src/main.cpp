@@ -60,7 +60,9 @@ int main(int argc, char **argv){
         return result;
     }
 
-    view->display_window();
+    // display the window or die
+    if ((result = view->display_window()) != 0) { return result; }
+
     view->render();
     view->msg_loop();
     view->clean_up();

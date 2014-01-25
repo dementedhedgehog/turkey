@@ -64,7 +64,7 @@ class GameComponent : public IComponent {
     GameComponent(Control * control);
 
     // start displaying this component
-    void init(SDL_Renderer * renderer);
+    int init(SDL_Renderer * renderer);
     //void start(View & view);
     void render(SDL_Renderer * renderer, SDL_Window * window);
 

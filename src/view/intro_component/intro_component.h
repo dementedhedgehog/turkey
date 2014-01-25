@@ -23,7 +23,7 @@ class IntroComponent : public IComponent {
     IntroComponent(Control * control);
 
     // start displaying this component
-    void init(SDL_Renderer * renderer);
+    int init(SDL_Renderer * renderer);
     void render(SDL_Renderer * renderer, SDL_Window * window);
 
     const char* get_name_cstr();
