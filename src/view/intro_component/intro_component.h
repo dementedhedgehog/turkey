@@ -4,12 +4,14 @@
  * Game component that plays the intro
  *
  */
-#include "view/i_component.h"
+#include "model/model.h"
+#include "view/component.h"
 
-class IntroComponent : public IComponent {
+class IntroComponent : public Component {
  private:
     SDL_Texture * background;
-    Control * control;
+    /* Control * control; */
+    //Model * model;
 
     // example text
     // FIXME: add to its own object
@@ -20,16 +22,17 @@ class IntroComponent : public IComponent {
     TTF_Font * font;  // FIXME get the font from a loader object..
 
  public:
-    IntroComponent(Control * control);
+    IntroComponent(Model * model, SDL_Window * window, SDL_Renderer * renderer);
 
     // start displaying this component
     int init(SDL_Renderer * renderer);
     void render(SDL_Renderer * renderer, SDL_Window * window);
 
     const char* get_name_cstr();
-    void move(); // RENAME!!!
+ 
+    // do any animation, update positions and displayed values etc.
+    void update(); 
     void clean_up();
-
 
     // keyboard
     void key_f1_down();

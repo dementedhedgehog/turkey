@@ -18,7 +18,7 @@
 
 
 #include "model/model.h"
-#include "control/control.h"
+//#include "control/control.h"
 #include "view/view.h"
 #include "shared/scripting.h"
 
@@ -45,13 +45,13 @@ int main(int argc, char **argv){
 
     Scripting * scripting = new Scripting();
     Model * model = new Model();
-    Control * control = new Control(model);
-    View * view = new View(control);
+    View * view = new View();
 
     // the view gets change notifications from the model
     model->register_state_listener(view);
     
     scripting->print_time();
+    scripting->initialize_script();
 
     // init the UI libraries
     result = view->init_sdl();
@@ -61,14 +61,13 @@ int main(int argc, char **argv){
     }
 
     // display the window or die
-    if ((result = view->display_window()) != 0) { return result; }
+    if ((result = view->display_window(model)) != 0) { return result; }
 
     view->render();
     view->msg_loop();
     view->clean_up();
 
     delete view;
-    delete control;
     delete model;
     delete scripting;
 

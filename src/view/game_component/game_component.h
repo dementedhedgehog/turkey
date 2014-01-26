@@ -4,12 +4,14 @@
  * Game component that playes the side scroller game itself.
  *
  */
-#include "control/control.h"
-#include "view/i_component.h"
+//#include "control/control.h"
+#include "model/model.h"
+#include "view/component.h"
 
-class GameComponent : public IComponent {
+class GameComponent : public Component {
  private:
-    Control * control;
+    //Control * control;
+    //Model * model;
 
     // some renderer textures
     SDL_Texture * character;
@@ -17,12 +19,10 @@ class GameComponent : public IComponent {
     SDL_Texture * stone; // block of stone  - just hacking this in here for the moment
     //SDL_Texture * background_parallax;
 
-
     // FIXME: move these things to a sprite_image object.. sprites then contain 
     // a bunch of sprite_images
     // a grid cell posn, positive down and left (like sdl coords) 
     // velocity?, scripts etc.
-
 
     // example text
     // FIXME: add to its own object
@@ -31,7 +31,6 @@ class GameComponent : public IComponent {
 
     // an example of a ttf font
     TTF_Font * font;  // FIXME get the font from a loader object..
-
 
     // FIXME: move to view
     bool grid_enabled;
@@ -47,29 +46,32 @@ class GameComponent : public IComponent {
     int character_xvel;
     int character_yvel;
 
-    void start_moving_character_left();
-    void stop_moving_character_left();
+    /* void start_moving_character_left(); */
+    /* void stop_moving_character_left(); */
 
-    void start_moving_character_right();
-    void stop_moving_character_right();
+    /* void start_moving_character_right(); */
+    /* void stop_moving_character_right(); */
 
-    void start_moving_character_up();
-    void stop_moving_character_up();
+    /* void start_moving_character_up(); */
+    /* void stop_moving_character_up(); */
 
-    void start_moving_character_down();
-    void stop_moving_character_down();
+    /* void start_moving_character_down(); */
+    /* void stop_moving_character_down(); */
+
 
 
  public:
-    GameComponent(Control * control);
+    //GameComponent(Control * control);
+    GameComponent(Model * model, SDL_Window * window, SDL_Renderer * renderer);
 
     // start displaying this component
     int init(SDL_Renderer * renderer);
-    //void start(View & view);
     void render(SDL_Renderer * renderer, SDL_Window * window);
 
     const char* get_name_cstr();
-    void move(); // RENAME
+
+    // do any animation, update positions and displayed values etc.
+    void update(); 
     void clean_up();
 
 

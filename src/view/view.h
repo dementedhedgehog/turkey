@@ -9,7 +9,7 @@
 #include <string>
 
 #include "model/model.h"
-#include "control/control.h"
+#include "view/utils.h"
 #include "view/fps.h"
 #include "view/intro_component/intro_component.h"
 #include "view/game_component/game_component.h"
@@ -36,8 +36,6 @@ class View : public IStateListener {
     // turn on sound (for development)
     bool sound_enabled;
 
-
-
     // the sdl renderer
     SDL_Renderer * renderer;
 
@@ -45,10 +43,10 @@ class View : public IStateListener {
     SDL_Window * window;
 
     // run in fullscreen mode (use F1 to toggle).
-    //bool fullscreen;
+    bool fullscreen;
 
     // the MVC control object
-    Control * control;
+    //Control * control;
 
     // the music that will be played 
     Mix_Music * music; 
@@ -64,7 +62,7 @@ class View : public IStateListener {
     GameComponent * game;
 
     // the current game component
-    IComponent * current_component;
+    Component * current_component;
     
     // set this to true when we want to exit the message loop and hence the application
     bool finished;
@@ -72,25 +70,31 @@ class View : public IStateListener {
        
  public:    
 
-    View(Control * control);
+    //View(Control * control);
+    View();
 
     // start up sdl
     int init_sdl();
 
     // show an sdl window
-    int display_window();
+    int display_window(Model * model);
 
     // draw to a window
     int render();
-
-    // move things
-    int move();
 
     // enter the message loop... we stay in here till the player quits
     int msg_loop();
 
     // toggle back and forth between full screen mode
     void toggle_fullscreen();
+
+    /* // load a texture. */
+    /* SDL_Texture * load_texture(const std::string &file); */
+
+    /* // render a texture */
+    /* void render_texture(SDL_Texture *tex, int x, int y); */
+    /* void render_texture(SDL_Texture *tex, SDL_Rect destination, SDL_Rect * clip); */
+    /* void render_texture(SDL_Texture *tex, int x, int y, SDL_Rect * clip); */
 
     // free everything.
     int clean_up();

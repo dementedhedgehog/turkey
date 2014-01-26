@@ -5,24 +5,33 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
 
-#include "view/utils.h"
+#include "model/model.h"
 
+class View;
 
 /*
  * Interface for Components.
  *
- * Components are parts of the game.. e.g. the help screens, the intro screen, the inventory screen the 
- * game screen etc.
+ * Components are parts of the game.. e.g. the help screens, the intro screen, the inventory 
+ * screen the game screen etc.
  */
 //#include "view/view.h"
 
-class IComponent {
+class Component {
+ protected:
+    //View * view;
+    Model * model;
+    SDL_Window * window;
+    SDL_Renderer * renderer;
+    
 public:
+    //Component(View * view, Model * model);
+    Component(Model * model, SDL_Window * window, SDL_Renderer * renderer);
 
     // Adding a virtual destructor allows you to pass pointer ownership to another party 
     // without exposing the concrete derived class. The destructor doesn't have to do 
     // anything, because the interface doesn't have any concrete members
-    virtual ~IComponent() {};
+    //virtual ~Component() {};
 
     // increment the count of the frames rendererd (do this each frame).
     //virtual void start(View & view) = 0;
@@ -33,7 +42,7 @@ public:
     virtual const char * get_name_cstr() = 0;
 
     // update sprite positions
-    virtual void move() = 0;
+    virtual void update() = 0;
 
     // clean up resources
     virtual void clean_up() = 0;

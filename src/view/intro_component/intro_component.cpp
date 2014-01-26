@@ -1,12 +1,17 @@
 
 #include <iostream>
 
-#include "control/control.h"
+//#include "control/control.h"
+#include "model/model.h"
+#include "view/utils.h"
 #include "view/intro_component/intro_component.h"
 
-IntroComponent::IntroComponent(Control * control) {
-    this->control = control;
-}
+// IntroComponent::IntroComponent(Control * control) {
+//     this->control = control;
+// }
+
+IntroComponent::IntroComponent(Model * model, SDL_Window * window, SDL_Renderer * renderer) :
+    Component(model, window, renderer) { }
 
 
 int IntroComponent::init(SDL_Renderer * renderer) {
@@ -62,7 +67,8 @@ const char* IntroComponent::get_name_cstr() {
     return "Intro";
 }
 
-void IntroComponent::move() {
+// do any animation, update positions and displayed values etc.
+void IntroComponent::update() {
     // no-op for the moment..
 }
 
@@ -84,7 +90,7 @@ void IntroComponent::key_f1_up() {
 }
 
 void IntroComponent::key_f1_down() {
-    control->toggle_fullscreen();
+    toggle_fullscreen(window);
 }
 
 void  IntroComponent::key_0_up() {};
@@ -120,8 +126,9 @@ void  IntroComponent::key_down_down() {};
 
 void  IntroComponent::key_a_up() {};
 void  IntroComponent::key_a_down() {
-    std::cout << "AAAAX" << std::endl;                            
-    control->change_state(State::GAME);
+    // std::cout << "AAAAX" << std::endl;                            
+    // control->change_state(State::GAME);
+    model->change_state(State::GAME);
 };
 void  IntroComponent::key_d_up() {};
 void  IntroComponent::key_d_down() {};

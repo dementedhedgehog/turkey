@@ -4,16 +4,15 @@ tasks
 
    * game_objects list with positions and bounding boxes
    * collision detection
+
    * collision handling
    * particle system (to check the collision system)
-
-
    * proper model view control architecture.. sooner rather than later (or does this make stuff slow for a simple and well-defined application?)
    * dump a stack trace on error
    * animation and proper sprite architecture
    * screens/view contexts.. need an intro, main menu, etc
    * sound manager
-   * resource cache
+   * resource cache   
 
 later
 ====
@@ -22,6 +21,11 @@ later
    * parallax, fake 3d tunnels, snow etc
    * quad tree for collision detection
    * particle system for flashy stuff
+
+questions
+=========
+   * MVC looks like overkill.. but I'm leaving it in for the moment because it's easier to 
+     pull it out later than to put it back in later.
 
 
 done

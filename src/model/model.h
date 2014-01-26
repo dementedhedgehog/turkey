@@ -6,29 +6,21 @@
 //#include "cell.h"
 #include "position.h"
 
-
-enum class State {INTRO, GAME, FATAL_ERROR};    
-
-class IState {
- public:
-    virtual ~IState() {};    
-    virtual State get_state()  { return State::FATAL_ERROR; }; //= 0;
-};
+#include "model/i_state.h"
+#include "model/game_state.h"
 
 
 class IntroState : public IState {
  public:
     State get_state() { return State::INTRO; }
+    void update() { }
 };
 
-class GameState : public IState {
- public:
-    State get_state() { return State::GAME; }    
-};
 
 class FatalErrorState : public IState {
  public:
     State get_state() { return State::FATAL_ERROR; }    
+    void update() { }
 };
 
 class IStateListener {
@@ -51,6 +43,7 @@ private:
     
     IState * current_state;
 
+    // a list of things to notify when the game state changes
     std::list<IStateListener*> listeners;
 
 public: 
@@ -60,5 +53,10 @@ public:
     void toggle_fullscreen();
     void change_state(State to_state);
     void register_state_listener(IStateListener * listener);    
+
+    GameState * get_game_state();
+
+    // change the positions of the game objects, do collision detection etc.
+    void update();
 };
 #endif

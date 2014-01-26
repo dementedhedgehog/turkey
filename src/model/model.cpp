@@ -51,3 +51,11 @@ void Model::change_state(State to_state) {
 void Model::register_state_listener(IStateListener * state_listener) {
     listeners.push_back(state_listener);    
 }
+
+GameState * Model::get_game_state() {
+    return game_state;
+}
+
+void Model::update() {
+    return current_state->update();
+}

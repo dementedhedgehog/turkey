@@ -3,7 +3,6 @@
 #include <cassert>
 
 #include "view.h"
-#include "utils.h"
 
 // FIXME: get these values from a configuration
 
@@ -27,15 +26,17 @@ const uint FRAMES_PER_SECOND = 60;
 const uint MOVES_PER_SECOND = 60;
 
 
-View::View(Control * control) {
-    control = control;
+// View::View(Control * control) {
+//     control = control;
+View::View() {
+    //this->model = model;
 
     // determine how long to wait between frames
     ms_per_frame = 1000 / FRAMES_PER_SECOND;
     ms_per_move = 1000 / MOVES_PER_SECOND;
 
     // set the default value to run in fullscreen mode 
-    //fullscreen = false;    
+    fullscreen = false;    
 
     // enable fps counter?
     //fps = new FPS();
@@ -47,9 +48,8 @@ View::View(Control * control) {
     // set this true to stop looping in the message loop and quit the application
     finished = false;
 
-    intro = new IntroComponent(control);
-    game = new GameComponent(control);
-    current_component = intro;
+    //
+    current_component = NULL;
 }
 
 
@@ -88,7 +88,7 @@ int View::init_sdl() {
 
 
 // show an sdl window
-int View::display_window() {
+int View::display_window(Model * model) {
 
     // create the window
     window = SDL_CreateWindow(GAME_NAME, 
@@ -131,6 +131,12 @@ int View::display_window() {
             return 9; 
         }
     }
+
+    // intro = new IntroComponent(control);
+    // game = new GameComponent(control);
+    intro = new IntroComponent(model, window, renderer);
+    game = new GameComponent(model, window, renderer);
+    current_component = intro;
         
 
     // init the various renderers
@@ -172,14 +178,6 @@ int View::render() {
     return 0;
 }
 
-
-// draw to the screen
-int View::move() {
-    current_component->move();
-
-    // success
-    return 0;
-}
 
 
 // free everything.
@@ -439,13 +437,17 @@ int View::msg_loop() {
                 break;
             }
         }
+
+        //
+        // FIXME: I think we want to tune these two rates on the fly to get nice behaviour
+        //
             
         // try to keep a constant number of moves per second
         time_now = SDL_GetTicks();
         if (time_now - last_move_time >= ms_per_move) {
                 
-            // move objects
-            move(); // FIXME RENAME
+            // move objects, calculate collisions, update stats etc
+            current_component->update();
 
             // reset the move time
             last_move_time = time_now;
@@ -494,4 +496,5 @@ void View::state_changed(State old_state, State current_state) {
             break;
     }
 }
+
 

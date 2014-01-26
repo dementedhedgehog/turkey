@@ -1,7 +1,9 @@
 
 #include <iostream>
 
-#include "control/control.h"
+//#include "control/control.h"
+//#include "control/.h"
+#include "view/utils.h"
 #include "view/game_component/game_component.h"
 
 
@@ -19,16 +21,18 @@ const int GRID_CELL_HEIGHT = SCREEN_HEIGHT / N_CELLS_HIGH;
     
 
 
-GameComponent::GameComponent(Control * control) {
-    this->control = control;
-
+// GameComponent::GameComponent(Control * control) {
+//     this->control = control;
+GameComponent::GameComponent(Model * model, SDL_Window * window, SDL_Renderer * renderer) :
+    Component(model, window, renderer) {
+    
     // init character position 
     // FIXME: move this stuff into a sprite or some other object
     character_pos = {3, 3}; 
     character_width = 35;
-    character_height = 36; 
-    character_xvel = 0;
-    character_yvel = 0;
+    character_height = 36;
+    // character_xvel = 0;
+    // character_yvel = 0;
 
     // MOVE TO MODEL
     // display the cell grid.. for development and debugging
@@ -39,7 +43,6 @@ const char * GameComponent::get_name_cstr() {
     return "Game";
 }
     
-
 
 int GameComponent::init(SDL_Renderer * renderer) {
 
@@ -85,22 +88,8 @@ int GameComponent::init(SDL_Renderer * renderer) {
 void GameComponent::render(SDL_Renderer * renderer, SDL_Window * window) {
     int x, y;
 
-    // tile background
-    //int backgroundWidth, backgroundHeight;
-    //SDL_QueryTexture(background, NULL, NULL, &backgroundWidth, &backgroundHeight);
+    // draw the background
     renderTexture(background, renderer, 0, 0);
-    // renderTexture(background, renderer, backgroundWidth, 0);
-    // renderTexture(background, renderer, 0, backgroundHeight);
-    // renderTexture(background, renderer, backgroundWidth, backgroundHeight);
-
-
-    // draw parallax background
-    // int iW, iH;
-    // SDL_QueryTexture(background_parallax, NULL, NULL, &iW, &iH);
-    // int x = SCREEN_WIDTH / 2 - iW / 2;
-    // int y = SCREEN_HEIGHT / 2 - iH / 2;
-    // renderTexture(background_parallax, renderer, x, y);
-
 
     // draw the cell lines
     if (grid_enabled) {
@@ -118,27 +107,14 @@ void GameComponent::render(SDL_Renderer * renderer, SDL_Window * window) {
         }
     }
 
-
-    // hard coded dungen
-    int sx;
-    y = 17 * GRID_CELL_HEIGHT;
-    for (x = 0; x < 15; x += 1) {
-        sx = x * GRID_CELL_WIDTH;
-        renderTexture(stone, renderer, sx, y);
+    // draw all the game objects..
+    GameState const * game_state = model->get_game_state();
+    std::list<GameObj*> game_objs = game_state->get_game_objs();
+    std::list<GameObj*>::iterator i;
+    for (i = game_objs.begin(); i != game_objs.end(); i++) {         
+        renderTexture(stone, renderer, GRID_CELL_WIDTH * (*i)->x, GRID_CELL_HEIGHT * (*i)->y);
     }
-
-    y = 23 * GRID_CELL_HEIGHT;
-    for (x = 26; x < 35; x += 1) {
-        sx = x * GRID_CELL_WIDTH;
-        renderTexture(stone, renderer, sx, y);
-    }
-
-    y = 13 * GRID_CELL_HEIGHT;
-    for (x = 22; x < 27; x += 1) {
-        sx = x * GRID_CELL_WIDTH;
-        renderTexture(stone, renderer, sx, y);
-    }
-
+    
     // draw the character    
     x = GRID_CELL_WIDTH * character_pos.x - character_width / 2;
     y = GRID_CELL_HEIGHT * character_pos.y - character_height / 2;
@@ -158,10 +134,13 @@ void GameComponent::render(SDL_Renderer * renderer, SDL_Window * window) {
 }
 
 
-void GameComponent::move() {
-    // move stuff
-    character_pos.x += character_xvel;
-    character_pos.y += character_yvel;
+void GameComponent::update() {
+
+    // // move stuff
+    // character_pos.x += character_xvel;
+    // character_pos.y += character_yvel;
+
+    model->update();
 }    
 
 
@@ -188,7 +167,8 @@ void GameComponent::clean_up() {
 void  GameComponent::key_f1_up() {
 }
 void  GameComponent::key_f1_down() {
-    control->toggle_fullscreen();
+    //control->toggle_fullscreen();
+    toggle_fullscreen(window);
 }
 
 
@@ -213,45 +193,62 @@ void  GameComponent::key_4_down() {}
 void  GameComponent::key_9_up() {}
 void  GameComponent::key_9_down() {}
 
-void GameComponent::key_left_down() { start_moving_character_left(); }
-void GameComponent::key_left_up() { stop_moving_character_left(); }
+void GameComponent::key_left_down() {     
+    model->get_game_state()->start_moving_character_left(); 
+}
 
-void GameComponent::key_right_down() { start_moving_character_right(); }
-void GameComponent::key_right_up() { stop_moving_character_right(); }
+void GameComponent::key_left_up() { 
+    model->get_game_state()->stop_moving_character_left(); 
+}
 
-void  GameComponent::key_up_down() { start_moving_character_up(); }
-void  GameComponent::key_up_up() { stop_moving_character_up(); }
+void GameComponent::key_right_down() { 
+    model->get_game_state()->start_moving_character_right(); 
+}
+void GameComponent::key_right_up() { 
+    model->get_game_state()->stop_moving_character_right(); 
+}
 
-void  GameComponent::key_down_down() { start_moving_character_down(); }
-void  GameComponent::key_down_up() { stop_moving_character_down(); }
+void  GameComponent::key_up_down() { 
+    model->get_game_state()->start_moving_character_up(); 
+}
+void  GameComponent::key_up_up() { 
+    model->get_game_state()->stop_moving_character_up(); 
+}
 
-void  GameComponent::key_a_down() { start_moving_character_left(); }
-void  GameComponent::key_a_up() { stop_moving_character_left(); }
+void  GameComponent::key_down_down() { 
+    model->get_game_state()->start_moving_character_down(); 
+}
+void  GameComponent::key_down_up() { 
+    model->get_game_state()->stop_moving_character_down(); 
+}
 
-void  GameComponent::key_d_down() { start_moving_character_right(); }
-void  GameComponent::key_d_up() { stop_moving_character_right(); }
+void  GameComponent::key_a_down() { 
+    model->get_game_state()->start_moving_character_left(); 
+}
+void  GameComponent::key_a_up() { 
+    model->get_game_state()->stop_moving_character_left(); 
+}
 
-void  GameComponent::key_w_down() { start_moving_character_up(); }
-void  GameComponent::key_w_up() { stop_moving_character_up(); }
+void  GameComponent::key_d_down() { 
+    model->get_game_state()->start_moving_character_right(); 
+}
+void  GameComponent::key_d_up() { 
+    model->get_game_state()->stop_moving_character_right(); 
+}
 
-void  GameComponent::key_x_down() { start_moving_character_down(); }
-void  GameComponent::key_x_up() { stop_moving_character_down(); }
+void  GameComponent::key_w_down() { 
+    model->get_game_state()->start_moving_character_up(); 
+}
+void  GameComponent::key_w_up() { 
+    model->get_game_state()->stop_moving_character_up(); 
+}
+
+void  GameComponent::key_x_down() { 
+    model->get_game_state()->start_moving_character_down(); 
+}
+void  GameComponent::key_x_up() { 
+    model->get_game_state()->stop_moving_character_down(); 
+}
 
 void  GameComponent::mouse_button() {}
 
-
-
-//
-// character movement
-//
-void GameComponent::start_moving_character_left() { character_xvel = -1; }
-void GameComponent::stop_moving_character_left() { if (character_xvel < 0) character_xvel = 0; }
-
-void GameComponent::start_moving_character_right() { character_xvel = +1; }
-void GameComponent::stop_moving_character_right() { if (character_xvel > 0) character_xvel = 0; }
-
-void GameComponent::start_moving_character_up() { character_yvel = -1; }
-void GameComponent::stop_moving_character_up() { if (character_yvel < 0) character_yvel = 0; }
-
-void GameComponent::start_moving_character_down() { character_yvel = +1; }
-void GameComponent::stop_moving_character_down() { if (character_yvel > 0) character_yvel = 0; }

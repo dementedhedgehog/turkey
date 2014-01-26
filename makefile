@@ -30,8 +30,8 @@ PROG = turkey
 
 all: $(PROG)
 
-$(PROG): main.o model.o control.o view.o utils.o fps.o scripting.o position.o \
-	intro_component.o game_component.o sprite.o # cell.o 
+$(PROG): main.o model.o view.o fps.o scripting.o position.o component.o \
+	intro_component.o game_component.o sprite.o game_state.o game_obj.o utils.o
 	$(CXX) $^ $(LDFLAGS) -o $@
 
 main.o: src/main.cpp
@@ -40,23 +40,18 @@ main.o: src/main.cpp
 model.o: src/model/model.cpp src/model/model.h src/model/position.h
 	$(CXX) $(CXXFLAGS) $< -o $@
 
-control.o: src/control/control.cpp src/control/control.h
-	$(CXX) $(CXXFLAGS) $< -o $@
-
-view.o: src/view/view.cpp src/view/view.h src/view/utils.h src/view/fps.h
-	$(CXX) $(CXXFLAGS) $< -o $@
-
-fps.o: src/view/fps.cpp src/view/fps.h 
+view.o: src/view/view.cpp src/view/view.h src/view/fps.h
 	$(CXX) $(CXXFLAGS) $< -o $@
 
 utils.o: src/view/utils.cpp src/view/utils.h
 	$(CXX) $(CXXFLAGS) $< -o $@
 
+fps.o: src/view/fps.cpp src/view/fps.h 
+	$(CXX) $(CXXFLAGS) $< -o $@
+
 scripting.o: src/shared/scripting.cpp src/shared/scripting.h
 	$(CXX) $(CXXFLAGS) $< -o $@
 
-# cell.o: src/model/cell.cpp src/model/cell.h
-# 	$(CXX) $(CXXFLAGS) $< -o $@
 
 position.o: src/model/position.cpp src/model/position.h
 	$(CXX) $(CXXFLAGS) $< -o $@
@@ -64,10 +59,19 @@ position.o: src/model/position.cpp src/model/position.h
 sprite.o: src/view/sprite.cpp src/view/sprite.h
 	$(CXX) $(CXXFLAGS) $< -o $@
 
-intro_component.o: src/view/intro_component/intro_component.cpp src/view/intro_component/intro_component.h src/view/i_component.h src/control/control.h
+component.o: src/view/component.cpp src/view/component.h 
 	$(CXX) $(CXXFLAGS) $< -o $@
 
-game_component.o: src/view/game_component/game_component.cpp src/view/game_component/game_component.h src/view/i_component.h src/control/control.h
+intro_component.o: src/view/intro_component/intro_component.cpp src/view/intro_component/intro_component.h src/view/component.h # src/control/control.h
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+game_component.o: src/view/game_component/game_component.cpp src/view/game_component/game_component.h src/view/component.h # src/control/control.h
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+game_state.o: src/model/game_state.cpp src/model/game_state.h
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+game_obj.o: src/model/game_obj.cpp src/model/game_obj.h
 	$(CXX) $(CXXFLAGS) $< -o $@
 
 

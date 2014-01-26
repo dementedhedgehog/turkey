@@ -3,6 +3,14 @@
 
 #include <string>
 
+
+
+class Animation {
+    
+    
+};
+
+
 /*
  * A class that encapsulates a sprite and all its animation information.
  *
