@@ -26,10 +26,7 @@ const uint FRAMES_PER_SECOND = 60;
 const uint MOVES_PER_SECOND = 60;
 
 
-// View::View(Control * control) {
-//     control = control;
 View::View() {
-    //this->model = model;
 
     // determine how long to wait between frames
     ms_per_frame = 1000 / FRAMES_PER_SECOND;
@@ -51,6 +48,11 @@ View::View() {
     //
     current_component = NULL;
 }
+
+// View::~View() {
+
+// }
+
 
 
 // start up sdl

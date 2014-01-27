@@ -27,6 +27,11 @@ class IStateListener {
 public:
     //virtual state_changing(IState * from_state, IState * to_state) = 0;
     virtual void state_changed(State old_state, State current_state) = 0;
+
+    // Adding a virtual destructor allows you to pass pointer ownership to another party 
+    // without exposing the concrete derived class. The destructor doesn't have to do 
+    // anything, because the interface doesn't have any concrete members
+    virtual ~IStateListener() {};
 };
     
 
