@@ -5,86 +5,161 @@
 #include <iostream>
 
 #include "shared/scripting.h"
+#include "view/utils.h"
 
 
+/*
+ * These functions expose parts of the c++ engine to python.
+ */
 
 static int numargs = 0;
 
 
-/* Return the number of arguments of the application command line */
-static PyObject* turkey_numargs(PyObject *self, PyObject *args)
-{
-    if(!PyArg_ParseTuple(args, ":numargs"))
+/* Returns the number of game objects added (0 or 1) */
+static PyObject* turkey_add_game_obj(PyObject *self, PyObject *args)    
+{    
+    int x, y;
+    if(!PyArg_ParseTuple(args, "ii:add_game_obj", &x, &y))
         return NULL;
-    return Py_BuildValue("i", numargs);
+       
+    Model * model = (Model*)PyCapsule_Import("turkey._MODEL", 0);
+    if (model == NULL) {
+        log_msg("Problem extracting the model c api.");
+        return Py_BuildValue("i", 0);
+    }
+
+    GameObj * game_obj = new GameObj(x, y);
+
+    GameState * game_state = model->get_game_state();
+    game_state->add_game_obj(game_obj);
+
+    return Py_BuildValue("i", 1);
 }
 
 
+/* Returns the number of game objects added (0 or 1) */
+static PyObject* turkey_load_texture(PyObject *self, PyObject *args)
+{    
+    char * texture_fname;
+    if(!PyArg_ParseTuple(args, "s:load_texture", &texture_fname))
+        return Py_None;
+       
+    View * view = (View *)PyCapsule_Import("turkey._VIEW", 0);
+    if (view == NULL) {
+        log_msg("Problem extracting the view c api.");
+        return Py_None;
+    }
+
+    SDL_Texture * texture = load_texture(texture_fname, view->get_renderer());
+
+    PyObject * texture_object = PyCapsule_New((void *)texture, "turkey._TEXTURE", NULL);
+    if (texture_object == NULL) {
+        log_msg("Problem creating texture for the python scripts!");
+        return Py_None;
+    }
+
+    return Py_BuildValue("O", texture_object);
+}
+
+// wrap the methods in a module so that 
 static PyMethodDef InitializeTurkeyMethods[] = {
-    {"numargs", turkey_numargs, METH_VARARGS,
-     "Return the number of arguments received by the process."},
-    {NULL, NULL, 0, NULL}
+    // {"numargs", 
+    //  turkey_numargs, 
+    //  METH_VARARGS, 
+    //  "Return the number of arguments received by the process."},
+
+    {"add_game_obj", 
+     turkey_add_game_obj, 
+     METH_VARARGS, 
+     "Add a game object to be displayed."},
+
+    {"load_texture", 
+     turkey_load_texture, 
+     METH_VARARGS, 
+     "Load a texture to be displayed."},
+
+    {NULL, NULL, 0, NULL} // sentinel.
 };
 
 
 
-Scripting::Scripting() {
+/*
+ * Initialize the embedded python engine.
+ */
+Scripting::Scripting(Model * model, View * view) {
+    this->model = model;
+    this->view = view;
+}
+
+
+int Scripting::init(char * program_fname) {
+
+    // add the directory containing the executable to the python path
+    // (no return value to check!)
+    Py_SetProgramName(program_fname);
+
     // initialize embedded python scripting
-    // FIXME: check it worked!
+    // (no return value to check!)
     Py_Initialize();
 
+    // initialize the turkey python module (the python->c++ interface to the engine).
+    PyObject * module;
     numargs = 6;
-    Py_InitModule("turkey", InitializeTurkeyMethods);
+    module = Py_InitModule("turkey", InitializeTurkeyMethods);
+    if (module == NULL) {
+        log_msg("Problem initializing scripts!");
+        return 1;
+    }
 
-    // PyRun_SimpleString("from time import time,ctime\n"
-    //                    "print 'Today is',ctime(time())\n");
+    /* Create a capsule containing the model pointer */
+    PyObject * c_api_object;
+    c_api_object = PyCapsule_New((void *)model, "turkey._MODEL", NULL);
+    if (c_api_object == NULL) {
+        log_msg("Problem creating model object for the python scripts!");
+        return 2;
+    }
+
+    // and add it to the module
+    if (PyModule_AddObject(module, "_MODEL", c_api_object) != 0) {
+        log_msg("Problem adding model for the python scripts!");
+        return 3;
+    }
+
+    /* Create a capsule containing the view pointer */
+    c_api_object = PyCapsule_New((void *)view, "turkey._VIEW", NULL);
+    if (c_api_object == NULL) {
+        log_msg("Problem creating view object for the python scripts!");
+        return 4;
+    }
+
+    // and add it to the module
+    if (PyModule_AddObject(module, "_VIEW", c_api_object) != 0) {
+        log_msg("Problem adding view for the python scripts!");
+        return 5;
+    }    
+        
+    return 0;
 }
 
 
 Scripting::~Scripting() {
     // clean up python
+    // (this function can be called without calling init - it's safe)
     Py_Finalize();
 }
 
-void Scripting::print_time() {
-    // just a little demo
-    PyRun_SimpleString("from time import time,ctime\n"
-                       "print 'Today is',ctime(time())\n");
-}
 
-
-// Scripting::import(std::string module_name) {
-//     PyObject * python_module, python_name;
-
-//     // load the module with the given name 
-//     // (have to convert the string to a python string and release it).
-//     python_name = PyString_FromString(module_name.cstr);
-//     module_ptr = PyImport_Import(python_name);
-//     Py_DECREF(python_name);
-
-//     Module * module;
-//     if (module_ptr != NULL) {
-//         module = new Module(module_ptr);
-//     }
-//     else {
-//         PyErr_Print();
-//         std::cout << "Failed to load \"" << module_name << std::endl;
-//         module = nullptr;
-//     }
-//     return module;
-// }
-
-
-
-
-
-int Scripting::initialize_script() {
+/*
+ * Execute the initialize levels python script from c++
+ *
+ */
+int Scripting::run_initialize_levels_script() {
     PyObject *pName, *pModule, *pFunc;
     PyObject *pArgs, *pValue;
 
     //std::string 
-    const char * module_name = "turkey_initialize";
-    const char * fn_name = "foo";
+    const char * module_name = "turkey_scripts";
+    const char * fn_name = "initialize_levels";
 
     pName = PyString_FromString(module_name);
     pModule = PyImport_Import(pName);

@@ -1,6 +1,8 @@
 #ifndef GAME_OBJ_H
 #define GAME_OBJ_H
 
+#include <SDL2/SDL.h>
+
 /*
  * Class that represents all collidable objects 
  * this includes the main character, monsters, some pieces of terrain, and items.
@@ -18,6 +20,7 @@ class GameObj {
     // bounding box radius 
     // (i.e. for the moment they're squares with side length 2r centered at x,y)
     
+    GameObj(int x, int y, SDL_Texture texture); // FIXME: replace with sprite instance
     GameObj(int x, int y);
 };
 

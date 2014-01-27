@@ -73,6 +73,9 @@ class View : public IStateListener {
     //View(Control * control);
     View();
 
+    // access the renderer
+    SDL_Renderer * get_renderer();
+
     // start up sdl
     int init_sdl();
 

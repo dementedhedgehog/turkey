@@ -58,13 +58,13 @@ int View::init_sdl() {
 
     // init sdl
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
-        logSDLError(std::cout, "SDL_Init");
+        log_sdl_error("SDL_Init");
 		return 1;
 	}
     
     // init the img reading library
     if ((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) != IMG_INIT_PNG) {
-        logSDLError(std::cout, "IMG_Init");
+        log_sdl_error("IMG_Init");
         return 2;
     }
 
@@ -96,7 +96,7 @@ int View::display_window(Model * model) {
         SCREEN_WIDTH, SCREEN_HEIGHT,
         SDL_WINDOW_SHOWN);
     if (window == nullptr) {
-        logSDLError(std::cout, "CreateWindow");
+        log_sdl_error("CreateWindow");
         return 2;
     }
 
@@ -104,13 +104,13 @@ int View::display_window(Model * model) {
     renderer = SDL_CreateRenderer(window, -1, 
         SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     if (renderer == nullptr) {
-        logSDLError(std::cout, "CreateRenderer");
+        log_sdl_error("CreateRenderer");
         return 3;
     }
 
     // background_parallax = loadTexture("./res/dungen_parallax.png", renderer);
     // if (background_parallax == nullptr) {
-    //     logSDLError(std::cout, "LoadBMP");
+    //     log_sdl_error(std::cout, "LoadBMP");
     //     return 4;
     // }
 
@@ -490,7 +490,7 @@ void View::state_changed(State old_state, State current_state) {
         case State::FATAL_ERROR:
         default:
             // log an error and bail
-            logSDLError(std::cout, "Unknown State!");
+            log_sdl_error("Unknown State!");
             finished = true;
             //return 2;
             break;
@@ -498,3 +498,7 @@ void View::state_changed(State old_state, State current_state) {
 }
 
 
+
+SDL_Renderer * View::get_renderer() {
+    return renderer;
+}

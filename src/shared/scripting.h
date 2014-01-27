@@ -1,43 +1,26 @@
 #ifndef SCRIPTING_H
 #define SCRIPTING_H
 
-
-/* /\* */
-/*  * Class that wraps a python module. */
-/*  *\/ */
-/* class Module { */
-/*  private: */
-/*     PyObject * module_ptr; */
-
-/*  protected: */
-/*     Module(std::string module_name); */
-/*     ~Module() { Py_DECREF(pModule); }; */
-/* };     */
-
-
-/* class InitalizeScript : public LoadModule { */
-/*  public: */
-/*     InitializeScript(); */
-
-
-/* } */
-
+#include "model/model.h"
+#include "view/view.h"
 
 /*
  * Object that provides access to python scripts..
  *
  */
 class Scripting {
+private:
+    Model * model;
+    View * view;
+
 public:
-    Scripting();
+    Scripting(Model * model, View * view);
     ~Scripting();
+
+    int init(char * program_fname);
     
-    void print_time();
-    /* void import(); */
-
     // run the initialization script 
-    int initialize_script();
-
+    int run_initialize_levels_script();
 };
 
 #endif

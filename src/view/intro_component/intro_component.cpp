@@ -1,14 +1,13 @@
+/*
+ * Intro screen implementation.
+ *
+ */
 
 #include <iostream>
 
-//#include "control/control.h"
 #include "model/model.h"
 #include "view/utils.h"
 #include "view/intro_component/intro_component.h"
-
-// IntroComponent::IntroComponent(Control * control) {
-//     this->control = control;
-// }
 
 IntroComponent::IntroComponent(Model * model, SDL_Window * window, SDL_Renderer * renderer) :
     Component(model, window, renderer) { }
@@ -17,9 +16,9 @@ IntroComponent::IntroComponent(Model * model, SDL_Window * window, SDL_Renderer 
 int IntroComponent::init(SDL_Renderer * renderer) {
     std::cout << "intro init" << std::endl;
 
-    background = loadTexture("./res/intro_background.jpg", renderer);
+    background = load_texture("./res/intro_background.jpg", renderer);
     if (background == nullptr) {
-        logSDLError(std::cout, "LoadBMPX");
+        log_sdl_error("Load intro background texture failed");
         return 2;
     }
 
@@ -56,7 +55,7 @@ void IntroComponent::render(
     // tile background
     int backgroundWidth, backgroundHeight;
     SDL_QueryTexture(background, NULL, NULL, &backgroundWidth, &backgroundHeight);
-    renderTexture(background, renderer, 0, 0);
+    render_texture(background, renderer, 0, 0);
 
     SDL_Rect src = { 0, 0, title_text->w, title_text->h };
     SDL_Rect dest = { 30, 30, title_text->w, title_text->h};

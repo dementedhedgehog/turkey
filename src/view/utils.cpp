@@ -12,9 +12,14 @@
 * @param os The output stream to write the message too
 * @param msg The error message to write, format will be msg error: SDL_GetError()
 */
-void logSDLError(std::ostream &os, const std::string &msg) {
-	os << msg << " error: " << SDL_GetError() << std::endl;
+void log_sdl_error(const std::string &msg) {
+    std::cerr << msg << " error: " << SDL_GetError() << std::endl;
 }
+
+void log_msg(const std::string &msg) {
+    std::cerr << msg << std::endl;
+}
+
 
 
 /**
@@ -23,7 +28,7 @@ void logSDLError(std::ostream &os, const std::string &msg) {
  * @param ren The renderer to load the texture onto
  * @return the loaded texture, or nullptr if something went wrong.
  */
-SDL_Texture* loadTexture(const std::string &file, SDL_Renderer * renderer) {
+SDL_Texture* load_texture(const std::string &file, SDL_Renderer * renderer) {
 
 	// Initialize to nullptr to avoid dangling pointer issues
 	SDL_Texture *texture = nullptr;
@@ -33,11 +38,12 @@ SDL_Texture* loadTexture(const std::string &file, SDL_Renderer * renderer) {
 
     // Make sure converting went ok too
     if (texture == nullptr) {
-        logSDLError(std::cout, "CreateTextureFromSurface");
+        log_sdl_error("CreateTextureFromSurface");
 	}
 
 	return texture;
 }
+
 
 
 /**
@@ -48,7 +54,7 @@ SDL_Texture* loadTexture(const std::string &file, SDL_Renderer * renderer) {
  * @param x The x coordinate to draw too
  * @param y The y coordinate to draw too
  */
-void renderTexture(SDL_Texture *tex, SDL_Renderer *renderer, int x, int y) {
+void render_texture(SDL_Texture *tex, SDL_Renderer *renderer, int x, int y) {
 
 	// Setup the destination rectangle to be at the position we want
 	SDL_Rect dst;

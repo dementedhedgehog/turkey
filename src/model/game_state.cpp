@@ -32,7 +32,10 @@ GameState::GameState() {
 
     game_obj = new GameObj(20, 20);
     game_objs.push_back(game_obj);
+}
 
+void GameState::add_game_obj(GameObj * game_obj) {
+    game_objs.push_back(game_obj);
 }
 
 

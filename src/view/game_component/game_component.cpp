@@ -1,8 +1,6 @@
 
 #include <iostream>
 
-//#include "control/control.h"
-//#include "control/.h"
 #include "view/utils.h"
 #include "view/game_component/game_component.h"
 
@@ -21,8 +19,6 @@ const int GRID_CELL_HEIGHT = SCREEN_HEIGHT / N_CELLS_HIGH;
     
 
 
-// GameComponent::GameComponent(Control * control) {
-//     this->control = control;
 GameComponent::GameComponent(Model * model, SDL_Window * window, SDL_Renderer * renderer) :
     Component(model, window, renderer) {
     
@@ -47,9 +43,9 @@ const char * GameComponent::get_name_cstr() {
 int GameComponent::init(SDL_Renderer * renderer) {
 
     // FIXME: all this should be done using config files? 
-    background = loadTexture("./res/background.jpg", renderer);
+    background = load_texture("./res/background.jpg", renderer);
     if (background == nullptr) {
-        logSDLError(std::cout, "LoadBMPX");
+        log_sdl_error("Load game component background image failed");
         return 1;
     }
 
@@ -75,10 +71,10 @@ int GameComponent::init(SDL_Renderer * renderer) {
     }        
 
     // load the main character image
-    character = loadTexture("./res/dwarf.png", renderer);
+    character = load_texture("./res/dwarf.png", renderer);
 
     // load a block of stone..
-    stone = loadTexture("./res/stone.png", renderer);
+    stone = load_texture("./res/stone.png", renderer);
 
     // success
     return 0;
@@ -89,7 +85,7 @@ void GameComponent::render(SDL_Renderer * renderer, SDL_Window * window) {
     int x, y;
 
     // draw the background
-    renderTexture(background, renderer, 0, 0);
+    render_texture(background, renderer, 0, 0);
 
     // draw the cell lines
     if (grid_enabled) {
@@ -112,24 +108,17 @@ void GameComponent::render(SDL_Renderer * renderer, SDL_Window * window) {
     std::list<GameObj*> game_objs = game_state->get_game_objs();
     std::list<GameObj*>::iterator i;
     for (i = game_objs.begin(); i != game_objs.end(); i++) {         
-        renderTexture(stone, renderer, GRID_CELL_WIDTH * (*i)->x, GRID_CELL_HEIGHT * (*i)->y);
+        render_texture(stone, renderer, GRID_CELL_WIDTH * (*i)->x, GRID_CELL_HEIGHT * (*i)->y);
     }
     
     // draw the character    
     x = GRID_CELL_WIDTH * character_pos.x - character_width / 2;
     y = GRID_CELL_HEIGHT * character_pos.y - character_height / 2;
-    renderTexture(character, renderer, x, y);
+    render_texture(character, renderer, x, y);
 
     SDL_Rect src = { 0, 0, title_text->w, title_text->h };
     SDL_Rect dest = { 30, 30, title_text->w, title_text->h};
-    // SDL_Rect dst = { 0, 0, 10, 10}; //textureX->w, textureX->h };
-    //SDL_RenderCopy(renderer, texture, &src, &dst);
     SDL_RenderCopy(renderer, title_texture, &src, &dest);
-
-    // // draw some text
-    // SDL_Rect src = { 0, 0, text->w, text->h };
-    // SDL_Rect dest = { 30, 30, text->w, text->h};
-    // SDL_RenderCopy(renderer, texture, &src, &dest);
 
 }
 

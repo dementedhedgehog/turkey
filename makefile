@@ -79,3 +79,4 @@ game_obj.o: src/model/game_obj.cpp src/model/game_obj.h
 clean:
 	rm -f *.o && rm -f $(PROG)	
 	find . -name '*~' -exec rm {} \; # clean up emacs temporary files
+	find . -name '*.pyc' -exec rm {} \; # clean up compiled python scripts

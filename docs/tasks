@@ -2,6 +2,7 @@
 tasks
 =====
 
+   * create the world from a python script
    * game_objects list with positions and bounding boxes
    * collision detection
 
@@ -21,11 +22,6 @@ later
    * parallax, fake 3d tunnels, snow etc
    * quad tree for collision detection
    * particle system for flashy stuff
-
-questions
-=========
-   * MVC looks like overkill.. but I'm leaving it in for the moment because it's easier to 
-     pull it out later than to put it back in later.
 
 
 done

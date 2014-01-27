@@ -21,6 +21,9 @@ class GameState : public IState {
 
     std::list<GameObj*> const get_game_objs() const;    
 
+    void add_game_obj(GameObj * game_obj);
+
+    // update the positions of all the game objects based on their velocity
     void update();
 
     // character movement
