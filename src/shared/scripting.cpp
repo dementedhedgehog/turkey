@@ -19,8 +19,11 @@ static int numargs = 0;
 static PyObject* turkey_add_game_obj(PyObject *self, PyObject *args)    
 {    
     int x, y;
-    if(!PyArg_ParseTuple(args, "ii:add_game_obj", &x, &y))
+    PyObject * texture_object = nullptr;
+    
+    if(!PyArg_ParseTuple(args, "ii|O:add_game_obj", &x, &y, &texture_object)) {
         return NULL;
+    }
        
     Model * model = (Model*)PyCapsule_Import("turkey._MODEL", 0);
     if (model == NULL) {
@@ -28,8 +31,18 @@ static PyObject* turkey_add_game_obj(PyObject *self, PyObject *args)
         return Py_BuildValue("i", 0);
     }
 
-    GameObj * game_obj = new GameObj(x, y);
+    
+    SDL_Texture * texture = nullptr;
+    if (texture_object != nullptr) {
+        SDL_Texture * texture = (SDL_Texture *)PyCapsule_GetPointer(texture_object, "turkey._TEXTURE");
+        if (texture == NULL) {
+            log_msg("Problem extracting the texture.");
+            return Py_BuildValue("O", 0);
+        }
 
+    }
+
+    GameObj * game_obj = new GameObj(x, y, texture);
     GameState * game_state = model->get_game_state();
     game_state->add_game_obj(game_obj);
 

@@ -14,9 +14,9 @@ class GameComponent : public Component {
     //Model * model;
 
     // some renderer textures
-    SDL_Texture * character;
+    //SDL_Texture * character;
     SDL_Texture * background;
-    SDL_Texture * stone; // block of stone  - just hacking this in here for the moment
+    //SDL_Texture * stone; // block of stone  - just hacking this in here for the moment
     //SDL_Texture * background_parallax;
 
     // FIXME: move these things to a sprite_image object.. sprites then contain 
@@ -38,13 +38,13 @@ class GameComponent : public Component {
     // character position
     // (assumes we go with the cell based positioning platformer model).
     // FIXME: move this info into a sprite!
-    SDL_Point character_pos; 
-    uint character_width;
-    uint character_height; 
+    /* SDL_Point character_pos;  */
+    /* uint character_width; */
+    /* uint character_height;  */
 
     // flags for handling character movement
-    int character_xvel;
-    int character_yvel;
+    /* int character_xvel; */
+    /* int character_yvel; */
 
     /* void start_moving_character_left(); */
     /* void stop_moving_character_left(); */

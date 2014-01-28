@@ -6,32 +6,31 @@ GameState::GameState() {
     // add the character!
     this->character = new GameObj(3, 3);
     game_objs.push_back(character);    
-
     
     // hard code some objects (FIXME: prototyping hack, remove)
-    int x, y; 
-    GameObj * game_obj;
+    // int x, y; 
+    // GameObj * game_obj;
     
-    y = 17;
-    for (x = 0; x < 15; x += 1) {
-        game_obj = new GameObj(x, y); 
-        game_objs.push_back(game_obj);
-    }
+    // y = 17;
+    // for (x = 0; x < 15; x += 1) {
+    //     game_obj = new GameObj(x, y); 
+    //     game_objs.push_back(game_obj);
+    // }
 
-    y = 23;
-    for (x = 26; x < 35; x += 1) {
-        game_obj = new GameObj(x, y);
-        game_objs.push_back(game_obj);
-    }
+    // y = 23;
+    // for (x = 26; x < 35; x += 1) {
+    //     game_obj = new GameObj(x, y);
+    //     game_objs.push_back(game_obj);
+    // }
 
-    y = 13;
-    for (x = 22; x < 27; x += 1) {
-        game_obj = new GameObj(x, y);
-        game_objs.push_back(game_obj);
-    }    
+    // y = 13;
+    // for (x = 22; x < 27; x += 1) {
+    //     game_obj = new GameObj(x, y);
+    //     game_objs.push_back(game_obj);
+    // }    
 
-    game_obj = new GameObj(20, 20);
-    game_objs.push_back(game_obj);
+    // game_obj = new GameObj(20, 20);
+    // game_objs.push_back(game_obj);
 }
 
 void GameState::add_game_obj(GameObj * game_obj) {

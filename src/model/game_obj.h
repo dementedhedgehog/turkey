@@ -17,11 +17,14 @@ class GameObj {
     int x_vel;
     int y_vel;
 
+    // FIXME: place holder for a sprite..
+    SDL_Texture * texture; 
+
     // bounding box radius 
     // (i.e. for the moment they're squares with side length 2r centered at x,y)
     
-    GameObj(int x, int y, SDL_Texture texture); // FIXME: replace with sprite instance
-    GameObj(int x, int y);
+    GameObj(int x, int y, SDL_Texture * texture = nullptr); // FIXME: replace with sprite instance
+    //GameObj(int x, int y);
 };
 
 #endif

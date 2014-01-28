@@ -24,9 +24,9 @@ GameComponent::GameComponent(Model * model, SDL_Window * window, SDL_Renderer * 
     
     // init character position 
     // FIXME: move this stuff into a sprite or some other object
-    character_pos = {3, 3}; 
-    character_width = 35;
-    character_height = 36;
+    // character_pos = {3, 3}; 
+    // character_width = 35;
+    // character_height = 36;
     // character_xvel = 0;
     // character_yvel = 0;
 
@@ -70,11 +70,11 @@ int GameComponent::init(SDL_Renderer * renderer) {
         return 4;
     }        
 
-    // load the main character image
-    character = load_texture("./res/dwarf.png", renderer);
+    // // load the main character image
+    // character = load_texture("./res/dwarf.png", renderer);
 
-    // load a block of stone..
-    stone = load_texture("./res/stone.png", renderer);
+    // // load a block of stone..
+    // stone = load_texture("./res/stone.png", renderer);
 
     // success
     return 0;
@@ -106,15 +106,18 @@ void GameComponent::render(SDL_Renderer * renderer, SDL_Window * window) {
     // draw all the game objects..
     GameState const * game_state = model->get_game_state();
     std::list<GameObj*> game_objs = game_state->get_game_objs();
+    GameObj * game_obj;
     std::list<GameObj*>::iterator i;
     for (i = game_objs.begin(); i != game_objs.end(); i++) {         
-        render_texture(stone, renderer, GRID_CELL_WIDTH * (*i)->x, GRID_CELL_HEIGHT * (*i)->y);
+        game_obj = (*i);
+        render_texture(game_obj->texture, renderer, 
+                       GRID_CELL_WIDTH * game_obj->x, GRID_CELL_HEIGHT * game_obj->y);
     }
     
     // draw the character    
-    x = GRID_CELL_WIDTH * character_pos.x - character_width / 2;
-    y = GRID_CELL_HEIGHT * character_pos.y - character_height / 2;
-    render_texture(character, renderer, x, y);
+    // x = GRID_CELL_WIDTH * character_pos.x - character_width / 2;
+    // y = GRID_CELL_HEIGHT * character_pos.y - character_height / 2;
+    // render_texture(character, renderer, x, y);
 
     SDL_Rect src = { 0, 0, title_text->w, title_text->h };
     SDL_Rect dest = { 30, 30, title_text->w, title_text->h};
@@ -137,7 +140,7 @@ void GameComponent::clean_up() {
     // clean up the sdl objects
     SDL_DestroyTexture(background);
     //SDL_DestroyTexture(background_parallax); 
-    SDL_DestroyTexture(character); 
+    // SDL_DestroyTexture(character); 
 
     SDL_FreeSurface(title_text);
     SDL_DestroyTexture(title_texture);
@@ -170,7 +173,19 @@ void  GameComponent::key_2_down() {}
 void  GameComponent::key_3_up() {}
 void  GameComponent::key_3_down() {}
 void  GameComponent::key_4_up() {}
-void  GameComponent::key_4_down() {}
+void  GameComponent::key_4_down() {
+
+    GameState const * game_state = model->get_game_state();
+    std::list<GameObj*> game_objs = game_state->get_game_objs();
+    GameObj * game_obj;
+    std::list<GameObj*>::iterator i;
+    std::cout << "----" << std::endl;
+    for (i = game_objs.begin(); i != game_objs.end(); i++) {         
+        game_obj = (*i);
+        std::cout << "obj: " << game_obj->x << ", " << game_obj->y << std::endl;
+    }
+
+}
 /*  void  GameComponent::key_5_up() {} */
 /*  void  GameComponent::key_5_down() {} */
 /*  void  GameComponent::key_6_up() {} */
