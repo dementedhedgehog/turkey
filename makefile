@@ -31,7 +31,8 @@ PROG = turkey
 all: $(PROG)
 
 $(PROG): main.o model.o view.o fps.o scripting.o position.o component.o \
-	intro_component.o game_component.o sprite.o game_state.o game_obj.o utils.o
+	intro_component.o game_component.o sprite.o game_state.o game_obj.o utils.o \
+	brute_force_collision_detector.o
 	$(CXX) $^ $(LDFLAGS) -o $@
 
 main.o: src/main.cpp
@@ -65,13 +66,27 @@ component.o: src/view/component.cpp src/view/component.h
 intro_component.o: src/view/intro_component/intro_component.cpp src/view/intro_component/intro_component.h src/view/component.h # src/control/control.h
 	$(CXX) $(CXXFLAGS) $< -o $@
 
-game_component.o: src/view/game_component/game_component.cpp src/view/game_component/game_component.h src/view/component.h # src/control/control.h
+game_component.o: \
+	src/view/game_component/game_component.cpp \
+	src/view/game_component/game_component.h \
+	src/view/component.h 
 	$(CXX) $(CXXFLAGS) $< -o $@
 
-game_state.o: src/model/game_state.cpp src/model/game_state.h
+game_state.o: \
+	src/model/game_state.cpp \
+	src/model/game_state.h \
+	src/model/collision_detectors/brute_force_collision_detector.h 
 	$(CXX) $(CXXFLAGS) $< -o $@
 
-game_obj.o: src/model/game_obj.cpp src/model/game_obj.h
+game_obj.o: \
+	src/model/game_obj.cpp \
+	src/model/game_obj.h
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+brute_force_collision_detector.o: \
+	src/model/collision_detectors/brute_force_collision_detector.cpp \
+	src/model/collision_detectors/brute_force_collision_detector.h \
+	src/model/i_collision_detector.h
 	$(CXX) $(CXXFLAGS) $< -o $@
 
 

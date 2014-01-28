@@ -1,10 +1,15 @@
 
+#include <iostream>
+
 #include "model/game_state.h"
+#include "model/collision_detectors/brute_force_collision_detector.h"
 
 GameState::GameState() {
 
     // add the character!
     this->character = nullptr;    
+
+    collision_detector = new BruteForceCollisionDetector();    
 }
 
 void GameState::add_game_obj(GameObj * game_obj) {
@@ -35,6 +40,22 @@ void GameState::update() {
         game_obj->x += game_obj->x_vel;
         game_obj->y += game_obj->y_vel;
     }
+
+    collision_detector->detect_collisions(game_objs, collisions);
+
+    if (collisions.size() > 0) {
+        std::cout << "collisions: " << collisions.size()  << std::endl;
+    };
+
+    // std::list<collision_t>::iterator j;
+    // collision_t collision;
+    // for (j = collisions.begin(); j != collisions.end(); j++) {         
+
+    //     // move stuff
+    //     //collision = *i;
+    //     std::cout << "collision!" << std::endl;
+    // }
+
 }
 
 

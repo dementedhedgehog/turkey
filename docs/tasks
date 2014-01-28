@@ -2,18 +2,20 @@
 tasks
 =====
 
-   * create the world from a python script
    * game_objects list with positions and bounding boxes
    * collision detection
+   * load sprites in python
+   * new keyboard handler for fighting
+   * sprite implementation and animation
+   * settings in python (debug etc)
+   * set backgrounds in python
+   * triggers in python.. collisions or collisions and inputs
 
-   * collision handling
    * particle system (to check the collision system)
-   * proper model view control architecture.. sooner rather than later (or does this make stuff slow for a simple and well-defined application?)
    * dump a stack trace on error
-   * animation and proper sprite architecture
    * screens/view contexts.. need an intro, main menu, etc
    * sound manager
-   * resource cache   
+   * resource cache  
 
 later
 ====
@@ -30,4 +32,5 @@ done
   * add blocks
   * sort out a repo
   * fix memory bug .. use gdb, run turkey, where.
+  * create the world from a python script
 

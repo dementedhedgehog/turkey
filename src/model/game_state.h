@@ -5,6 +5,7 @@
 
 #include "model/i_state.h"
 #include "model/game_obj.h"
+#include "model/i_collision_detector.h"
 
 
 class GameState : public IState {
@@ -14,6 +15,9 @@ class GameState : public IState {
 
     // the main dude that the player controls
     GameObj * character;
+
+    ICollisionDetector * collision_detector;
+    std::list<collision_t> collisions;
 
  public:
     GameState();

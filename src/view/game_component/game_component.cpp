@@ -14,23 +14,15 @@ const int N_CELLS_HIGH = 50;
 // grid size..
 const int SCREEN_WIDTH  = 1280;  // FIXME: get this dynamically from the window
 const int SCREEN_HEIGHT = 800;
-const int GRID_CELL_WIDTH  = SCREEN_WIDTH / N_CELLS_WIDE;
-const int GRID_CELL_HEIGHT = SCREEN_HEIGHT / N_CELLS_HIGH;
+const int GRID_CELL_WIDTH  = 1; // SCREEN_WIDTH / N_CELLS_WIDE;
+const int GRID_CELL_HEIGHT = 1; // SCREEN_HEIGHT / N_CELLS_HIGH;
     
 
 
 GameComponent::GameComponent(Model * model, SDL_Window * window, SDL_Renderer * renderer) :
     Component(model, window, renderer) {
     
-    // init character position 
-    // FIXME: move this stuff into a sprite or some other object
-    // character_pos = {3, 3}; 
-    // character_width = 35;
-    // character_height = 36;
-    // character_xvel = 0;
-    // character_yvel = 0;
-
-    // MOVE TO MODEL
+    // MOVE TO SCRIPTS
     // display the cell grid.. for development and debugging
     grid_enabled = true;
 }
@@ -70,12 +62,6 @@ int GameComponent::init(SDL_Renderer * renderer) {
         return 4;
     }        
 
-    // // load the main character image
-    // character = load_texture("./res/dwarf.png", renderer);
-
-    // // load a block of stone..
-    stone = load_texture("./res/stone.png", renderer);
-
     // success
     return 0;
 }
@@ -104,10 +90,6 @@ void GameComponent::render(SDL_Renderer * renderer, SDL_Window * window) {
     }
 
 
-    // load a block of stone..
-    //SDL_Texture * stone = load_texture("./res/stone.png", renderer);
-
-
     // draw all the game objects..
     GameState const * game_state = model->get_game_state();
     std::list<GameObj*> game_objs = game_state->get_game_objs();
@@ -119,12 +101,6 @@ void GameComponent::render(SDL_Renderer * renderer, SDL_Window * window) {
                        GRID_CELL_WIDTH * game_obj->x, GRID_CELL_HEIGHT * game_obj->y);
     }
 
-        
-    // draw the character    
-    // x = GRID_CELL_WIDTH * character_pos.x - character_width / 2;
-    // y = GRID_CELL_HEIGHT * character_pos.y - character_height / 2;
-    // render_texture(character, renderer, x, y);
-
     SDL_Rect src = { 0, 0, title_text->w, title_text->h };
     SDL_Rect dest = { 30, 30, title_text->w, title_text->h};
     SDL_RenderCopy(renderer, title_texture, &src, &dest);
@@ -133,11 +109,6 @@ void GameComponent::render(SDL_Renderer * renderer, SDL_Window * window) {
 
 
 void GameComponent::update() {
-
-    // // move stuff
-    // character_pos.x += character_xvel;
-    // character_pos.y += character_yvel;
-
     model->update();
 }    
 
@@ -146,15 +117,12 @@ void GameComponent::clean_up() {
     // clean up the sdl objects
     SDL_DestroyTexture(background);
     //SDL_DestroyTexture(background_parallax); 
-    // SDL_DestroyTexture(character); 
-
     SDL_FreeSurface(title_text);
     SDL_DestroyTexture(title_texture);
 
     // clean up the font 
     TTF_CloseFont(font);
     font = NULL; // to be safe...
-
 }    
 
 
@@ -165,7 +133,6 @@ void GameComponent::clean_up() {
 void  GameComponent::key_f1_up() {
 }
 void  GameComponent::key_f1_down() {
-    //control->toggle_fullscreen();
     toggle_fullscreen(window);
 }
 
@@ -180,9 +147,6 @@ void  GameComponent::key_3_up() {}
 void  GameComponent::key_3_down() {}
 void  GameComponent::key_4_up() {}
 void  GameComponent::key_4_down() {
-
-    // load a block of stone..
-    //stone = load_texture("./res/stone.png", renderer);
 
     GameState const * game_state = model->get_game_state();
     std::list<GameObj*> game_objs = game_state->get_game_objs();

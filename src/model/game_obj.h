@@ -14,6 +14,9 @@ class GameObj {
     int x;
     int y;
 
+    int half_height;
+    int half_width;
+
     int x_vel;
     int y_vel;
 
@@ -22,8 +25,8 @@ class GameObj {
 
     // bounding box radius 
     // (i.e. for the moment they're squares with side length 2r centered at x,y)
-    
-    GameObj(int x, int y, SDL_Texture * texture = nullptr); // FIXME: replace with sprite instance
+    // FIXME: replace with sprite instance    
+    GameObj(int x, int y, SDL_Texture * texture = nullptr); 
     //GameObj(int x, int y);
 };
 
