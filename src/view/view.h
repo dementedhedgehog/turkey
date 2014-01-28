@@ -101,7 +101,7 @@ class View : public IStateListener {
     /* void render_texture(SDL_Texture *tex, int x, int y, SDL_Rect * clip); */
 
     // free everything.
-    int clean_up();
+    int clean_up();    
 
     // notification that the state has changed
     // (required by the IStateListener interface)

@@ -74,7 +74,7 @@ int GameComponent::init(SDL_Renderer * renderer) {
     // character = load_texture("./res/dwarf.png", renderer);
 
     // // load a block of stone..
-    // stone = load_texture("./res/stone.png", renderer);
+    stone = load_texture("./res/stone.png", renderer);
 
     // success
     return 0;
@@ -103,6 +103,11 @@ void GameComponent::render(SDL_Renderer * renderer, SDL_Window * window) {
         }
     }
 
+
+    // load a block of stone..
+    //SDL_Texture * stone = load_texture("./res/stone.png", renderer);
+
+
     // draw all the game objects..
     GameState const * game_state = model->get_game_state();
     std::list<GameObj*> game_objs = game_state->get_game_objs();
@@ -113,7 +118,8 @@ void GameComponent::render(SDL_Renderer * renderer, SDL_Window * window) {
         render_texture(game_obj->texture, renderer, 
                        GRID_CELL_WIDTH * game_obj->x, GRID_CELL_HEIGHT * game_obj->y);
     }
-    
+
+        
     // draw the character    
     // x = GRID_CELL_WIDTH * character_pos.x - character_width / 2;
     // y = GRID_CELL_HEIGHT * character_pos.y - character_height / 2;
@@ -175,6 +181,9 @@ void  GameComponent::key_3_down() {}
 void  GameComponent::key_4_up() {}
 void  GameComponent::key_4_down() {
 
+    // load a block of stone..
+    //stone = load_texture("./res/stone.png", renderer);
+
     GameState const * game_state = model->get_game_state();
     std::list<GameObj*> game_objs = game_state->get_game_objs();
     GameObj * game_obj;
@@ -182,7 +191,7 @@ void  GameComponent::key_4_down() {
     std::cout << "----" << std::endl;
     for (i = game_objs.begin(); i != game_objs.end(); i++) {         
         game_obj = (*i);
-        std::cout << "obj: " << game_obj->x << ", " << game_obj->y << std::endl;
+        std::cout << "obj: " << game_obj->x << ", " << game_obj->y << "  " << game_obj->texture << std::endl;
     }
 
 }

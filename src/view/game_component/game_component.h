@@ -16,7 +16,7 @@ class GameComponent : public Component {
     // some renderer textures
     //SDL_Texture * character;
     SDL_Texture * background;
-    //SDL_Texture * stone; // block of stone  - just hacking this in here for the moment
+    SDL_Texture * stone; // block of stone  - just hacking this in here for the moment
     //SDL_Texture * background_parallax;
 
     // FIXME: move these things to a sprite_image object.. sprites then contain 

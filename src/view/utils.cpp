@@ -38,7 +38,7 @@ SDL_Texture* load_texture(const std::string &file, SDL_Renderer * renderer) {
 
     // Make sure converting went ok too
     if (texture == nullptr) {
-        log_sdl_error("CreateTextureFromSurface");
+        log_sdl_error("CreateTextureFromSurface ");
 	}
 
 	return texture;
@@ -54,7 +54,7 @@ SDL_Texture* load_texture(const std::string &file, SDL_Renderer * renderer) {
  * @param x The x coordinate to draw too
  * @param y The y coordinate to draw too
  */
-void render_texture(SDL_Texture *tex, SDL_Renderer *renderer, int x, int y) {
+void render_texture(SDL_Texture * tex, SDL_Renderer * renderer, int x, int y) {
 
 	// Setup the destination rectangle to be at the position we want
 	SDL_Rect dst;
