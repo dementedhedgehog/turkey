@@ -19,6 +19,9 @@ class GameState : public IState {
     ICollisionDetector * collision_detector;
     std::list<collision_t> collisions;
 
+    // is the game paused?
+    bool paused;
+
  public:
     GameState();
     State get_state() { return State::GAME; }    
@@ -30,6 +33,9 @@ class GameState : public IState {
 
     // update the positions of all the game objects based on their velocity
     void update();
+
+   // toggle game pause
+    void pause();
 
     // character movement
     void start_moving_character_left();

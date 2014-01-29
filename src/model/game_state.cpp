@@ -8,6 +8,9 @@ GameState::GameState() {
 
     // add the character!
     this->character = nullptr;    
+    paused = false;
+
+    std::cout << "XXX paused" << paused << std::endl;
 
     collision_detector = new BruteForceCollisionDetector();    
 }
@@ -30,6 +33,12 @@ std::list<GameObj*> const GameState::get_game_objs() const {
 
 
 void GameState::update() {
+
+    // don't update any positions if the game is paused
+    if (paused) {
+        std::cout << "paused " << std::endl;
+        return;
+    }
 
     std::list<GameObj*>::iterator i;
     GameObj * game_obj;
@@ -74,3 +83,6 @@ void GameState::stop_moving_character_up() { if (character && character->y_vel <
 
 void GameState::start_moving_character_down() { if (character) character->y_vel = +1;}
 void GameState::stop_moving_character_down() { if (character && character->y_vel > 0) character->y_vel = 0;}
+
+// toggle pausing the game!
+void GameState::pause() { paused = !paused; }

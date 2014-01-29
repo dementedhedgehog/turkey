@@ -89,7 +89,6 @@ void GameComponent::render(SDL_Renderer * renderer, SDL_Window * window) {
         }
     }
 
-
     // draw all the game objects..
     GameState const * game_state = model->get_game_state();
     std::list<GameObj*> game_objs = game_state->get_game_objs();
@@ -104,7 +103,6 @@ void GameComponent::render(SDL_Renderer * renderer, SDL_Window * window) {
     SDL_Rect src = { 0, 0, title_text->w, title_text->h };
     SDL_Rect dest = { 30, 30, title_text->w, title_text->h};
     SDL_RenderCopy(renderer, title_texture, &src, &dest);
-
 }
 
 
@@ -116,7 +114,6 @@ void GameComponent::update() {
 void GameComponent::clean_up() {
     // clean up the sdl objects
     SDL_DestroyTexture(background);
-    //SDL_DestroyTexture(background_parallax); 
     SDL_FreeSurface(title_text);
     SDL_DestroyTexture(title_texture);
 
@@ -168,7 +165,7 @@ void  GameComponent::key_4_down() {
 /*  void  GameComponent::key_8_up() {} */
 /*  void  GameComponent::key_8_down() {} */
 void  GameComponent::key_9_up() {}
-void  GameComponent::key_9_down() {}
+void  GameComponent::key_9_down() { model->get_game_state()->pause(); }
 
 void GameComponent::key_left_down() {     
     model->get_game_state()->start_moving_character_left(); 
@@ -227,5 +224,5 @@ void  GameComponent::key_x_up() {
     model->get_game_state()->stop_moving_character_down(); 
 }
 
-void  GameComponent::mouse_button() {}
+void  GameComponent::mouse_button() { }
 
