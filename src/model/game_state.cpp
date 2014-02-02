@@ -65,8 +65,7 @@ void GameState::update(const Uint8 * key_states) {
     // effected their movement.  This method also calculates the AABB bounding boxes
     // for all movable objects (aka aabb rects).   We use this information to optimize 
     // collision detection in an approach called the Bounding Box Optimization.
-    calc_projected_moves();
-
+    calc_projected_positions();
 
     // get a list of possible collisions (i.e. a list of objects whose aabb rects overlap)
     // all possible collisions will be in this list.. i.e. it might contain false positives 
@@ -83,17 +82,11 @@ void GameState::update(const Uint8 * key_states) {
         // for each collision
         Collision * collision;
         for (auto j = potential_collisions.begin(); j != potential_collisions.end(); j++) {
-
-            //       skip the bit at the start where the bounding boxes don't apply
-            //
-            //       use speculative contacts to inch the moving object forward until there's 
-            //       a collision or we get where we want to be.
-            
             collision = *j;            
 
-            // speculative_contacts
+            // Use speculative contacts to inch the moving object forward until there's 
+            // a collision or we get where we want to be.
             collision->calc_projected_move();
-
 
             // FIXME: handle collisions here!!!
             // some won't need penetration resolution???
@@ -106,9 +99,7 @@ void GameState::update(const Uint8 * key_states) {
         }       
     }
 
-
     commit_changes_in_positions();
-
     //if (character) character->dump_position("character");
 }    
 
@@ -116,7 +107,7 @@ void GameState::update(const Uint8 * key_states) {
 // calculate the positions that movable objects would be in after moving if nothing 
 // effected their movement.  This method also calculates the AABB bounding boxes
 // for all movable objects.
-void GameState::calc_projected_moves() {
+void GameState::calc_projected_positions() {
 
     // We want objects to move at a constant rate irrespective of the number of 
     // frames per second so we scale the velocities and accelerations by the time 
@@ -129,11 +120,12 @@ void GameState::calc_projected_moves() {
 
     // remember that now is the new last time we moved the objects!
     last_time_updated = time_now;
-
+    
+    // for each movable game object
     std::list<GameObj*>::iterator i;
     GameObj * game_obj;
     for (i = movable_game_objs.begin(); i != movable_game_objs.end(); i++) {
-        // calculate where movable game objects would move to if collisions don't exist
+        // calculate where the movable object would move to if collisions don't happen
         game_obj = *i;
         game_obj->calc_projected_delta_position(delta_time);
     }
@@ -144,10 +136,12 @@ void GameState::calc_projected_moves() {
 // collision-resolved positions.
 void GameState::commit_changes_in_positions() {
 
+    // for each movable game object
     std::list<GameObj*>::iterator i;
     GameObj * game_obj;
     for (i = movable_game_objs.begin(); i != movable_game_objs.end(); i++) {
-        // calculate where movable game objects would move to if collisions don't exist
+        // set the game objects current position to the projected position 
+        // after we've taken into account all the collisions.
         game_obj = *i;
         game_obj->commit_change_in_position();
     }

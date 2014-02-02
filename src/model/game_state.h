@@ -45,7 +45,7 @@ class GameState : public IState {
     // work out where movable objects would move to without collisions 
     // and update the bounding boxes
     // scale movement to delta t
-    void calc_projected_moves();
+    void calc_projected_positions();
 
     // fast and stupid first stage of collision detection 
     void detect_potential_collisions_brute_force(
