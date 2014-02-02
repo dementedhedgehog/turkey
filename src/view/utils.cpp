@@ -2,8 +2,10 @@
  * SDL utility fns
  *
  */
+#include <string>
 #include <iostream>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_ttf.h>
 
 #include "utils.h"
 
@@ -14,6 +16,10 @@
 */
 void log_sdl_error(const std::string &msg) {
     std::cerr << msg << " error: " << SDL_GetError() << std::endl;
+}
+
+void log_ttf_error(const std::string &msg) {
+    std::cerr << msg << " error: " << TTF_GetError() << std::endl;
 }
 
 void log_msg(const std::string &msg) {
@@ -28,17 +34,18 @@ void log_msg(const std::string &msg) {
  * @param ren The renderer to load the texture onto
  * @return the loaded texture, or nullptr if something went wrong.
  */
-SDL_Texture* load_texture(const std::string &file, SDL_Renderer * renderer) {
+SDL_Texture* load_texture(const std::string & fname, SDL_Renderer * renderer) {
 
 	// Initialize to nullptr to avoid dangling pointer issues
 	SDL_Texture *texture = nullptr;
 
 	// Load the texture
-    texture = IMG_LoadTexture(renderer, file.c_str()); 
+    texture = IMG_LoadTexture(renderer, fname.c_str()); 
 
     // Make sure converting went ok too
     if (texture == nullptr) {
-        log_sdl_error("CreateTextureFromSurface ");
+        log_msg("XXXX");
+        log_sdl_error((std::string("CreateTextureFromSurface ") + fname).c_str());
 	}
 
 	return texture;

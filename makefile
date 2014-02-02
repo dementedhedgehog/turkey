@@ -13,6 +13,7 @@ BUILD_FLAGS=-ggdb -g3
 #BUILD_FLAGS= -O2 -DNDEBUG 
 
 
+
 # You may need to change -std=c++11 to -std=c++0x if your compiler is a bit older
 # run python2.7-config --cflags to get the python flags you need
 CXXFLAGS = $(BUILD_FLAGS) \
@@ -30,18 +31,21 @@ PROG = turkey
 
 all: $(PROG)
 
-$(PROG): main.o model.o view.o fps.o scripting.o position.o component.o \
-	intro_component.o game_component.o sprite.o game_state.o game_obj.o utils.o \
-	brute_force_collision_detector.o
+$(PROG): main.o model.o view.o fps.o scripting.o sub_view.o \
+	intro_view.o game_view.o sprite.o game_state.o intro_state.o game_obj.o \
+	utils.o font_manager.o collision.o # position.o 
 	$(CXX) $^ $(LDFLAGS) -o $@
 
 main.o: src/main.cpp
 	$(CXX) $(CXXFLAGS) $< -o $@
 
-model.o: src/model/model.cpp src/model/model.h src/model/position.h
+model.o: src/model/model.cpp src/model/model.h # src/model/position.h
 	$(CXX) $(CXXFLAGS) $< -o $@
 
 view.o: src/view/view.cpp src/view/view.h src/view/fps.h
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+font_manager.o: src/view/font_manager.cpp src/view/font_manager.h src/view/utils.h
 	$(CXX) $(CXXFLAGS) $< -o $@
 
 utils.o: src/view/utils.cpp src/view/utils.h
@@ -54,28 +58,38 @@ scripting.o: src/shared/scripting.cpp src/shared/scripting.h
 	$(CXX) $(CXXFLAGS) $< -o $@
 
 
-position.o: src/model/position.cpp src/model/position.h
+# position.o: src/model/position.cpp src/model/position.h
+# 	$(CXX) $(CXXFLAGS) $< -o $@
+
+collision.o: src/model/collision.cpp src/model/collision.h
 	$(CXX) $(CXXFLAGS) $< -o $@
 
 sprite.o: src/view/sprite.cpp src/view/sprite.h
 	$(CXX) $(CXXFLAGS) $< -o $@
 
-component.o: src/view/component.cpp src/view/component.h 
+sub_view.o: src/view/sub_view.cpp src/view/sub_view.h 
 	$(CXX) $(CXXFLAGS) $< -o $@
 
-intro_component.o: src/view/intro_component/intro_component.cpp src/view/intro_component/intro_component.h src/view/component.h # src/control/control.h
+intro_view.o: \
+	src/view/intro_view/intro_view.cpp \
+	src/view/intro_view/intro_view.h \
+	src/view/sub_view.h 
 	$(CXX) $(CXXFLAGS) $< -o $@
 
-game_component.o: \
-	src/view/game_component/game_component.cpp \
-	src/view/game_component/game_component.h \
-	src/view/component.h 
+game_view.o: \
+	src/view/game_view/game_view.cpp \
+	src/view/game_view/game_view.h \
+	src/view/sub_view.h 
 	$(CXX) $(CXXFLAGS) $< -o $@
 
 game_state.o: \
 	src/model/game_state.cpp \
-	src/model/game_state.h \
-	src/model/collision_detectors/brute_force_collision_detector.h 
+	src/model/game_state.h 
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+intro_state.o: \
+	src/model/intro_state.cpp \
+	src/model/intro_state.h 
 	$(CXX) $(CXXFLAGS) $< -o $@
 
 game_obj.o: \
@@ -83,15 +97,14 @@ game_obj.o: \
 	src/model/game_obj.h
 	$(CXX) $(CXXFLAGS) $< -o $@
 
-brute_force_collision_detector.o: \
-	src/model/collision_detectors/brute_force_collision_detector.cpp \
-	src/model/collision_detectors/brute_force_collision_detector.h \
-	src/model/i_collision_detector.h
-	$(CXX) $(CXXFLAGS) $< -o $@
 
+# generate TAGS file for emacs
+TAGS:
+	 find src -type f -iname "*.h" -or -iname "*.cpp" | etags -
 
 .PHONY: clean
 clean:
 	rm -f *.o && rm -f $(PROG)	
+	rm -f TAGS
 	find . -name '*~' -exec rm {} \; # clean up emacs temporary files
 	find . -name '*.pyc' -exec rm {} \; # clean up compiled python scripts

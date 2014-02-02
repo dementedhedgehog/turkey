@@ -2,7 +2,9 @@
 #include <iostream>
 #include <cassert>
 
-#include "view.h"
+#include "view/view.h"
+#include "view/utils.h"
+#include "view/fps.h"
 
 // FIXME: get these values from a configuration
 
@@ -33,11 +35,12 @@ View::View() {
     ms_per_move = 1000 / MOVES_PER_SECOND;
 
     // set the default value to run in fullscreen mode 
-    fullscreen = false;    
+    //fullscreen = false;    
 
     // enable fps counter?
-    //fps = new FPS();
     fps = NULL;
+
+    font_manager = FontManager();
     
     // play sound 
     sound_enabled = false;
@@ -46,7 +49,7 @@ View::View() {
     finished = false;
 
     //
-    current_component = NULL;
+    current_view = NULL;
 }
 
 // View::~View() {
@@ -82,7 +85,9 @@ int View::init_sdl() {
         return 4; 
     }
 
-    // setup the game components
+    font_manager.init();
+
+    // setup the game views
 
     // success
     return 0;
@@ -91,6 +96,9 @@ int View::init_sdl() {
 
 // show an sdl window
 int View::display_window(Model * model) {
+
+    // keep a referemce to the model
+    this->model = model;
 
     // create the window
     window = SDL_CreateWindow(GAME_NAME, 
@@ -110,12 +118,6 @@ int View::display_window(Model * model) {
         return 3;
     }
 
-    // background_parallax = loadTexture("./res/dungen_parallax.png", renderer);
-    // if (background_parallax == nullptr) {
-    //     log_sdl_error(std::cout, "LoadBMP");
-    //     return 4;
-    // }
-
     // load the music 
     if (sound_enabled) {
         music = Mix_LoadMUS("./res/beat.wav"); 
@@ -134,20 +136,18 @@ int View::display_window(Model * model) {
         }
     }
 
-    // intro = new IntroComponent(control);
-    // game = new GameComponent(control);
-    intro = new IntroComponent(model, window, renderer);
-    game = new GameComponent(model, window, renderer);
-    current_component = intro;
-        
+    // init the various game views
+    intro_view = new IntroView(model, window, renderer);
+    game_view = new GameView(model, window, renderer);
+    current_view = intro_view;        
 
     // init the various renderers
     int result;
-    if ((result = intro->init(renderer)) != 0) {
+    if ((result = intro_view->init()) != 0) {
         return result;
     }
 
-    if ((result = game->init(renderer)) != 0) {
+    if ((result = game_view->init()) != 0) {
         return result;
     }
         
@@ -165,16 +165,17 @@ int View::render() {
     // clear the display
     SDL_RenderClear(renderer);
 
-    // draw the screen for the current component
-    current_component->render(renderer, window); 
+    // draw the screen for the current view
+    current_view->render(); 
+
+    
+    // increment frames per second 
+    if (fps) {
+        fps->increment(renderer);
+    }
 
     // display what we've just rendered
     SDL_RenderPresent(renderer);
-
-    // increment frames per second 
-    if (fps) {
-        fps->increment();
-    }
         
     // success
     return 0;
@@ -185,9 +186,9 @@ int View::render() {
 // free everything.
 int View::clean_up() {
    
-    // clean up the component specific resources
-    intro->clean_up();
-    game->clean_up();
+    // clean up the view specific resources
+    intro_view->clean_up();
+    game_view->clean_up();
 
     // cleanup the sound effects 
     if (sound_enabled) {
@@ -199,6 +200,9 @@ int View::clean_up() {
         // clean up the music 
         Mix_FreeMusic(music); 
     }
+
+    // clean up the font manager
+    font_manager.clean_up();
 
     // clean up the ttf library
     TTF_Quit();
@@ -214,6 +218,7 @@ int View::clean_up() {
     // clean up the frame-per-second counter
     if (fps) {
         delete fps;
+        fps = NULL;
     }
 
     // success
@@ -223,11 +228,94 @@ int View::clean_up() {
 
 int View::msg_loop() {    
     SDL_Event event;
-    int result = 0;
     uint time_now;
     uint last_frame_time = SDL_GetTicks();
-    uint last_move_time = last_frame_time;
-   
+    uint last_move_time = last_frame_time;  
+
+    //         case SDLK_0:
+    //             current_view->key_0_down();
+
+    //             // if 0 was pressed stop the music 
+    //             if (sound_enabled) {
+    //                 Mix_HaltMusic(); 
+    //             }
+    //             break;
+
+    //         case SDLK_1: 
+    //             current_view->key_1_down();
+
+    //             // if 1 was pressed play the scratch effect 
+    //             if (sound_enabled) {
+    //                 if (Mix_PlayChannel(-1, scratch, 0 ) == -1) { 
+    //                     return 1; 
+    //                 } 
+    //             }
+    //             break;
+
+    //         case SDLK_2: 
+    //             current_view->key_2_down();
+
+    //             // if 2 was pressed play the high hit effect 
+    //             if (sound_enabled) {
+    //                 if (Mix_PlayChannel(-1, high, 0) == -1) { 
+    //                     return 1; 
+    //                 } 
+    //             }
+    //             break;
+
+    //         case SDLK_3: 
+    //             current_view->key_3_down();
+
+    //             if (sound_enabled) {
+    //                 // if 3 was pressed play the medium hit effect 
+    //                 if (Mix_PlayChannel(-1, med, 0) == -1) {
+    //                     return 1; 
+    //                 } 
+    //             }
+    //             break;
+
+    //         case SDLK_4: 
+    //             current_view->key_4_down();
+
+    //             if (sound_enabled) {
+    //                 // if 4 was pressed play the low hit effect 
+    //                 if (Mix_PlayChannel(-1, low, 0) == -1) { 
+    //                     return 1; 
+    //                 } 
+    //             }
+    //             break;
+                            
+    //         case SDLK_9: 
+    //             current_view->key_9_down();
+
+    //             // if 9 was pressed and there is no music playing 
+    //             if (sound_enabled) {
+    //                 if (Mix_PlayingMusic() == 0) {
+    //                     // play the music 
+    //                     if (Mix_PlayMusic(music, -1) == -1) { 
+    //                         return 1; 
+    //                     } 
+    //                 }
+    //             }
+    //             else { 
+    //                 // music is being played...
+    //                 if (sound_enabled) {
+                                    
+    //                     // if the music is paused 
+    //                     if (Mix_PausedMusic() == 1) { 
+    //                         // resume the music 
+    //                         Mix_ResumeMusic(); 
+    //                     } 
+    //                     // If the music is currently playing 
+    //                     else { 
+    //                         // pause the music 
+    //                         Mix_PauseMusic(); 
+    //                     } 
+    //                 }
+    //             }
+    //             break;
+
+
     // loop handling messages till someone exists the game 
     while (!finished) {
 
@@ -236,207 +324,58 @@ int View::msg_loop() {
 
             switch (event.type) {            
                 case SDL_KEYDOWN: {
-                    // Handle any key presses here.
-
+                    // Handle global key presses here.
+                    
                     /* Check the SDLKey values and move change the coords */
                     switch (event.key.keysym.sym) {
 
-                        case SDLK_LEFT:
-                            current_component->key_left_down();
+                        case SDLK_F1: {
+                            // should toggle fullscreen in all views
+                            toggle_fullscreen(window);
                             break;
+                        }
 
-                        case SDLK_RIGHT:
-                            current_component->key_right_down();
+                        case SDLK_ESCAPE: {
+                            // exit the game in all views
+                            // don't overload this.
+                            quit();
                             break;
-
-                        case SDLK_UP:
-                            current_component->key_up_down();
-                            break;
-
-                        case SDLK_DOWN:
-                            current_component->key_down_down();
-                            break;
-
-                        case SDLK_a:
-                            current_component->key_a_down();
-                            break;
-
-                        case SDLK_d:
-                            current_component->key_d_down();
-                            break;
-
-                        case SDLK_w:
-                            current_component->key_w_down();
-                            break;
-
-                        case SDLK_x:
-                            current_component->key_x_down();
-                            break;
-
-                        case SDLK_F1:
-                            // should toggle fullscreen
-                            current_component->key_f1_down();
-                            break;
-
-                        case SDLK_ESCAPE: 
-                            current_component->key_d_down();
-                            // don't overload this.. handle it here?
-                            finished = true;
-                            break;
-
-                        case SDLK_0:
-                            current_component->key_0_down();
-
-                            // if 0 was pressed stop the music 
-                            if (sound_enabled) {
-                                Mix_HaltMusic(); 
-                            }
-                            break;
-
-                        case SDLK_1: 
-                            current_component->key_1_down();
-
-                            // if 1 was pressed play the scratch effect 
-                            if (sound_enabled) {
-                                if (Mix_PlayChannel(-1, scratch, 0 ) == -1) { 
-                                    return 1; 
-                                } 
-                            }
-                            break;
-
-                        case SDLK_2: 
-                            current_component->key_2_down();
-
-                            // if 2 was pressed play the high hit effect 
-                            if (sound_enabled) {
-                                if (Mix_PlayChannel(-1, high, 0) == -1) { 
-                                    return 1; 
-                                } 
-                            }
-                            break;
-
-                        case SDLK_3: 
-                            current_component->key_3_down();
-
-                            if (sound_enabled) {
-                                // if 3 was pressed play the medium hit effect 
-                                if (Mix_PlayChannel(-1, med, 0) == -1) {
-                                    return 1; 
-                                } 
-                            }
-                            break;
-
-                        case SDLK_4: 
-                            current_component->key_4_down();
-
-                            if (sound_enabled) {
-                                // if 4 was pressed play the low hit effect 
-                                if (Mix_PlayChannel(-1, low, 0) == -1) { 
-                                    return 1; 
-                                } 
-                            }
-                            break;
+                        }
                             
-                        case SDLK_9: 
-                            current_component->key_9_down();
-
-                            // if 9 was pressed and there is no music playing 
-                            if (sound_enabled) {
-                                if (Mix_PlayingMusic() == 0) {
-                                    // play the music 
-                                    if (Mix_PlayMusic(music, -1) == -1) { 
-                                        return 1; 
-                                    } 
-                                }
-                            }
-                            else { 
-                                // music is being played...
-                                if (sound_enabled) {
-                                    
-                                    // if the music is paused 
-                                    if (Mix_PausedMusic() == 1) { 
-                                        // resume the music 
-                                        Mix_ResumeMusic(); 
-                                    } 
-                                    // If the music is currently playing 
-                                    else { 
-                                        // pause the music 
-                                        Mix_PauseMusic(); 
-                                    } 
-                                }
-                            }
-                            break;
-
                         default:
                             break;
                     }
                     break;
-                    
-
-                    /* We must also use the SDL_KEYUP events to zero the x */
-                    /* and y velocity variables. But we must also be       */
-                    /* careful not to zero the velocities when we shouldn't*/
-                    case SDL_KEYUP: {
-                        switch (event.key.keysym.sym) {
-
-                            case SDLK_LEFT:
-                                current_component->key_left_up();
-                                break;
-
-                            case SDLK_RIGHT:
-                                current_component->key_right_up();
-                                break;
-
-                            case SDLK_UP:
-                                current_component->key_up_up();
-                                break;
-
-                            case SDLK_DOWN:
-                                current_component->key_down_up();
-                                break;
-
-                            case SDLK_a:
-                                current_component->key_a_up();
-                                break;
-
-                            case SDLK_d:
-                                current_component->key_d_up();
-                                break;
-
-                            case SDLK_w:
-                                current_component->key_w_up();
-                                break;
-
-                            case SDLK_x:
-                                current_component->key_x_up();
-                                break;
-                            
-                            default: 
-                                std::cout << "we don't handle " << 
-                                    SDL_GetKeyName(event.key.keysym.sym) << std::endl;
-                                break;
-                        }
-                        break;
-                    }
-                        
-                    case SDL_MOUSEBUTTONDOWN: {
-                        // Handle mouse clicks here.
-                        std::cout << "mouse button down" << std::endl;
-                        break;
-                    }
-
-                    case SDL_QUIT: {
-                        // closing the game window quits the game..
-                        finished = true;
-                        break;
-                    }
-                        
-                    default: {
-                        std::cout << "unknown event " << event.type << std::endl;
-                        break;
-                    }                
                 }
-                break;
+                                            
+                case SDL_MOUSEBUTTONDOWN: {
+                    // Handle mouse clicks here.
+                    std::cout << "mouse button down" << std::endl;
+                    break;
+                }
+                    
+                case SDL_QUIT: {
+                    // closing the game window quits the game..
+                    finished = true;
+                    break;
+                }
+
+                case SDL_WINDOWEVENT_FOCUS_GAINED: {
+                    //SDL_Log("Window %d gained keyboard focus", event->window.windowID);
+                    model->set_keyboard_focus(true);
+                    break;
+                }
+
+                case SDL_WINDOWEVENT_FOCUS_LOST: {
+                    //SDL_Log("Window %d lost keyboard focus", event->window.windowID);
+                    model->set_keyboard_focus(false);
+                    break;
+                }
+                        
+                default: {
+                    std::cout << "unknown event " << event.type << std::endl;
+                    break;
+                }                
             }
         }
 
@@ -446,10 +385,14 @@ int View::msg_loop() {
             
         // try to keep a constant number of moves per second
         time_now = SDL_GetTicks();
+        
         if (time_now - last_move_time >= ms_per_move) {
+
+            // pass the keyboard state to the current view for polling
+            const Uint8 * key_states = SDL_GetKeyboardState(NULL);
                 
             // move objects, calculate collisions, update stats etc
-            current_component->update();
+            model->update(key_states);
 
             // reset the move time
             last_move_time = time_now;
@@ -465,12 +408,13 @@ int View::msg_loop() {
             last_frame_time = time_now;
         }
 
+
         // this delay is so we don't hog cpu usage if we don't need to.
         SDL_Delay(1);
     }
 
     // success
-    return result;
+    return 0;
 }
 
 
@@ -481,12 +425,12 @@ void View::state_changed(State old_state, State current_state) {
     switch (current_state) {
         case State::INTRO:
             std::cout << "intro!!" << std::endl;
-            current_component = intro;
+            current_view = intro_view;
             break;
             
         case State::GAME:
             std::cout << "render!!" << std::endl;
-            current_component = game;
+            current_view = game_view;
             break;
 
         case State::FATAL_ERROR:
@@ -494,7 +438,6 @@ void View::state_changed(State old_state, State current_state) {
             // log an error and bail
             log_sdl_error("Unknown State!");
             finished = true;
-            //return 2;
             break;
     }
 }
@@ -504,3 +447,21 @@ void View::state_changed(State old_state, State current_state) {
 SDL_Renderer * View::get_renderer() {
     return renderer;
 }
+
+
+void View::debug_set_draw_fps(const bool draw_fps) { 
+
+    // turn on fps (if it isn't already on)
+    if (draw_fps) {
+        if (fps == NULL) {        
+            fps = new FPS(font_manager.get_fps_font());
+        }
+    }
+    // turn off fps (if it's already on)
+    else {
+        if (fps) {
+            delete fps;
+            fps = NULL;
+        }
+    }
+} 

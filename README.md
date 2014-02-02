@@ -40,5 +40,37 @@ If you're getting memory errors on linux run: gdb, run turkey, kill the turkey p
 
 
       
+building on windows
+-------------------
 
+ o) mkdir C:\turkey
+ i) cd C:\turkey
+
+ i) Checking out with git.. note there's a bug in the latest git so get the older 
+    version without the bug:
+
+       git-1.8.4 preview.
+
+    clone the turkey repo from the cmd line thus:     
+       git clone https://github.com/dementedhedgehog/turkey.git
+
+   So now you'll have C:\turkey\turkey\..lots..of..files
+
+
+ ii) Install mingw in c:\mingw 
+ iii) Make sure c:/mingw/bin in in the PATH environment variable
+
+ iv) Download the sdl development libraries.. here
+        http://www.libsdl.org/download-2.0.php
+    get this one:
+        http://www.libsdl.org/release/SDL2-devel-2.0.1-mingw.tar.gz
+
+   gunzip it and untar it into c:\turkey    
+
+
+
+ v) run mingw32-make
+ 
+
+     
 

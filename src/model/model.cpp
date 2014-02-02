@@ -7,10 +7,12 @@
 
 
 Model::Model() {
-    intro_state = new IntroState();
-    game_state = new GameState();
+    intro_state = new IntroState(this);
+    game_state = new GameState(this);
     fatal_error_state = new FatalErrorState();
     current_state = intro_state;
+
+    game_has_keyboard_focus = true;
 }
 
 Model::~Model() {
@@ -19,9 +21,12 @@ Model::~Model() {
     delete fatal_error_state;
 }
 
-void Model::toggle_fullscreen() {
-    // FIXME: WE SHOULD GET THIS STATE FROM SDL RATHER THAN DUPLICATE IT!??
-    // BUT WE NEED TO SAVE IT?
+void Model::set_keyboard_focus(const bool has_focus) {
+    game_has_keyboard_focus = has_focus;
+}
+
+const bool Model::has_keyboard_focus() {
+    return game_has_keyboard_focus;
 }
 
 void Model::change_state(State to_state) {
@@ -56,6 +61,6 @@ GameState * Model::get_game_state() {
     return game_state;
 }
 
-void Model::update() {
-    return current_state->update();
+void Model::update(const Uint8 * key_states) {
+    current_state->update(key_states);
 }

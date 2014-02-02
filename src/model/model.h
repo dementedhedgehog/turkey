@@ -4,23 +4,17 @@
 #include <list>
 
 //#include "cell.h"
-#include "position.h"
+//#include "position.h"
 
 #include "model/i_state.h"
 #include "model/game_state.h"
-
-
-class IntroState : public IState {
- public:
-    State get_state() { return State::INTRO; }
-    void update() { }
-};
+#include "model/intro_state.h"
 
 
 class FatalErrorState : public IState {
  public:
     State get_state() { return State::FATAL_ERROR; }    
-    void update() { }
+    void update(const Uint8 * key_states) { }
 };
 
 class IStateListener {
@@ -51,17 +45,23 @@ private:
     // a list of things to notify when the game state changes
     std::list<IStateListener*> listeners;
 
+    // do we have keyboard focus
+    bool game_has_keyboard_focus;
+
 public: 
     Model();    
     ~Model();    
 
-    void toggle_fullscreen();
+    //void toggle_fullscreen();
     void change_state(State to_state);
     void register_state_listener(IStateListener * listener);    
 
     GameState * get_game_state();
 
+    void set_keyboard_focus(const bool has_focus);
+    const bool has_keyboard_focus();
+
     // change the positions of the game objects, do collision detection etc.
-    void update();
+    void update(const Uint8 * key_states);
 };
 #endif

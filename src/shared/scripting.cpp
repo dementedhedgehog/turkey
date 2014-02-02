@@ -8,40 +8,129 @@
 #include "view/utils.h"
 
 
+// python exceptions we throw from c++
+static PyObject * FailedToLoadTextureErr;
+
+// embedded python treats bools like ints.. 
+// we use these consts to make our intention a little clearer
+const int FALSE = 0;
+const int TRUE = 0;
+
+
 /*
+ *
  * These functions expose parts of the c++ engine to python.
+ *
  */
 
-static int numargs = 0;
+
+/*
+ * Quit the game!!!
+ */
+static PyObject* turkey_quit(PyObject *self, PyObject *args)    
+{        
+    if (!PyArg_ParseTuple(args, ":debug_set_draw_grid")) {
+        return NULL;
+    }
+       
+    View * view = (View*)PyCapsule_Import("turkey._VIEW", 0);
+    if (view == NULL) {
+        log_msg("Problem extracting the c++ view object.");
+        return Py_BuildValue("i", 0);
+    }
+    
+    // turn on the cell grid 
+    view->quit();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+
+/*
+ * Turns the cell grid on/off in the game view.
+ */
+static PyObject* turkey_debug_set_draw_grid(PyObject *self, PyObject *args)    
+{    
+    int draw_grid;
+    
+    if (!PyArg_ParseTuple(args, "i:debug_set_draw_grid", &draw_grid)) {
+        return NULL;
+    }
+       
+    View * view = (View*)PyCapsule_Import("turkey._VIEW", 0);
+    if (view == NULL) {
+        log_msg("Problem extracting the c++ view object.");
+        return Py_BuildValue("i", 0);
+    }
+    
+    // turn on the cell grid 
+    view->debug_set_draw_grid((bool)draw_grid);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*
+ * Turns the frames per second display on/off
+ */
+static PyObject* turkey_debug_set_draw_fps(PyObject *self, PyObject *args)    
+{    
+    int draw_fps;
+    
+    if (!PyArg_ParseTuple(args, "i:debug_set_draw_fps", &draw_fps)) {
+        return NULL;
+    }
+       
+    View * view = (View*)PyCapsule_Import("turkey._VIEW", 0);
+    if (view == NULL) {
+        log_msg("Problem extracting the c++ view object.");
+        return Py_BuildValue("i", 0);
+    }
+    
+    // turn on the cell grid 
+    view->debug_set_draw_fps((bool)draw_fps);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
 
 
 /* Returns the number of game objects added (0 or 1) */
 static PyObject* turkey_add_game_obj(PyObject *self, PyObject *args)    
 {    
-    int x, y;
+    float x, y;
+    int movable = FALSE;
     PyObject * texture_object = nullptr;
     
-    if(!PyArg_ParseTuple(args, "ii|O:add_game_obj", &x, &y, &texture_object)) {
+    if (!PyArg_ParseTuple(args, "ff|Oi:add_game_obj", &x, &y, &texture_object, &movable)) {
         return NULL;
     }
        
     Model * model = (Model*)PyCapsule_Import("turkey._MODEL", 0);
     if (model == NULL) {
-        log_msg("Problem extracting the model c api.");
+        log_msg("Problem extracting the c++ model object.");
         return Py_BuildValue("i", 0);
     }
-
-    
+        
     SDL_Texture * texture = nullptr;
     if (texture_object != nullptr) {
         texture = (SDL_Texture *)PyCapsule_GetPointer(texture_object, "turkey._TEXTURE");
-        if (texture == NULL) {
-            log_msg("Problem extracting the texture.");
-            return Py_BuildValue("i", 0);
-        }
     }
 
-    GameObj * game_obj = new GameObj(x, y, texture);
+    if (texture == NULL) {
+        // throw an exception!
+        PyErr_SetString(
+            FailedToLoadTextureErr,
+            (std::string(
+                "Problem extracting the texture at ") + 
+                //__FILE__ + "," + (char*)__LINE__ + ": " +
+                SDL_GetError()
+             ).c_str());
+        return NULL;
+    }
+
+    GameObj * game_obj = new GameObj(x, y, texture, (bool)movable);
     GameState * game_state = model->get_game_state();
     game_state->add_game_obj(game_obj);
 
@@ -50,32 +139,44 @@ static PyObject* turkey_add_game_obj(PyObject *self, PyObject *args)
 
 
 
-/* Returns the number of game objects added (0 or 1) */
+/* 
+ * Add a game object to the game.
+ */
 static PyObject* turkey_add_character_game_obj(PyObject *self, PyObject *args)    
 {    
-    int x, y;
+    float x, y;
     PyObject * texture_object = nullptr;
     
-    if(!PyArg_ParseTuple(args, "ii|O:add_game_obj", &x, &y, &texture_object)) {
+    if(!PyArg_ParseTuple(args, "ff|O:add_character_game_obj", &x, &y, &texture_object)) {
         return NULL;
     }
        
     Model * model = (Model*)PyCapsule_Import("turkey._MODEL", 0);
     if (model == NULL) {
-        log_msg("Problem extracting the model c api.");
+        log_msg("Problem extracting the c++ model object.");
         return Py_BuildValue("i", 0);
     }
     
     SDL_Texture * texture = nullptr;
     if (texture_object != nullptr) {
         texture = (SDL_Texture *)PyCapsule_GetPointer(texture_object, "turkey._TEXTURE");
-        if (texture == NULL) {
-            log_msg("Problem extracting the texture.");
-            return Py_BuildValue("i", 0);
-        }
     }
 
-    GameObj * game_obj = new GameObj(x, y, texture);
+    // check we got a texture
+    if (texture == NULL) {
+        // throw an exception!
+        PyErr_SetString(
+            FailedToLoadTextureErr,
+            (std::string(
+                "Problem extracting the texture at ") + 
+                __FILE__ + "," + (char*)__LINE__ + ": " +
+                SDL_GetError()
+             ).c_str());
+        return NULL;
+    }
+
+    const bool movable = true;
+    GameObj * game_obj = new GameObj(x, y, texture, movable);
     GameState * game_state = model->get_game_state();
     game_state->add_character_game_obj(game_obj);
 
@@ -84,24 +185,39 @@ static PyObject* turkey_add_character_game_obj(PyObject *self, PyObject *args)
 
 
 
-/* Returns the number of game objects added (0 or 1) */
+/*
+ * Loads a texture from an image file.
+ */
 static PyObject* turkey_load_texture(PyObject *self, PyObject *args)
 {    
+
     char * texture_fname;
-    if(!PyArg_ParseTuple(args, "s:load_texture", &texture_fname))
+    if(!PyArg_ParseTuple(args, "s:load_texture", &texture_fname)) {
+        log_msg("Problem parsing the python arguments");
+        Py_INCREF(Py_None);
         return Py_None;
+    }
        
     View * view = (View *)PyCapsule_Import("turkey._VIEW", 0);
     if (view == NULL) {
-        log_msg("Problem extracting the view c api.");
+        log_msg("Problem extracting the c++ view object.");
+        Py_INCREF(Py_None);
         return Py_None;
     }
 
+    // FIXME: this is ugly..
     SDL_Texture * texture = load_texture(texture_fname, view->get_renderer());
+    //SDL_Texture * texture = view->pyapi_load_texture(texture_fname);
+    if (texture == NULL) {
+        log_msg("Problem extracting the c++ texture object.");
+        Py_INCREF(Py_None);
+        return Py_None;
+    }
 
     PyObject * texture_object = PyCapsule_New((void *)texture, "turkey._TEXTURE", NULL);
     if (texture_object == NULL) {
         log_msg("Problem creating texture for the python scripts!");
+        Py_INCREF(Py_None);
         return Py_None;
     }
 
@@ -110,6 +226,21 @@ static PyObject* turkey_load_texture(PyObject *self, PyObject *args)
 
 // wrap the methods in a module so that 
 static PyMethodDef InitializeTurkeyMethods[] = {
+
+    {"quit", 
+     turkey_quit, 
+     METH_VARARGS, 
+     "Quit the game!!!"},
+
+    {"debug_set_draw_grid", 
+     turkey_debug_set_draw_grid, 
+     METH_VARARGS, 
+     "DEBUG METHOD: Set whether to display the cell grid or not."},
+
+    {"debug_set_draw_fps", 
+     turkey_debug_set_draw_fps, 
+     METH_VARARGS, 
+     "DEBUG METHOD: Set whether to display the frames per second or not."},
 
     {"add_game_obj", 
      turkey_add_game_obj, 
@@ -152,14 +283,13 @@ int Scripting::init(char * program_fname) {
 
     // initialize the turkey python module (the python->c++ interface to the engine).
     PyObject * module;
-    numargs = 6;
     module = Py_InitModule("turkey", InitializeTurkeyMethods);
     if (module == NULL) {
         log_msg("Problem initializing scripts!");
         return 1;
     }
 
-    /* Create a capsule containing the model pointer */
+    // Create a capsule containing the model pointer
     PyObject * c_api_object;
     c_api_object = PyCapsule_New((void *)model, "turkey._MODEL", NULL);
     if (c_api_object == NULL) {
@@ -173,7 +303,7 @@ int Scripting::init(char * program_fname) {
         return 3;
     }
 
-    /* Create a capsule containing the view pointer */
+    // Create a capsule containing the view pointer 
     c_api_object = PyCapsule_New((void *)view, "turkey._VIEW", NULL);
     if (c_api_object == NULL) {
         log_msg("Problem creating view object for the python scripts!");
@@ -202,44 +332,40 @@ Scripting::~Scripting() {
  *
  */
 int Scripting::run_initialize_levels_script() {
-    PyObject *pName, *pModule, *pFunc;
-    PyObject *pArgs, *pValue;
+    PyObject *py_name, *py_module, *py_func;
+    PyObject *py_args, *py_value;
 
     //std::string 
-    const char * module_name = "turkey_scripts";
+    const char * module_name = "scripts";
     const char * fn_name = "initialize_levels";
 
-    pName = PyString_FromString(module_name);
-    pModule = PyImport_Import(pName);
-    Py_DECREF(pName);
+    py_name = PyString_FromString(module_name);
+    py_module = PyImport_Import(py_name);
+    Py_DECREF(py_name);
 
-    if (pModule != NULL) {
-        pFunc = PyObject_GetAttrString(pModule, fn_name);
-        /* pFunc is a new reference */
+    if (py_module != NULL) {
 
-        if (pFunc && PyCallable_Check(pFunc)) {
-            pArgs = PyTuple_New(0);
-            // pArgs = PyTuple_New(argc - 3);
-            // for (i = 0; i < argc - 3; ++i) {
-            //     pValue = PyInt_FromLong(atoi(argv[i + 3]));
-            //     if (!pValue) {
-            //         Py_DECREF(pArgs);
-            //         Py_DECREF(pModule);
-            //         fprintf(stderr, "Cannot convert argument\n");
-            //         return 1;
-            //     }
-            //     /* pValue reference stolen here: */
-            //     PyTuple_SetItem(pArgs, i, pValue);
-            // }
-            pValue = PyObject_CallObject(pFunc, pArgs);
-            Py_DECREF(pArgs);
-            if (pValue != NULL) {
-                printf("Result of call: %ld\n", PyInt_AsLong(pValue));
-                Py_DECREF(pValue);
+        // create a global exception class
+        FailedToLoadTextureErr = PyErr_NewException(
+            (char*)"turkey.FailedToLoadTextureErr", NULL, NULL);
+        Py_INCREF(FailedToLoadTextureErr);
+        PyModule_AddObject(py_module, "error", FailedToLoadTextureErr);
+ 
+
+        // call the init function
+        py_func = PyObject_GetAttrString(py_module, fn_name);
+
+        if (py_func && PyCallable_Check(py_func)) {
+            py_args = PyTuple_New(0);
+            py_value = PyObject_CallObject(py_func, py_args);
+            Py_DECREF(py_args);
+            if (py_value != NULL) {
+                printf("Result of call: %ld\n", PyInt_AsLong(py_value));
+                Py_DECREF(py_value);
             }
             else {
-                Py_DECREF(pFunc);
-                Py_DECREF(pModule);
+                Py_DECREF(py_func);
+                Py_DECREF(py_module);
                 PyErr_Print();
                 fprintf(stderr,"Call failed\n");
                 return 1;
@@ -250,8 +376,8 @@ int Scripting::run_initialize_levels_script() {
                 PyErr_Print();
             std::cout << "Cannot find function \"" << fn_name << "\"" << std::endl;
         }
-        Py_XDECREF(pFunc);
-        Py_DECREF(pModule);
+        Py_XDECREF(py_func);
+        Py_DECREF(py_module);
     }
     else {
         PyErr_Print();

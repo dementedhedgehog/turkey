@@ -1,0 +1,43 @@
+
+
+
+game design 
+-----------
+
+http://www.wildbunny.co.uk/blog/2011/12/11/how-to-make-a-2d-platform-game-part-1/
+http://higherorderfun.com/blog/2012/05/20/the-guide-to-implementing-2d-platformers/
+
+
+speculative contacts collision resolved
+---------------------------------------
+
+http://www.wildbunny.co.uk/blog/2011/03/25/speculative-contacts-an-continuous-collision-engine-approach-part-1/
+
+http://katyscode.wordpress.com/tag/speculative-contacts/
+
+http://katyscode.wordpress.com/2013/01/20/2d-platform-games-part-2-collision-detection-tweaks/
+http://katyscode.wordpress.com/2013/01/21/2d-platform-games-part-3-scrolling-and-parallax-backgrounds/
+http://katyscode.wordpress.com/2013/01/21/2d-platform-games-part-4-moving-platforms-and-crush-detection/
+http://katyscode.wordpress.com/2013/02/19/2d-platform-games-part-11-collision-detection-edge-cases-for-the-uninitiated/
+
+http://jitter-physics.com/wordpress/?tag=speculative-contacts
+
+
+collision points
+----------------
+http://www.wildbunny.co.uk/blog/2011/12/14/how-to-make-a-2d-platform-game-part-2-collision-detection/
+
+http://games.greggman.com/game/programming_m_c__kids/
+http://www.hobbygamedev.com/int/platformer-game-source-in-processing/
+
+
+quadtrees
+---------
+
+http://code-spot.co.za/2010/06/15/region-quadtrees-in-c/
+http://gamedevelopment.tutsplus.com/tutorials/quick-tip-use-quadtrees-to-detect-likely-collisions-in-2d-space--gamedev-374
+
+sprites
+-------
+
+http://www.pygame.org/wiki/Spritesheet?parent=CookBook

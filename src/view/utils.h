@@ -13,6 +13,7 @@
  * @param msg The error message to write, format will be msg error: SDL_GetError()
  */
 void log_sdl_error(const std::string &msg);
+void log_ttf_error(const std::string &msg);
 
 /**
  * Log an error message 
@@ -27,7 +28,7 @@ void log_msg(const std::string &msg);
  * @param ren The renderer to load the texture onto
  * @return the loaded texture, or nullptr if something went wrong.
  */
-SDL_Texture * load_texture(const std::string &file, SDL_Renderer * renderer);
+SDL_Texture * load_texture(const std::string & fname, SDL_Renderer * renderer);
 
 
 /**
@@ -45,5 +46,7 @@ void render_texture(SDL_Texture *tex, SDL_Renderer *renderer, int x, int y);
  * Toggle the window to full size.
  */
 void toggle_fullscreen(SDL_Window * window);
+
+
 
 #endif

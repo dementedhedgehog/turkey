@@ -2,29 +2,40 @@
 tasks
 =====
 
-   * game_objects list with positions and bounding boxes
-   * collision detection
-   * load sprites in python
-   * new keyboard handler for fighting
-   * sprite implementation and animation
+   * move camera
    * settings in python (debug etc)
-   * set backgrounds in python
-   * triggers in python.. collisions or collisions and inputs
+       - screen boundaries
+       - aabb bounding boxes
 
+   * collision detection
+      - speculative collisions
+      - scaling acceleration!
+      - quad trees
+      - internal edges
+      - n moving bodies
+      - ladders
+      - collision handling: friction, hysterisis, programmable callbacks  
+      - needs penetration resolution for two objects moving towards each other??
+
+   * sprite implementation and animation
+   * load sprites in python
+   * set backgrounds in python
+   * parallax
+
+   * triggers in python.. collisions or collisions and inputs
    * particle system (to check the collision system)
    * dump a stack trace on error
    * screens/view contexts.. need an intro, main menu, etc
    * sound manager
    * resource cache  
+   * widget library?
 
 later
 ====
-   * embed python
    * ui widget library
    * parallax, fake 3d tunnels, snow etc
-   * quad tree for collision detection
    * particle system for flashy stuff
-
+   * render fps text on the GPU
 
 done
 ====
@@ -33,4 +44,11 @@ done
   * sort out a repo
   * fix memory bug .. use gdb, run turkey, where.
   * create the world from a python script
-
+  * game_objects list with positions and bounding boxes
+  * embed python     
+  * new keyboard handler for fighting
+  * pause needs to display something on the screen!
+  * settings in python
+       - draw grid
+       - draw fps
+   * rename game components to game views

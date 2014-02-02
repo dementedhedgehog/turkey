@@ -11,8 +11,9 @@
 #include "model/model.h"
 #include "view/utils.h"
 #include "view/fps.h"
-#include "view/intro_component/intro_component.h"
-#include "view/game_component/game_component.h"
+#include "view/font_manager.h"
+#include "view/intro_view/intro_view.h"
+#include "view/game_view/game_view.h"
 
 /**
  * View for MVC
@@ -27,26 +28,20 @@ class View : public IStateListener {
     // determines how many moves per second we get
     uint ms_per_move;
  
-    // fps counter
+    // fps counter (null if we're not counting fps).
     FPS * fps;
-
-    // turn on grid (for development)
-    //bool grid_enabled;
 
     // turn on sound (for development)
     bool sound_enabled;
+
+    // the font manager
+    FontManager font_manager;
 
     // the sdl renderer
     SDL_Renderer * renderer;
 
     // the game window
     SDL_Window * window;
-
-    // run in fullscreen mode (use F1 to toggle).
-    bool fullscreen;
-
-    // the MVC control object
-    //Control * control;
 
     // the music that will be played 
     Mix_Music * music; 
@@ -57,24 +52,26 @@ class View : public IStateListener {
     Mix_Chunk * med; 
     Mix_Chunk * low; 
 
-    // all the game components
-    IntroComponent * intro;
-    GameComponent * game;
+    // all the game views
+    IntroView * intro_view;
+    GameView * game_view;
 
-    // the current game component
-    Component * current_component;
+    // the current game view
+    SubView * current_view;
     
     // set this to true when we want to exit the message loop and hence the application
     bool finished;
 
+    // reference to the model
+    Model * model;
+
        
  public:    
 
-    //View(Control * control);
+    // constructor
     View();
-    /* ~View(); */
 
-    // access the renderer
+    /* // access the renderer */
     SDL_Renderer * get_renderer();
 
     // start up sdl
@@ -89,23 +86,32 @@ class View : public IStateListener {
     // enter the message loop... we stay in here till the player quits
     int msg_loop();
 
-    // toggle back and forth between full screen mode
-    void toggle_fullscreen();
-
-    /* // load a texture. */
-    /* SDL_Texture * load_texture(const std::string &file); */
-
-    /* // render a texture */
-    /* void render_texture(SDL_Texture *tex, int x, int y); */
-    /* void render_texture(SDL_Texture *tex, SDL_Rect destination, SDL_Rect * clip); */
-    /* void render_texture(SDL_Texture *tex, int x, int y, SDL_Rect * clip); */
-
     // free everything.
     int clean_up();    
 
     // notification that the state has changed
     // (required by the IStateListener interface)
     void state_changed(State old_state, State current_state);
+
+
+    //
+    // Python API stuff.
+    // expose these methods to the python api
+    //
+    
+    // sets that flag that determines whether cell grid is drawn
+    void debug_set_draw_grid(const bool draw_grid) { 
+        game_view->debug_set_draw_grid(draw_grid); 
+    }
+
+    // sets that flag that determines whether frames per second is drawn
+    void debug_set_draw_fps(const bool draw_fps);
+
+    void quit() { finished = true; }
+    // load a texture
+    /* SDL_Texture * pyapi_load_texture(const std::string &fname) { */
+    /*     load_texture(fname, renderer); */
+    /* } */
 };
 
 #endif
