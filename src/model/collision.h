@@ -22,13 +22,18 @@ class Collision {
     }
 
     // calculate the projected move using the speculative contacts approach
-    inline void calc_projected_move() {
-        collision_type = a->calc_projected_move(b);
-    }
+    /* inline void calc_projected_move() { */
+    /*     collision_type = a->calc_projected_move(b); */
+    /* } */
 
-    inline void penetration_resolution() {
-        //a.penetration_resolution(b); no op for the moment
-        // FIXME... thinking about this..
+    /* inline void penetration_resolution() { */
+    /*     //a.penetration_resolution(b); no op for the moment */
+    /*     // FIXME... thinking about this.. */
+    /* } */
+
+    inline bool check() {
+        this->collision_type = a->collides_with(b);
+        return (this->collision_type != NONE);
     }
 };
 

@@ -11,6 +11,8 @@
 #include "model/collision_type.h"
 
 
+// FIXME: get rid of dx/dy duplicate data that stops us changing the velocities?
+
 /*
  * Class that represents all collidable objects 
  * this includes the main character, monsters, some pieces of terrain, and items.
@@ -34,7 +36,7 @@ class GameObj {
     // (we use this field to optimize collision detection).    
     bool movable; 
 
-    // Bounding Box (used for collision detection)
+    // Axis Aligned Bounding Box (used for collision detection)
     // Note: not quite a bounding box for the object because it's really the box for the 
     // object and the object if it were moved to where it wants to be (ignoring collisions).
     float ax, ay, bx, by;
@@ -68,9 +70,19 @@ class GameObj {
     float dx;
     float dy;
 
+    // if a game object is a potential collider (or collidee) *and* movable then
+    // we will need to iterate it's movement at collision detection time.
+    // movable objects that aren't potential colliders can just jump to their potential 
+    // displacement. Immovable game objects are never colliders.
+    bool potential_collider;
+
+    // distance to be moved, i.e. from (x, y) to (dx, dy)
+    float move_distance;
+
     // t is a parametric value between 0.0 and 1.0 that represents how 
     // far along the (dx, dy) vector we can safely move in one movement cycle
     float t;
+    
 
     // constructor
     GameObj(float x, float y, SDL_Texture * texture = nullptr, bool movable = false); 
@@ -86,63 +98,45 @@ class GameObj {
     void accelerate_right();
     void jump();
 
-    /* inline void apply_gravity() { */
-    /* } */
+
+    //
+    // Instructions to change the movement of the object
+    //
     
     // change in speed when there's no direction input
     void decelerate();
 
+    //
+    // Methods used in collision detection
+    //
+
+    // move a little bit before checking for collisions
+    void step_movement(float step_t);
+
+    // equivalent to step_movement with step_t = 1.0
+    void move();
+
     // calculate the position of this object after moving if nothing effected its movement.  
     // This method also calculates the AABB bounding boxes for all movable objects.
-    void calc_projected_delta_position(float delta_time_in_secs);
+    float calc_projected_delta_position(float delta_time_in_secs);
 
-    // return true if this object potentially collides with the other object 
+    // return true if this object *potentially* collides with the other object 
     bool potentially_collides_with(GameObj * other_game_obj);
+
+    // return true if this object *collides* with the other object 
+    bool collides_with(GameObj * other_game_obj);
 
     // set the position of the object to the current projected position 
     // (after collisions have been resolved).
     void commit_change_in_position();
 
     // move the object along the movement vector using a parametric equation
-    // 
-    inline collision_type_t calc_projected_move(GameObj * other_game_obj) {
-
-        // FIXME: Safe move optimization here!
-        // there's an easy way to find a larger starting new_t value here
-        float start_t = 0.0f;
-
-        // We need to get the length of the dx/dy vector in order to step by 1 pixel 
-        // at a time when doing our speculative collisions accurately to the pixel.
-        // Note: also that we don't care about t values that have already had collisions!
-        float dxdy_vector_length = (t - start_t) * sqrt(dx*dx + dy*dy); // in pixels 
-
-        // how many steps do we have to take to get per pixel testing?
-        float step = 1.0 / dxdy_vector_length;
-
-        // step the parametric equation until we get to 1.0 or we get a collision
-        float new_t;
-        collision_type_t collision_type = NONE;
-        for (new_t = start_t; new_t <= (t + 0.0001); new_t += step) {
-            collision_type = projection_collides_with(other_game_obj, t);
-            if (collision_type != NONE) {
-                new_t -= step;
-
-                if (new_t < t) {
-                    // a closer collision has occurred
-                    t = new_t;
-                }
-                break;
-            }
-        }
-
-        // returns the type of collision or NONE
-        return collision_type;
-    }
+    collision_type_t calc_projected_move(GameObj * other_game_obj);
 
     // this is supposed to be the accurate collision detection
     // FIXME: it's just using bounding boxes at the moment
     // FIXME: this will use contact points
-    inline collision_type_t projection_collides_with(GameObj * other_game_obj, float t) {
+    inline collision_type_t check_for_collision(GameObj * other_game_obj) {
         collision_type_t collision_type = NONE;
         
         // if moving left
@@ -190,6 +184,7 @@ class GameObj {
         // (not the aabb bounding box) of the other game object.
         return collision_type;        
     }
+
 };
 
 #endif

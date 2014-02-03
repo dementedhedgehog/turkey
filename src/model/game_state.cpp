@@ -32,6 +32,9 @@ void GameState::add_game_obj(GameObj * game_obj) {
     if (game_obj->movable) {
         movable_game_objs.push_back(game_obj);
     }
+    else {
+        immovable_game_objs.push_back(game_obj);
+    }
 }
 
 
@@ -65,7 +68,7 @@ void GameState::update(const Uint8 * key_states) {
     // effected their movement.  This method also calculates the AABB bounding boxes
     // for all movable objects (aka aabb rects).   We use this information to optimize 
     // collision detection in an approach called the Bounding Box Optimization.
-    calc_projected_positions();
+    float max_distance = calc_projected_movement();
 
     // get a list of possible collisions (i.e. a list of objects whose aabb rects overlap)
     // all possible collisions will be in this list.. i.e. it might contain false positives 
@@ -77,29 +80,54 @@ void GameState::update(const Uint8 * key_states) {
     
     // For each pairwise collision move the object as far as it can.
     // do this a number of times to avoid jitter..
-    for (int i = 0; i < N_SPECULATIVE_CONTACTS_ITERATIONS; i++) {
+    // for (int i = 0; i < N_SPECULATIVE_CONTACTS_ITERATIONS; i++) {
+       
+    // how many steps do we have to take to get per pixel testing?
+    float dt = 1.0 / max_distance;
+        
+    GameObj * game_obj;
+    std::list<GameObj*>::iterator i;
+    for (float t = 0.0f; t < 1.001; t += dt) {
 
-        // for each collision
-        Collision * collision;
-        for (auto j = potential_collisions.begin(); j != potential_collisions.end(); j++) {
-            collision = *j;            
-
-            // Use speculative contacts to inch the moving object forward until there's 
-            // a collision or we get where we want to be.
-            collision->calc_projected_move();
-
-            // FIXME: handle collisions here!!!
-            // some won't need penetration resolution???
+        // step any movable objects that might be in a collision
+        for (i = movable_game_objs.begin(); i != movable_game_objs.end(); i++) {
+            game_obj = *i;
             
-            // penetration resolution
-            //collision->penetration_resolution();
+            if (game_obj->potential_collider) {
+                game_obj->step_movement(dt);
+            }
+        }
+        
+        // for each collision
+        for (auto j = potential_collisions.begin(); j != potential_collisions.end(); j++) {
+            Collision * collision = *j;            
+
+            // check for a collision..
+            if (collision->check()) {
+
+                // FIXME: resolve collision here!
+                std::cout << "COLLISION OCCURRED !!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+
+                // handle the collision
+                collision->resolve();
+            }
 
             // move stuff
             std::cout << "collision!" << std::endl;
         }       
     }
+    // }
 
-    commit_changes_in_positions();
+    // now move any movable objects that can't be in a collision
+    for (i = movable_game_objs.begin(); i != movable_game_objs.end(); i++) {
+        game_obj = *i;
+            
+        if (!game_obj->potential_collider) {
+            game_obj->move();
+        }
+    }
+
+    //commit_changes_in_positions();
     //if (character) character->dump_position("character");
 }    
 
@@ -107,7 +135,10 @@ void GameState::update(const Uint8 * key_states) {
 // calculate the positions that movable objects would be in after moving if nothing 
 // effected their movement.  This method also calculates the AABB bounding boxes
 // for all movable objects.
-void GameState::calc_projected_positions() {
+//
+// Returns the maximum possible distance moved which we use to determine the number
+// of iterations to make.
+float GameState::calc_projected_movement() {
 
     // We want objects to move at a constant rate irrespective of the number of 
     // frames per second so we scale the velocities and accelerations by the time 
@@ -123,29 +154,34 @@ void GameState::calc_projected_positions() {
     
     // for each movable game object
     std::list<GameObj*>::iterator i;
+    float max_distance = 0.0;
+    float distance;
     GameObj * game_obj;
     for (i = movable_game_objs.begin(); i != movable_game_objs.end(); i++) {
         // calculate where the movable object would move to if collisions don't happen
         game_obj = *i;
-        game_obj->calc_projected_delta_position(delta_time);
+        distance = game_obj->calc_projected_delta_position(delta_time);
+        max_distance = fmax(max_distance, distance);
     }
+
+    return max_distance;
 }
 
 
 // commits the current position of the movable objects to their projected, 
 // collision-resolved positions.
-void GameState::commit_changes_in_positions() {
+// void GameState::commit_changes_in_positions() {
 
-    // for each movable game object
-    std::list<GameObj*>::iterator i;
-    GameObj * game_obj;
-    for (i = movable_game_objs.begin(); i != movable_game_objs.end(); i++) {
-        // set the game objects current position to the projected position 
-        // after we've taken into account all the collisions.
-        game_obj = *i;
-        game_obj->commit_change_in_position();
-    }
-}
+//     // for each movable game object
+//     std::list<GameObj*>::iterator i;
+//     GameObj * game_obj;
+//     for (i = movable_game_objs.begin(); i != movable_game_objs.end(); i++) {
+//         // set the game objects current position to the projected position 
+//         // after we've taken into account all the collisions.
+//         game_obj = *i;
+//         game_obj->commit_change_in_position();
+//     }
+// }
 
 void GameState::handle_keyboard(const Uint8 * key_states) {
 
@@ -237,7 +273,8 @@ void GameState::detect_potential_collisions_brute_force(
     // clear the list so there are no collisions left.
     collisions.clear();
 
-    // for each game obj
+    // make a collision object for each pair of things that might collide 
+    // (if two movable objs might collide there's still only one collision).
     std::list<GameObj*>::const_iterator i;
     std::list<GameObj*>::const_iterator j;
     GameObj * game_obj_i;
@@ -245,19 +282,34 @@ void GameState::detect_potential_collisions_brute_force(
     for (i = movable_game_objs.begin(); i != movable_game_objs.end(); i++) {         
         game_obj_i = *i;
 
-        for (j = game_objs.begin(); j != game_objs.end(); j++) {
+        // collisions of movable objects with other movable objects
+        for (j = std::next(i); j != movable_game_objs.end(); j++) {
+            //for (j = i + 1; j != movable_game_objs.end(); j++) {
             game_obj_j = *j;
 
-            // don't compare an element with itself.
-            if (game_obj_i == game_obj_j) {
-                continue;
+            // sanity checks
+            assert(game_obj_i != game_obj_j);
+            assert(game_obj_j->movable);
+
+            // check for a collision..
+            if (game_obj_i->potentially_collides_with(game_obj_j)) {
+                
+                // collision!
+                Collision * c = new Collision(game_obj_i, game_obj_j);
+                collisions.push_back(c);
             }
+        }
+
+        // collisions of movable objects with immovable objects
+        for (j = immovable_game_objs.begin(); j != immovable_game_objs.end(); j++) {
+            game_obj_j = *j;
+
+            // sanity checks
+            assert(game_obj_i != game_obj_j);
+            assert(!game_obj_j->movable);
             
             // check for a collision..
             if (game_obj_i->potentially_collides_with(game_obj_j)) {
-
-                // sanity check (the first object is always movable).
-                assert(game_obj_i->movable);
                 
                 // collision!
                 Collision * c = new Collision(game_obj_i, game_obj_j);

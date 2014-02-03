@@ -21,6 +21,9 @@ class GameState : public IState {
     // but not game_objs with fixed_position = true.
     // (we use this in an optimization of the collision detection).
     std::list<GameObj*> movable_game_objs;
+
+    // and a list for game objs that don't move
+    std::list<GameObj*> immovable_game_objs;
     
     // the main dude that the player controls (he's also in the game_objs list).
     // the character also appears in the list of game_objs and the movable_game_objs
@@ -45,7 +48,7 @@ class GameState : public IState {
     // work out where movable objects would move to without collisions 
     // and update the bounding boxes
     // scale movement to delta t
-    void calc_projected_positions();
+    float calc_projected_movement();
 
     // fast and stupid first stage of collision detection 
     void detect_potential_collisions_brute_force(
@@ -55,7 +58,7 @@ class GameState : public IState {
 
     // set the current position to the projected position 
     // that has the positions resolved
-    void commit_changes_in_positions();
+    /* void commit_changes_in_positions(); */
 
     // use this to edge trigger dumping debug data to stdout
     bool rctrl_key_pressed;
