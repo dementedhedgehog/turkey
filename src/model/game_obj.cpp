@@ -146,11 +146,11 @@ float GameObj::calc_projected_delta_position(float delta_time_in_secs) {
     dy = y_vel_per_sec * delta_time_in_secs; 
 
     // calculate the move distanc
-    move_distance = sqrt(dx*dx + dy*dy);
+    float move_distance = sqrt(dx*dx + dy*dy);
 
     // reset the parametric t value for the projected move 
     // later on we try and find the largest t value without having a collision.
-    t = 1.0f;
+    //t = 1.0f;
 
     // assume all objects aren't going to be 
     potential_collider = false;
@@ -175,50 +175,10 @@ float GameObj::calc_projected_delta_position(float delta_time_in_secs) {
     return move_distance;        
 }        
 
-// // move the object along the movement vector using a parametric equation
-// // 
-// inline collision_type_t GameObj::calc_projected_move(GameObj * other_game_obj) {
-
-//     // FIXME: Safe move optimization here!
-//     // there's an easy way to find a larger starting new_t value here
-//     float start_t = 0.0f;
-
-//     // We need to get the length of the dx/dy vector in order to step by 1 pixel 
-//     // at a time when doing our speculative collisions accurately to the pixel.
-//     // Note: also that we don't care about t values that have already had collisions!
-//     float dxdy_vector_length = (t - start_t) * sqrt(dx*dx + dy*dy); // in pixels 
-
-//     // how many steps do we have to take to get per pixel testing?
-//     float step = 1.0 / dxdy_vector_length;
-
-//     // step the parametric equation until we get to 1.0 or we get a collision
-//     float new_t;
-//     collision_type_t collision_type = NONE;
-//     for (new_t = start_t; new_t <= (t + 0.0001); new_t += step) {
-//         collision_type = projection_collides_with(other_game_obj, t);
-//         if (collision_type != NONE) {
-//             new_t -= step;
-
-//             if (new_t < t) {
-//                 // a closer collision has occurred
-//                 t = new_t;
-//             }
-//             break;
-//         }
-//     }
-
-//     // returns the type of collision or NONE
-//     return collision_type;
-// }
-
-
-// collision_t check_for_collision(GameObj * other) {
-//     return projection_collides_with(other_game_obj, t);
-
 // move the object along the movement vector using a parametric equation
-void GameObj::step_movement(float step_t) {
-    x += step_t * dx;
-    y += step_t * dy;
+void GameObj::move(float step_t) {
+    x += step_t * x_vel_per_sec;
+    y += step_t * y_vel_per_sec;
 }
 
 void GameObj::decelerate() {
@@ -250,14 +210,4 @@ void GameObj::accelerate_right() {
 void GameObj::jump() {
     // y velocity is clamped later (we have to apply gravity)
     y_vel_per_sec = -y_jump_start_vel_per_sec;
-}
-
-// void GameObj::commit_change_in_position() {
-//     x += t * dx;
-//     y += t * dy;
-// }
-
-void GameObj::move() {
-    x += dx;
-    y += dy;
 }

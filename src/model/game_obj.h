@@ -77,11 +77,11 @@ class GameObj {
     bool potential_collider;
 
     // distance to be moved, i.e. from (x, y) to (dx, dy)
-    float move_distance;
+    //float move_distance;
 
     // t is a parametric value between 0.0 and 1.0 that represents how 
     // far along the (dx, dy) vector we can safely move in one movement cycle
-    float t;
+    //float t;
     
 
     // constructor
@@ -110,17 +110,15 @@ class GameObj {
     // Methods used in collision detection
     //
 
-    // move a little bit before checking for collisions
-    void step_movement(float step_t);
-
-    // equivalent to step_movement with step_t = 1.0
-    void move();
+    // move the object in the velocity direction
+    void move(float step_t);
 
     // calculate the position of this object after moving if nothing effected its movement.  
     // This method also calculates the AABB bounding boxes for all movable objects.
     float calc_projected_delta_position(float delta_time_in_secs);
 
     // return true if this object *potentially* collides with the other object 
+    // this is the fast and rough check for a potential collision
     bool potentially_collides_with(GameObj * other_game_obj);
 
     // return true if this object *collides* with the other object 
@@ -133,57 +131,9 @@ class GameObj {
     // move the object along the movement vector using a parametric equation
     collision_type_t calc_projected_move(GameObj * other_game_obj);
 
+
     // this is supposed to be the accurate collision detection
-    // FIXME: it's just using bounding boxes at the moment
-    // FIXME: this will use contact points
-    inline collision_type_t check_for_collision(GameObj * other_game_obj) {
-        collision_type_t collision_type = NONE;
-        
-        // if moving left
-        if (dx > 0) { 
-            float tbx = bx + t * dx;
-            
-            // If this objects right edge is to the left of the others left edge,
-            // then this object is totally to the left of the other object.
-            if (tbx < other_game_obj->ax) return NONE;
-
-            collision_type = collision_type && RIGHT;
-        }
-        else { // otherwise moving right
-            float tax = ax + t * dx;
-            
-            // If this objects left edge is to the right of the others right edge,
-            // then this object is totally to the right of the other object.
-            if (tax > other_game_obj->bx) return NONE;
-
-            collision_type = collision_type && LEFT;
-        }
-
-        // if moving down
-        if (dy > 0) {
-            float tby = by + t * dy;
-
-            // If this objects bottom edge is above the others top edge,
-            // then this object is totally above the other object.
-            if (tby < other_game_obj->ay) return NONE;
-
-            collision_type = collision_type && BOTTOM;
-        }
-        else { // otherwise moving up
-            float tay = ay + t * dy;
-
-            // If this objects top edge is below the others bottom edge,
-            // then this object is totally below the other object.
-            // (remember that y increases downwards in sdl).
-            if (tay > other_game_obj->by) return NONE;
-            
-            collision_type = collision_type && TOP;
-        }
-        
-        // otherwise there's been a collision with the real bounding box 
-        // (not the aabb bounding box) of the other game object.
-        return collision_type;        
-    }
+    collision_type_t check_for_collision(GameObj * other_game_obj);
 
 };
 

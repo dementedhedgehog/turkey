@@ -62,13 +62,26 @@ void GameState::update(const Uint8 * key_states) {
         return;
     }
     
-    // also use contact points?
+    // FIXME: use contact points?
+
+    // We want objects to move at a constant rate irrespective of the number of 
+    // frames per second so we scale the velocities and accelerations by the time 
+    // since the last render.
+    //
+    // Get the time ellapsed since the last update
+    // (for constant speed in time ... not effected by frames per second).
+    Uint32 time_now = SDL_GetTicks();
+    float delta_time = (time_now - last_time_updated) / 1000.0f; // in seconds
+
+    // remember that now is the new last time we moved the objects!
+    last_time_updated = time_now;
+
 
     // calculate the positions that movable objects would be in after moving if nothing 
     // effected their movement.  This method also calculates the AABB bounding boxes
     // for all movable objects (aka aabb rects).   We use this information to optimize 
     // collision detection in an approach called the Bounding Box Optimization.
-    float max_distance = calc_projected_movement();
+    float max_distance = calc_projected_movement(delta_time);
 
     // get a list of possible collisions (i.e. a list of objects whose aabb rects overlap)
     // all possible collisions will be in this list.. i.e. it might contain false positives 
@@ -83,7 +96,14 @@ void GameState::update(const Uint8 * key_states) {
     // for (int i = 0; i < N_SPECULATIVE_CONTACTS_ITERATIONS; i++) {
        
     // how many steps do we have to take to get per pixel testing?
-    float dt = 1.0 / max_distance;
+    float dt = delta_time / max_distance;
+
+    // FIXME: handle max_distance = 0 (no possible collisions)??
+
+    std::cout << "MAX_DISTANCE " << max_distance << std::endl;
+    std::cout << "DELTA_TIME " << delta_time << std::endl;
+    std::cout << "DT " << dt << std::endl;
+    exit(4);
         
     GameObj * game_obj;
     std::list<GameObj*>::iterator i;
@@ -94,7 +114,7 @@ void GameState::update(const Uint8 * key_states) {
             game_obj = *i;
             
             if (game_obj->potential_collider) {
-                game_obj->step_movement(dt);
+                game_obj->move(dt);
             }
         }
         
@@ -110,6 +130,8 @@ void GameState::update(const Uint8 * key_states) {
 
                 // handle the collision
                 collision->resolve();
+                
+                exit(1);
             }
 
             // move stuff
@@ -123,7 +145,7 @@ void GameState::update(const Uint8 * key_states) {
         game_obj = *i;
             
         if (!game_obj->potential_collider) {
-            game_obj->move();
+            game_obj->move(1.0f);
         }
     }
 
@@ -138,19 +160,7 @@ void GameState::update(const Uint8 * key_states) {
 //
 // Returns the maximum possible distance moved which we use to determine the number
 // of iterations to make.
-float GameState::calc_projected_movement() {
-
-    // We want objects to move at a constant rate irrespective of the number of 
-    // frames per second so we scale the velocities and accelerations by the time 
-    // since the last render.
-    //
-    // Get the time ellapsed since the last update
-    // (for constant speed in time ... not effected by frames per second).
-    Uint32 time_now = SDL_GetTicks();
-    float delta_time = (time_now - last_time_updated) / 1000.0f; // in seconds
-
-    // remember that now is the new last time we moved the objects!
-    last_time_updated = time_now;
+float GameState::calc_projected_movement(const float delta_time) {
     
     // for each movable game object
     std::list<GameObj*>::iterator i;

@@ -21,19 +21,19 @@ class Collision {
         collision_type = NONE;
     }
 
-    // calculate the projected move using the speculative contacts approach
-    /* inline void calc_projected_move() { */
-    /*     collision_type = a->calc_projected_move(b); */
-    /* } */
-
-    /* inline void penetration_resolution() { */
-    /*     //a.penetration_resolution(b); no op for the moment */
-    /*     // FIXME... thinking about this.. */
-    /* } */
-
     inline bool check() {
         this->collision_type = a->collides_with(b);
         return (this->collision_type != NONE);
+    }
+
+    inline void resolve() {
+        // FIXME.. lots and lots of work here 
+        // need to use velocity? rather than dx/dy?
+
+        // stop it falling through the floor?
+        if (collision_type == BOTTOM && !b->movable) {
+            a->y_vel_per_sec = 0.0f;
+        }
     }
 };
 
