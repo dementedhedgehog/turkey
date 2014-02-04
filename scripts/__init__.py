@@ -36,7 +36,7 @@ def initialize_levels():
         # add the character
         dwarf = turkey.load_texture("./res/dwarf.png")    
         print "add_game_obj " + str(turkey.add_character_game_obj(3 * CELL_WIDTH,
-                                                                  5 * CELL_HEIGHT,
+                                                                  15 * CELL_HEIGHT,
                                                                   dwarf))
     except Exception as err:
         print err

@@ -67,8 +67,8 @@ class GameObj {
     // 
 
     // change in position due to velocity and acceleration
-    float dx;
-    float dy;
+    /* float dx; */
+    /* float dy; */
 
     // if a game object is a potential collider (or collidee) *and* movable then
     // we will need to iterate it's movement at collision detection time.
@@ -122,18 +122,18 @@ class GameObj {
     bool potentially_collides_with(GameObj * other_game_obj);
 
     // return true if this object *collides* with the other object 
-    bool collides_with(GameObj * other_game_obj);
+    collision_type_t collides_with(GameObj * other_game_obj);
 
     // set the position of the object to the current projected position 
     // (after collisions have been resolved).
     void commit_change_in_position();
 
     // move the object along the movement vector using a parametric equation
-    collision_type_t calc_projected_move(GameObj * other_game_obj);
+    float calc_projected_move(GameObj * other_game_obj);
 
 
-    // this is supposed to be the accurate collision detection
-    collision_type_t check_for_collision(GameObj * other_game_obj);
+    /* // this is supposed to be the accurate collision detection */
+    /* collision_type_t check_for_collision(GameObj * other_game_obj); */
 
 };
 

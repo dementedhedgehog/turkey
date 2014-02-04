@@ -24,7 +24,7 @@ GameState::GameState(Model * model) {
     jump_key_pressed = false;
 
     // start timing movement... now (movement = velocity * time).
-    last_time_updated = SDL_GetTicks();
+    last_time_updated = 0; 
 }
 
 void GameState::add_game_obj(GameObj * game_obj) {
@@ -51,6 +51,8 @@ std::list<GameObj*> const GameState::get_game_objs() const {
 }
 
 
+static int count = 0;
+
 void GameState::update(const Uint8 * key_states) {
 
     // work out the user commands
@@ -62,6 +64,12 @@ void GameState::update(const Uint8 * key_states) {
         return;
     }
     
+    // first time through don't bother doing anything (no way to get a meaningful delta time)
+    if (last_time_updated == 0) {
+        last_time_updated = SDL_GetTicks();
+        return;
+    }
+
     // FIXME: use contact points?
 
     // We want objects to move at a constant rate irrespective of the number of 
@@ -76,6 +84,7 @@ void GameState::update(const Uint8 * key_states) {
     // remember that now is the new last time we moved the objects!
     last_time_updated = time_now;
 
+    //if (character) character->dump_position("character");
 
     // calculate the positions that movable objects would be in after moving if nothing 
     // effected their movement.  This method also calculates the AABB bounding boxes
@@ -99,15 +108,17 @@ void GameState::update(const Uint8 * key_states) {
     float dt = delta_time / max_distance;
 
     // FIXME: handle max_distance = 0 (no possible collisions)??
-
+    if (character) character->dump_position("character");
     std::cout << "MAX_DISTANCE " << max_distance << std::endl;
     std::cout << "DELTA_TIME " << delta_time << std::endl;
-    std::cout << "DT " << dt << std::endl;
-    exit(4);
+    std::cout << "DT " << dt << std::endl << std::endl << std::endl;
+    //exit(4);
         
     GameObj * game_obj;
     std::list<GameObj*>::iterator i;
-    for (float t = 0.0f; t < 1.001; t += dt) {
+    //for (float t = 0.0f; t < 1.001; t += dt) {
+    for (float t = 0.0f; t < delta_time; t += dt) {
+        std::cout << count << std::endl;
 
         // step any movable objects that might be in a collision
         for (i = movable_game_objs.begin(); i != movable_game_objs.end(); i++) {
@@ -122,6 +133,8 @@ void GameState::update(const Uint8 * key_states) {
         for (auto j = potential_collisions.begin(); j != potential_collisions.end(); j++) {
             Collision * collision = *j;            
 
+            std::cout << "POTENTIAL COLLISION !!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+
             // check for a collision..
             if (collision->check()) {
 
@@ -131,26 +144,25 @@ void GameState::update(const Uint8 * key_states) {
                 // handle the collision
                 collision->resolve();
                 
-                exit(1);
+                //exit(1);
             }
-
-            // move stuff
-            std::cout << "collision!" << std::endl;
         }       
     }
-    // }
+
+    count += 1;
+    if (count > 18) {
+        //exit(3);
+        paused = true;
+    }
 
     // now move any movable objects that can't be in a collision
     for (i = movable_game_objs.begin(); i != movable_game_objs.end(); i++) {
         game_obj = *i;
             
         if (!game_obj->potential_collider) {
-            game_obj->move(1.0f);
+            game_obj->move(delta_time);
         }
     }
-
-    //commit_changes_in_positions();
-    //if (character) character->dump_position("character");
 }    
 
 

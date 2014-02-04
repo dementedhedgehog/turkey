@@ -55,11 +55,6 @@ class GameState : public IState {
         const std::list<GameObj*> game_objs, 
         std::list<Collision*> & collisions);
     
-
-    // set the current position to the projected position 
-    // that has the positions resolved
-    /* void commit_changes_in_positions(); */
-
     // use this to edge trigger dumping debug data to stdout
     bool rctrl_key_pressed;
 

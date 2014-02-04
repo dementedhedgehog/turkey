@@ -30,6 +30,10 @@ class Collision {
         // FIXME.. lots and lots of work here 
         // need to use velocity? rather than dx/dy?
 
+        std::cout << " RESOLVING! " << std::endl;
+
+        std::cout << " A! " << (collision_type == BOTTOM) << ", " << !b->movable << std::endl;
+
         // stop it falling through the floor?
         if (collision_type == BOTTOM && !b->movable) {
             a->y_vel_per_sec = 0.0f;

@@ -70,7 +70,7 @@ GameObj::GameObj(float x, float y, SDL_Texture * texture, bool movable) {
 void GameObj::dump_position(std::string name) {
     std::cout << name 
               << " pos: (" << x << ", " << y << "), "
-              << "delta pos: (" << dx << ", " << dy << "), "
+        //<< "delta pos: (" << dx << ", " << dy << "), "
               << "velocity: (" << x_vel_per_sec << ", " << y_vel_per_sec << "), "
               << "acc x: " << x_acc_per_sec << ", " 
               << "dec x: " << x_dec_per_sec << ", " 
@@ -82,10 +82,15 @@ void GameObj::dump_position(std::string name) {
 
 bool GameObj::potentially_collides_with(GameObj * other_game_obj) {
 
+    std::cout << " check potentially collides with " << std::endl;
+
     // If this objects top edge is below the others bottom edge,
     // then this object is totally below the other object.
     // (remember that y increases downwards in sdl).
-    if (ay > other_game_obj->by) return false;
+    if (ay > other_game_obj->by) {
+        std::cout << " below " << std::endl;
+        return false;
+    }
         
     // If this objects left edge is to the right of the others right edge,
     // then this object is totally to the right of the other object.
@@ -93,7 +98,10 @@ bool GameObj::potentially_collides_with(GameObj * other_game_obj) {
 
     // If this objects bottom edge is above the others top edge,
     // then this object is totally above the other object.
-    if (by < other_game_obj->ay) return false;
+    if (by < other_game_obj->ay) {
+        std::cout << " above " << std::endl;
+        return false;
+    }
 
     // If this objects right edge is to the left of the others left edge,
     // then this object is totally to the left of the other object.
@@ -104,27 +112,44 @@ bool GameObj::potentially_collides_with(GameObj * other_game_obj) {
 }
 
 
-bool GameObj::collides_with(GameObj * other_game_obj) {
+collision_type_t GameObj::collides_with(GameObj * other_game_obj) {
+
+    std::cout << " *** check collides with " << std::endl;
 
     // If this objects top edge is below the others bottom edge,
     // then this object is totally below the other object.
     // (remember that y increases downwards in sdl).
-    if (y - half_height > other_game_obj->y + other_game_obj->half_height) return false;
+    if (y - half_height > other_game_obj->y + other_game_obj->half_height) {
+        std::cout << " below " << std::endl;
+        return NONE;
+    }
         
     // If this objects left edge is to the right of the others right edge,
     // then this object is totally to the right of the other object.
-    if (x - half_width > other_game_obj->x + other_game_obj->half_width) return false;
+    if (x - half_width > other_game_obj->x + other_game_obj->half_width) {
+        std::cout << " right " << std::endl;
+        return NONE;
+    }
 
     // If this objects bottom edge is above the others top edge,
     // then this object is totally above the other object.
-    if (y + half_height < other_game_obj->y - other_game_obj->half_height) return false;
+    if (y + half_height < other_game_obj->y - other_game_obj->half_height) {
+        std::cout << " above " << std::endl;
+        return NONE;
+    }
+
 
     // If this objects right edge is to the left of the others left edge,
     // then this object is totally to the left of the other object.
-    if (x + half_height < other_game_obj->x + other_game_obj->half_width) return false;
+    if (x + half_width < other_game_obj->x - other_game_obj->half_width) {
+        std::cout << " left " << std::endl;
+        return NONE;
+    }
 
     // may be a collision!
-    return true;
+    std::cout << " collision " << std::endl;
+
+    return BOTTOM;  // FIXME: this is bull shit .. I just want to see it run.
 }
 
 float GameObj::calc_projected_delta_position(float delta_time_in_secs) {
@@ -142,8 +167,8 @@ float GameObj::calc_projected_delta_position(float delta_time_in_secs) {
     if (y_vel_per_sec < -y_max_vel_per_sec) y_vel_per_sec = -y_max_vel_per_sec;
 
     // work out the project change in position
-    dx = x_vel_per_sec * delta_time_in_secs;
-    dy = y_vel_per_sec * delta_time_in_secs; 
+    float dx = x_vel_per_sec * delta_time_in_secs;
+    float dy = y_vel_per_sec * delta_time_in_secs; 
 
     // calculate the move distanc
     float move_distance = sqrt(dx*dx + dy*dy);
