@@ -66,22 +66,16 @@ class GameObj {
     // Scaled Movement Variables
     // 
 
-    // change in position due to velocity and acceleration
-    /* float dx; */
-    /* float dy; */
+    // projected movement position (where we want to move in the next time step
+    // assuming there aren't going to be any collisions).
+    float px;
+    float py;
 
     // if a game object is a potential collider (or collidee) *and* movable then
     // we will need to iterate it's movement at collision detection time.
     // movable objects that aren't potential colliders can just jump to their potential 
     // displacement. Immovable game objects are never colliders.
     bool potential_collider;
-
-    // distance to be moved, i.e. from (x, y) to (dx, dy)
-    //float move_distance;
-
-    // t is a parametric value between 0.0 and 1.0 that represents how 
-    // far along the (dx, dy) vector we can safely move in one movement cycle
-    //float t;
     
 
     // constructor
@@ -111,30 +105,37 @@ class GameObj {
     //
 
     // move the object in the velocity direction
-    void move(float step_t);
+    void move(const float step_t);
+
+    // move the object along the movement vector using a parametric equation
+    float calc_initial_projected_move(float delta_time_in_secs);
+
+    // work out (hypothetically) where this object would move to
+    void calc_projected_move(const float step_t);
+    //float calc_projected_move(GameObj * other_game_obj);
+
 
     // calculate the position of this object after moving if nothing effected its movement.  
     // This method also calculates the AABB bounding boxes for all movable objects.
-    float calc_projected_delta_position(float delta_time_in_secs);
+    // (Faster than the initial projected move method).
+    void  calc_projected_delta_position(float delta_time_in_secs);
+    //void calc_projected_delta_move(float delta_time_in_secs);
 
     // return true if this object *potentially* collides with the other object 
     // this is the fast and rough check for a potential collision
     bool potentially_collides_with(GameObj * other_game_obj);
 
-    // return true if this object *collides* with the other object 
-    collision_type_t collides_with(GameObj * other_game_obj);
+    // Check whether the projected position of this object will collide with the projected 
+    // position of another movable object.
+    collision_type_t check_for_projected_movable_collision(GameObj * other_game_obj);
+
+    // Check whether the projected position of this object will collide with the fixed 
+    // position of a fixed object.
+    collision_type_t check_for_projected_fixed_collision(GameObj * other_game_obj);
 
     // set the position of the object to the current projected position 
     // (after collisions have been resolved).
-    void commit_change_in_position();
-
-    // move the object along the movement vector using a parametric equation
-    float calc_projected_move(GameObj * other_game_obj);
-
-
-    /* // this is supposed to be the accurate collision detection */
-    /* collision_type_t check_for_collision(GameObj * other_game_obj); */
-
+    //void commit_change_in_position();
 };
 
 #endif

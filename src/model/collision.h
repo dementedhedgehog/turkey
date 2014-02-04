@@ -21,8 +21,17 @@ class Collision {
         collision_type = NONE;
     }
 
-    inline bool check() {
-        this->collision_type = a->collides_with(b);
+    // check for a collision between the projected position of a and the projected 
+    // position of b (both of which are movable).
+    inline bool check_for_projected_movable_collision() {
+        this->collision_type = a->check_for_projected_movable_collision(b);
+        return (this->collision_type != NONE);
+    }
+
+    // check for a collision between the projected position of a and the position of b 
+    // (only a is movable).
+    inline bool check_for_projected_fixed_collision() {
+        this->collision_type = a->check_for_projected_fixed_collision(b);
         return (this->collision_type != NONE);
     }
 
@@ -36,7 +45,7 @@ class Collision {
 
         // stop it falling through the floor?
         if (collision_type == BOTTOM && !b->movable) {
-            a->y_vel_per_sec = 0.0f;
+             a->y_vel_per_sec = 0.0f;
         }
     }
 };

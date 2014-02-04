@@ -70,7 +70,8 @@ GameObj::GameObj(float x, float y, SDL_Texture * texture, bool movable) {
 void GameObj::dump_position(std::string name) {
     std::cout << name 
               << " pos: (" << x << ", " << y << "), "
-        //<< "delta pos: (" << dx << ", " << dy << "), "
+              << "potential_collider?: " << (bool)potential_collider << ", "
+              << "projected pos: (" << px << ", " << py << "), "
               << "velocity: (" << x_vel_per_sec << ", " << y_vel_per_sec << "), "
               << "acc x: " << x_acc_per_sec << ", " 
               << "dec x: " << x_dec_per_sec << ", " 
@@ -79,11 +80,8 @@ void GameObj::dump_position(std::string name) {
               << std::endl;
 }
 
-
+// returns true if the aabb boxes intersect
 bool GameObj::potentially_collides_with(GameObj * other_game_obj) {
-
-    std::cout << " check potentially collides with " << std::endl;
-
     // If this objects top edge is below the others bottom edge,
     // then this object is totally below the other object.
     // (remember that y increases downwards in sdl).
@@ -107,33 +105,42 @@ bool GameObj::potentially_collides_with(GameObj * other_game_obj) {
     // then this object is totally to the left of the other object.
     if (bx < other_game_obj->ax) return false;
 
+    // assume all objects aren't going to be 
+    potential_collider = true;
+    other_game_obj->potential_collider = true;
+
     // may be a collision!
     return true;
 }
 
 
-collision_type_t GameObj::collides_with(GameObj * other_game_obj) {
+//
+// Check whether the projected position of this object will collide with the projected 
+// position of another movable object.  
+//
+collision_type_t GameObj::check_for_projected_movable_collision(GameObj * other_game_obj) {
+    assert(other_game_obj->movable);
 
     std::cout << " *** check collides with " << std::endl;
 
     // If this objects top edge is below the others bottom edge,
     // then this object is totally below the other object.
     // (remember that y increases downwards in sdl).
-    if (y - half_height > other_game_obj->y + other_game_obj->half_height) {
+    if (py - half_height > other_game_obj->py + other_game_obj->half_height) {
         std::cout << " below " << std::endl;
         return NONE;
     }
         
     // If this objects left edge is to the right of the others right edge,
     // then this object is totally to the right of the other object.
-    if (x - half_width > other_game_obj->x + other_game_obj->half_width) {
+    if (px - half_width > other_game_obj->px + other_game_obj->half_width) {
         std::cout << " right " << std::endl;
         return NONE;
     }
 
     // If this objects bottom edge is above the others top edge,
     // then this object is totally above the other object.
-    if (y + half_height < other_game_obj->y - other_game_obj->half_height) {
+    if (py + half_height < other_game_obj->py - other_game_obj->half_height) {
         std::cout << " above " << std::endl;
         return NONE;
     }
@@ -141,7 +148,7 @@ collision_type_t GameObj::collides_with(GameObj * other_game_obj) {
 
     // If this objects right edge is to the left of the others left edge,
     // then this object is totally to the left of the other object.
-    if (x + half_width < other_game_obj->x - other_game_obj->half_width) {
+    if (px + half_width < other_game_obj->px - other_game_obj->half_width) {
         std::cout << " left " << std::endl;
         return NONE;
     }
@@ -152,7 +159,58 @@ collision_type_t GameObj::collides_with(GameObj * other_game_obj) {
     return BOTTOM;  // FIXME: this is bull shit .. I just want to see it run.
 }
 
-float GameObj::calc_projected_delta_position(float delta_time_in_secs) {
+
+//
+// Check whether the projected position of this object will collide with the fixed position 
+// of a fixed object.
+//
+collision_type_t GameObj::check_for_projected_fixed_collision(GameObj * other_game_obj) {
+    std::cout << " *** check collides fixed with " << std::endl;
+    dump_position("a");
+    other_game_obj->dump_position("b");
+    std::cout << std::endl;
+    std::cout << std::endl;
+
+    // If this objects top edge is below the others bottom edge,
+    // then this object is totally below the other object.
+    // (remember that y increases downwards in sdl).
+    if (py - half_height > other_game_obj->y + other_game_obj->half_height) {
+        std::cout << " below " << std::endl;
+        return NONE;
+    }
+        
+    // If this objects left edge is to the right of the others right edge,
+    // then this object is totally to the right of the other object.
+    if (px - half_width > other_game_obj->x + other_game_obj->half_width) {
+        std::cout << " right " << std::endl;
+        return NONE;
+    }
+
+    // If this objects bottom edge is above the others top edge,
+    // then this object is totally above the other object.
+    if (py + half_height < other_game_obj->y - other_game_obj->half_height) {
+        std::cout << " above " << std::endl;
+        return NONE;
+    }
+
+    // If this objects right edge is to the left of the others left edge,
+    // then this object is totally to the left of the other object.
+    if (px + half_width < other_game_obj->x - other_game_obj->half_width) {
+        std::cout << " left " << std::endl;
+        return NONE;
+    }
+
+    // may be a collision!
+    std::cout << " collision " << std::endl;
+
+    return BOTTOM;  // FIXME: this is bull shit .. I just want to see it run.
+}
+
+// 
+// Before we think about collisions we do a rough projection to see what pairs of 
+// objects we have to be careful about when it comes to detecting collisions.
+//
+float GameObj::calc_initial_projected_move(float delta_time_in_secs) {
 
     // should only ever call this on movable objects
     assert(movable);
@@ -172,10 +230,6 @@ float GameObj::calc_projected_delta_position(float delta_time_in_secs) {
 
     // calculate the move distanc
     float move_distance = sqrt(dx*dx + dy*dy);
-
-    // reset the parametric t value for the projected move 
-    // later on we try and find the largest t value without having a collision.
-    //t = 1.0f;
 
     // assume all objects aren't going to be 
     potential_collider = false;
@@ -200,11 +254,7 @@ float GameObj::calc_projected_delta_position(float delta_time_in_secs) {
     return move_distance;        
 }        
 
-// move the object along the movement vector using a parametric equation
-void GameObj::move(float step_t) {
-    x += step_t * x_vel_per_sec;
-    y += step_t * y_vel_per_sec;
-}
+
 
 void GameObj::decelerate() {
     if (x_vel_per_sec < 0) x_vel_per_sec += x_dec_per_sec;      
@@ -236,3 +286,20 @@ void GameObj::jump() {
     // y velocity is clamped later (we have to apply gravity)
     y_vel_per_sec = -y_jump_start_vel_per_sec;
 }
+
+
+
+// calculate where the object will be after the next time stp assuming 
+// no collisions happen
+void GameObj::calc_projected_delta_position(const float step_t) {
+    px = x + step_t * x_vel_per_sec;
+    py = y + step_t * y_vel_per_sec;
+}
+
+
+// move the object along the movement vector using a parametric equation
+void GameObj::move(const float step_t) {
+    x += step_t * x_vel_per_sec;
+    y += step_t * y_vel_per_sec;
+}
+

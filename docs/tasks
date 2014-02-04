@@ -2,13 +2,10 @@
 tasks
 =====
 
-   * move camera
-   * settings in python (debug etc)
-       - screen boundaries
-       - aabb bounding boxes
-
    * collision detection
-      - speculative collisions
+      - check collisions before moving
+      - return where collision occurred
+
       - scaling acceleration!
       - quad trees
       - internal edges
@@ -16,6 +13,13 @@ tasks
       - ladders
       - collision handling: friction, hysterisis, programmable callbacks  
       - needs penetration resolution for two objects moving towards each other??
+
+
+   * move camera
+   * settings in python (debug etc)
+       - screen boundaries
+       - aabb bounding boxes
+
 
    * sprite implementation and animation
    * load sprites in python
@@ -52,3 +56,5 @@ done
        - draw grid
        - draw fps
    * rename game components to game views
+  * collision detection
+      - speculative collisions

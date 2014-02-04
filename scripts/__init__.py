@@ -17,16 +17,16 @@ def initialize_levels():
         # build some steps
         stone = turkey.load_texture("./res/stone.png")
         ## print "stone " + str(stone)
-        ## for i in range(2,5):
-        ##    # print "add_game_obj " + str(turkey.add_game_obj(i, i, stone))
-        ##    turkey.add_game_obj(i * CELL_WIDTH, 20 * CELL_HEIGHT, stone)
+        for i in range(2, 12):
+           # print "add_game_obj " + str(turkey.add_game_obj(i, i, stone))
+           turkey.add_game_obj(i * CELL_WIDTH, 20 * CELL_HEIGHT, stone)
 
-        turkey.add_game_obj(4 * CELL_WIDTH, 20 * CELL_HEIGHT, stone)
+        #turkey.add_game_obj(4 * CELL_WIDTH, 20 * CELL_HEIGHT, stone)
         #turkey.add_game_obj(5 * CELL_WIDTH, 20 * CELL_HEIGHT, stone)
 
-        ## for i in range(2,5):
-        ##    # print "add_game_obj " + str(turkey.add_game_obj(i, i, stone))
-        ##    turkey.add_game_obj(i * CELL_WIDTH, 40 * CELL_HEIGHT, stone)
+        for i in range(2,5):
+           # print "add_game_obj " + str(turkey.add_game_obj(i, i, stone))
+           turkey.add_game_obj(i * CELL_WIDTH, 40 * CELL_HEIGHT, stone)
 
         ## print "add_game_obj " + str(
         ##     turkey.add_game_obj(10 * CELL_WIDTH, 10 * CELL_HEIGHT, stone))

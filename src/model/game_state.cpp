@@ -90,14 +90,19 @@ void GameState::update(const Uint8 * key_states) {
     // effected their movement.  This method also calculates the AABB bounding boxes
     // for all movable objects (aka aabb rects).   We use this information to optimize 
     // collision detection in an approach called the Bounding Box Optimization.
-    float max_distance = calc_projected_movement(delta_time);
+    float max_distance = calc_initial_projected_move(delta_time);
 
     // get a list of possible collisions (i.e. a list of objects whose aabb rects overlap)
     // all possible collisions will be in this list.. i.e. it might contain false positives 
     // but no false negatives.
-    detect_potential_collisions_brute_force(game_objs, potential_collisions);
-    if (potential_collisions.size() > 0) {
-        std::cout << "collisions: " << potential_collisions.size()  << std::endl;
+    detect_potential_collisions_brute_force(
+        game_objs, 
+        potential_movable_collisions,
+        potential_fixed_collisions);
+    if (potential_fixed_collisions.size() > 0 || potential_movable_collisions.size() > 0) {
+        std::cout << "potential collisions: " 
+                  << potential_movable_collisions.size() + potential_fixed_collisions.size()  
+                  << std::endl;
     };
     
     // For each pairwise collision move the object as far as it can.
@@ -108,10 +113,10 @@ void GameState::update(const Uint8 * key_states) {
     float dt = delta_time / max_distance;
 
     // FIXME: handle max_distance = 0 (no possible collisions)??
-    if (character) character->dump_position("character");
-    std::cout << "MAX_DISTANCE " << max_distance << std::endl;
-    std::cout << "DELTA_TIME " << delta_time << std::endl;
-    std::cout << "DT " << dt << std::endl << std::endl << std::endl;
+    // if (character) character->dump_position("character");
+    // std::cout << "MAX_DISTANCE " << max_distance << std::endl;
+    // std::cout << "DELTA_TIME " << delta_time << std::endl;
+    // std::cout << "DT " << dt << std::endl << std::endl << std::endl;
     //exit(4);
         
     GameObj * game_obj;
@@ -120,7 +125,52 @@ void GameState::update(const Uint8 * key_states) {
     for (float t = 0.0f; t < delta_time; t += dt) {
         std::cout << count << std::endl;
 
-        // step any movable objects that might be in a collision
+        // calculate the projected positions of movable objects that might be in a collision
+        for (i = movable_game_objs.begin(); i != movable_game_objs.end(); i++) {
+            game_obj = *i;
+            
+            if (game_obj->potential_collider) {
+                game_obj->calc_projected_delta_position(dt);
+            }
+        }
+        
+        // find and resolve each *movable* collision
+        for (auto j = potential_movable_collisions.begin(); 
+                  j != potential_movable_collisions.end(); 
+                  j++) {
+            Collision * collision = *j;
+
+            // check for a collision..
+            if (collision->check_for_projected_movable_collision()) {
+
+                // FIXME: resolve collision here!
+                std::cout << "COLLISION OCCURRED !!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+
+                // handle the collision
+                collision->resolve();
+            }
+        }       
+
+        // find and resolve each *fixed* collision
+        for (auto j = potential_fixed_collisions.begin(); 
+                  j != potential_fixed_collisions.end(); 
+                  j++) {
+            Collision * collision = *j;            
+
+            // check for a collision..
+            if (collision->check_for_projected_fixed_collision()) {
+
+                // FIXME: resolve collision here!
+                std::cout << "COLLISION OCCURRED !!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+
+                // handle the collision
+                collision->resolve();
+            }
+        }       
+
+        // now move the objects to their projected position 
+        // (unless they've been involved in a collision in which case the collision 
+        // resolution might have changed stuff a bit).
         for (i = movable_game_objs.begin(); i != movable_game_objs.end(); i++) {
             game_obj = *i;
             
@@ -128,32 +178,13 @@ void GameState::update(const Uint8 * key_states) {
                 game_obj->move(dt);
             }
         }
-        
-        // for each collision
-        for (auto j = potential_collisions.begin(); j != potential_collisions.end(); j++) {
-            Collision * collision = *j;            
-
-            std::cout << "POTENTIAL COLLISION !!!!!!!!!!!!!!!!!!!!!!" << std::endl;
-
-            // check for a collision..
-            if (collision->check()) {
-
-                // FIXME: resolve collision here!
-                std::cout << "COLLISION OCCURRED !!!!!!!!!!!!!!!!!!!!!!" << std::endl;
-
-                // handle the collision
-                collision->resolve();
-                
-                //exit(1);
-            }
-        }       
     }
 
     count += 1;
-    if (count > 18) {
-        //exit(3);
-        paused = true;
-    }
+    // if (count > 16) {
+    //     //exit(3);
+    //     paused = true;
+    // }
 
     // now move any movable objects that can't be in a collision
     for (i = movable_game_objs.begin(); i != movable_game_objs.end(); i++) {
@@ -172,7 +203,7 @@ void GameState::update(const Uint8 * key_states) {
 //
 // Returns the maximum possible distance moved which we use to determine the number
 // of iterations to make.
-float GameState::calc_projected_movement(const float delta_time) {
+float GameState::calc_initial_projected_move(const float delta_time) {
     
     // for each movable game object
     std::list<GameObj*>::iterator i;
@@ -182,7 +213,7 @@ float GameState::calc_projected_movement(const float delta_time) {
     for (i = movable_game_objs.begin(); i != movable_game_objs.end(); i++) {
         // calculate where the movable object would move to if collisions don't happen
         game_obj = *i;
-        distance = game_obj->calc_projected_delta_position(delta_time);
+        distance = game_obj->calc_initial_projected_move(delta_time);
         max_distance = fmax(max_distance, distance);
     }
 
@@ -285,7 +316,8 @@ void GameState::handle_keyboard(const Uint8 * key_states) {
  */
 void GameState::detect_potential_collisions_brute_force(
         const std::list<GameObj*> game_objs, 
-        std::list<Collision*> & collisions) {
+        std::list<Collision*> & moving_collisions,
+        std::list<Collision*> & fixed_collisions) {
 
     std::cout << std::endl;
     std::cout << std::endl;
@@ -293,7 +325,8 @@ void GameState::detect_potential_collisions_brute_force(
     std::cout << "---" << std::endl;
         
     // clear the list so there are no collisions left.
-    collisions.clear();
+    moving_collisions.clear();
+    fixed_collisions.clear();
 
     // make a collision object for each pair of things that might collide 
     // (if two movable objs might collide there's still only one collision).
@@ -305,8 +338,9 @@ void GameState::detect_potential_collisions_brute_force(
         game_obj_i = *i;
 
         // collisions of movable objects with other movable objects
+        // (we handle collisions between a pair of moving objects differently from
+        // a collision between a moving object and a fixed object).
         for (j = std::next(i); j != movable_game_objs.end(); j++) {
-            //for (j = i + 1; j != movable_game_objs.end(); j++) {
             game_obj_j = *j;
 
             // sanity checks
@@ -318,7 +352,7 @@ void GameState::detect_potential_collisions_brute_force(
                 
                 // collision!
                 Collision * c = new Collision(game_obj_i, game_obj_j);
-                collisions.push_back(c);
+                moving_collisions.push_back(c);
             }
         }
 
@@ -335,7 +369,7 @@ void GameState::detect_potential_collisions_brute_force(
                 
                 // collision!
                 Collision * c = new Collision(game_obj_i, game_obj_j);
-                collisions.push_back(c);
+                fixed_collisions.push_back(c);
             }
         }
     }  

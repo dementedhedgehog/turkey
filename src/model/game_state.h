@@ -29,8 +29,13 @@ class GameState : public IState {
     // the character also appears in the list of game_objs and the movable_game_objs
     GameObj * character;
 
-    // a list of potential collisions (returned by the first pass of the collision detector).
-    std::list<Collision*> potential_collisions;
+    // a list of potential collisions between two movable objects
+    // (returned by the first pass of the collision detector).
+    std::list<Collision*> potential_movable_collisions;
+
+    // a list of potential collisions between a movable object and a fixed object
+    // (returned by the first pass of the collision detector).
+    std::list<Collision*> potential_fixed_collisions;
 
     // is the game paused?
     bool paused;
@@ -48,12 +53,13 @@ class GameState : public IState {
     // work out where movable objects would move to without collisions 
     // and update the bounding boxes
     // scale movement to delta t
-    float calc_projected_movement(const float delta_time);
+    float calc_initial_projected_move(const float delta_time);
 
     // fast and stupid first stage of collision detection 
     void detect_potential_collisions_brute_force(
         const std::list<GameObj*> game_objs, 
-        std::list<Collision*> & collisions);
+        std::list<Collision*> & potential_movable_collisions,
+        std::list<Collision*> & potential_fixed_collisions);
     
     // use this to edge trigger dumping debug data to stdout
     bool rctrl_key_pressed;
