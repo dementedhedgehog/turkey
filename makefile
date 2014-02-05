@@ -33,7 +33,7 @@ all: $(PROG)
 
 $(PROG): main.o model.o view.o fps.o scripting.o sub_view.o \
 	intro_view.o game_view.o sprite.o game_state.o intro_state.o game_obj.o \
-	utils.o font_manager.o collision.o # position.o 
+	utils.o font_manager.o collision.o camera.o # position.o 
 	$(CXX) $^ $(LDFLAGS) -o $@
 
 main.o: src/main.cpp
@@ -95,6 +95,11 @@ intro_state.o: \
 game_obj.o: \
 	src/model/game_obj.cpp \
 	src/model/game_obj.h
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+camera.o: \
+	src/model/camera.cpp \
+	src/model/camera.h
 	$(CXX) $(CXXFLAGS) $< -o $@
 
 

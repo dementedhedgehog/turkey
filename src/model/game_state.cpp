@@ -15,6 +15,9 @@ GameState::GameState(Model * model) {
     // add the character!
     this->character = nullptr;   
 
+    // the camera
+    camera = new Camera();
+
     // pause state
     paused = false;
     pause_key_pressed = false;
@@ -244,7 +247,12 @@ void GameState::handle_keyboard(const Uint8 * key_states) {
 
         // move left?
         if (key_states[SDL_SCANCODE_LEFT]) { 
-            if (character) {
+
+            if (key_states[SDL_SCANCODE_LALT] || key_states[SDL_SCANCODE_LALT]) {
+                // alt left pans the camera right
+                camera->pan_left();
+            }
+            else if (character) {
                 character->accelerate_left();
                 move_player_request = true;
             }
@@ -252,7 +260,13 @@ void GameState::handle_keyboard(const Uint8 * key_states) {
 
         // move right?
         if (key_states[SDL_SCANCODE_RIGHT]) { 
-            if (character) {
+
+            if (key_states[SDL_SCANCODE_LALT] || key_states[SDL_SCANCODE_LALT]) {
+                // alt right pans the camera right
+                camera->pan_right();
+            }
+            else if (character) {
+                // right arrow moves the camera right
                 character->accelerate_right();
                 move_player_request = true;
             }
@@ -269,6 +283,25 @@ void GameState::handle_keyboard(const Uint8 * key_states) {
         else {
             // jump key released (logic to avoid strobing the jump key)
             jump_key_pressed = false;
+        }
+
+
+        // move up (camera only)?
+        if (key_states[SDL_SCANCODE_UP]) { 
+
+            if (key_states[SDL_SCANCODE_LALT] || key_states[SDL_SCANCODE_LALT]) {
+                // alt right pans the camera right
+                camera->pan_up();
+            }
+        }
+
+        // move down (camera only)?
+        if (key_states[SDL_SCANCODE_DOWN]) { 
+
+            if (key_states[SDL_SCANCODE_LALT] || key_states[SDL_SCANCODE_LALT]) {
+                // alt right pans the camera right
+                camera->pan_down();
+            }
         }
 
         // when the P button is pressed the game is paused
@@ -376,3 +409,8 @@ void GameState::detect_potential_collisions_brute_force(
     std::cout << "---" << std::endl;
 }
 
+
+// return the current camera position
+void GameState::get_camera_position(float * camera_x, float * camera_y) const {
+    camera->get_camera_position(camera_x, camera_y);
+}
