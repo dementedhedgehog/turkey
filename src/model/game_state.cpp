@@ -20,7 +20,6 @@ GameState::GameState(Model * model) {
     pause_key_pressed = false;
 
     // character jumping state
-    jumping = false;
     jump_key_pressed = false;
 
     // start timing movement... now (movement = velocity * time).
@@ -99,11 +98,11 @@ void GameState::update(const Uint8 * key_states) {
         game_objs, 
         potential_movable_collisions,
         potential_fixed_collisions);
-    if (potential_fixed_collisions.size() > 0 || potential_movable_collisions.size() > 0) {
-        std::cout << "potential collisions: " 
-                  << potential_movable_collisions.size() + potential_fixed_collisions.size()  
-                  << std::endl;
-    };
+    // if (potential_fixed_collisions.size() > 0 || potential_movable_collisions.size() > 0) {
+    //     std::cout << "potential collisions: " 
+    //               << potential_movable_collisions.size() + potential_fixed_collisions.size()  
+    //               << std::endl;
+    // };
     
     // For each pairwise collision move the object as far as it can.
     // do this a number of times to avoid jitter..
@@ -123,7 +122,7 @@ void GameState::update(const Uint8 * key_states) {
     std::list<GameObj*>::iterator i;
     //for (float t = 0.0f; t < 1.001; t += dt) {
     for (float t = 0.0f; t < delta_time; t += dt) {
-        std::cout << count << std::endl;
+        // std::cout << count << std::endl;
 
         // calculate the projected positions of movable objects that might be in a collision
         for (i = movable_game_objs.begin(); i != movable_game_objs.end(); i++) {
@@ -144,7 +143,7 @@ void GameState::update(const Uint8 * key_states) {
             if (collision->check_for_projected_movable_collision()) {
 
                 // FIXME: resolve collision here!
-                std::cout << "COLLISION OCCURRED !!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+                // std::cout << "COLLISION OCCURRED !!!!!!!!!!!!!!!!!!!!!!" << std::endl;
 
                 // handle the collision
                 collision->resolve();
@@ -161,7 +160,7 @@ void GameState::update(const Uint8 * key_states) {
             if (collision->check_for_projected_fixed_collision()) {
 
                 // FIXME: resolve collision here!
-                std::cout << "COLLISION OCCURRED !!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+                // std::cout << "COLLISION OCCURRED !!!!!!!!!!!!!!!!!!!!!!" << std::endl;
 
                 // handle the collision
                 collision->resolve();
@@ -260,9 +259,9 @@ void GameState::handle_keyboard(const Uint8 * key_states) {
  
         // Jump if not already jumping and the jump key was released earlier
         if (key_states[SDL_SCANCODE_SPACE]) {
-            if (!jumping && !jump_key_pressed) { 
+            if (!character->jumping && !jump_key_pressed) { 
                 if (character) character->jump();
-                jumping = true;
+                character->jumping = true;
                 jump_key_pressed = true;
             }
         }

@@ -15,6 +15,7 @@ GameObj::GameObj(float x, float y, SDL_Texture * texture, bool movable) {
 
     // is this a movable object?
     this->movable = movable;    
+    this->jumping = false;
 
     // draw this
     this->texture = texture;
@@ -86,7 +87,7 @@ bool GameObj::potentially_collides_with(GameObj * other_game_obj) {
     // then this object is totally below the other object.
     // (remember that y increases downwards in sdl).
     if (ay > other_game_obj->by) {
-        std::cout << " below " << std::endl;
+        //std::cout << " below " << std::endl;
         return false;
     }
         
@@ -97,7 +98,7 @@ bool GameObj::potentially_collides_with(GameObj * other_game_obj) {
     // If this objects bottom edge is above the others top edge,
     // then this object is totally above the other object.
     if (by < other_game_obj->ay) {
-        std::cout << " above " << std::endl;
+        //std::cout << " above " << std::endl;
         return false;
     }
 
@@ -121,27 +122,27 @@ bool GameObj::potentially_collides_with(GameObj * other_game_obj) {
 collision_type_t GameObj::check_for_projected_movable_collision(GameObj * other_game_obj) {
     assert(other_game_obj->movable);
 
-    std::cout << " *** check collides with " << std::endl;
+    // std::cout << " *** check collides with " << std::endl;
 
     // If this objects top edge is below the others bottom edge,
     // then this object is totally below the other object.
     // (remember that y increases downwards in sdl).
     if (py - half_height > other_game_obj->py + other_game_obj->half_height) {
-        std::cout << " below " << std::endl;
+        //std::cout << " below " << std::endl;
         return NONE;
     }
         
     // If this objects left edge is to the right of the others right edge,
     // then this object is totally to the right of the other object.
     if (px - half_width > other_game_obj->px + other_game_obj->half_width) {
-        std::cout << " right " << std::endl;
+        //std::cout << " right " << std::endl;
         return NONE;
     }
 
     // If this objects bottom edge is above the others top edge,
     // then this object is totally above the other object.
     if (py + half_height < other_game_obj->py - other_game_obj->half_height) {
-        std::cout << " above " << std::endl;
+        //std::cout << " above " << std::endl;
         return NONE;
     }
 
@@ -149,12 +150,12 @@ collision_type_t GameObj::check_for_projected_movable_collision(GameObj * other_
     // If this objects right edge is to the left of the others left edge,
     // then this object is totally to the left of the other object.
     if (px + half_width < other_game_obj->px - other_game_obj->half_width) {
-        std::cout << " left " << std::endl;
+        //std::cout << " left " << std::endl;
         return NONE;
     }
 
     // may be a collision!
-    std::cout << " collision " << std::endl;
+    //std::cout << " collision " << std::endl;
 
     return BOTTOM;  // FIXME: this is bull shit .. I just want to see it run.
 }
@@ -165,44 +166,43 @@ collision_type_t GameObj::check_for_projected_movable_collision(GameObj * other_
 // of a fixed object.
 //
 collision_type_t GameObj::check_for_projected_fixed_collision(GameObj * other_game_obj) {
-    std::cout << " *** check collides fixed with " << std::endl;
-    dump_position("a");
-    other_game_obj->dump_position("b");
-    std::cout << std::endl;
-    std::cout << std::endl;
+    // std::cout << " *** check collides fixed with " << std::endl;
+    // dump_position("a");
+    // other_game_obj->dump_position("b");
+    // std::cout << std::endl;
+    // std::cout << std::endl;
 
     // If this objects top edge is below the others bottom edge,
     // then this object is totally below the other object.
     // (remember that y increases downwards in sdl).
     if (py - half_height > other_game_obj->y + other_game_obj->half_height) {
-        std::cout << " below " << std::endl;
+        //std::cout << " below " << std::endl;
         return NONE;
     }
         
     // If this objects left edge is to the right of the others right edge,
     // then this object is totally to the right of the other object.
     if (px - half_width > other_game_obj->x + other_game_obj->half_width) {
-        std::cout << " right " << std::endl;
+        //std::cout << " right " << std::endl;
         return NONE;
     }
 
     // If this objects bottom edge is above the others top edge,
     // then this object is totally above the other object.
     if (py + half_height < other_game_obj->y - other_game_obj->half_height) {
-        std::cout << " above " << std::endl;
+        //std::cout << " above " << std::endl;
         return NONE;
     }
 
     // If this objects right edge is to the left of the others left edge,
     // then this object is totally to the left of the other object.
     if (px + half_width < other_game_obj->x - other_game_obj->half_width) {
-        std::cout << " left " << std::endl;
+        //std::cout << " left " << std::endl;
         return NONE;
     }
 
     // may be a collision!
-    std::cout << " collision " << std::endl;
-
+    //std::cout << " collision " << std::endl;
     return BOTTOM;  // FIXME: this is bull shit .. I just want to see it run.
 }
 

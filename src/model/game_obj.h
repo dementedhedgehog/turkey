@@ -41,6 +41,9 @@ class GameObj {
     // object and the object if it were moved to where it wants to be (ignoring collisions).
     float ax, ay, bx, by;
 
+    // is the player jumping (space held down?)
+    bool jumping;
+
     //
     // FPS Invariant Movement Variables
     //

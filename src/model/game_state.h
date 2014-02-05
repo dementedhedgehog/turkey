@@ -42,8 +42,6 @@ class GameState : public IState {
     // need this to avoid turning the pause off/on/off/on.. strobe-style
     bool pause_key_pressed;
 
-    // is the player jumping (space held down?)
-    bool jumping;
     // need this to avoid strobing the jump button
     bool jump_key_pressed;
 
