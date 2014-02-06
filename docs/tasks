@@ -3,11 +3,10 @@ tasks
 =====
 
    * collision detection
-      - check collisions before moving
       - return where collision occurred
 
       - scaling acceleration!
-      - quad trees
+      - quad trees?
       - internal edges
       - n moving bodies
       - ladders
@@ -19,12 +18,12 @@ tasks
    * settings in python (debug etc)
        - screen boundaries
        - aabb bounding boxes
+   * set backgrounds in python
+   * parallax
 
 
    * sprite implementation and animation
    * load sprites in python
-   * set backgrounds in python
-   * parallax
 
    * triggers in python.. collisions or collisions and inputs
    * particle system (to check the collision system)
@@ -58,3 +57,4 @@ done
    * rename game components to game views
   * collision detection
       - speculative collisions
+      - check collisions before moving

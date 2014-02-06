@@ -167,7 +167,6 @@ int View::render() {
 
     // draw the screen for the current view
     current_view->render(); 
-
     
     // increment frames per second 
     if (fps) {

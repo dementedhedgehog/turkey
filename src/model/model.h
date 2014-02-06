@@ -9,6 +9,7 @@
 #include "model/i_state.h"
 #include "model/game_state.h"
 #include "model/intro_state.h"
+#include "model/camera.h"
 
 
 class FatalErrorState : public IState {

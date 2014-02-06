@@ -75,8 +75,13 @@ int GameView::init() {
 
 void GameView::render() {
 
+    // get the game state to render
+    GameState const * game_state = model->get_game_state();
+    float camera_x, camera_y;
+    game_state->get_camera_position(&camera_x, &camera_y);
+
     // draw the background
-    render_texture(background, renderer, 0, 0);
+    render_texture(background, renderer, 0 - camera_x, 0-camera_y);
 
     // draw the cell lines
     if (debug_draw_grid) {
@@ -91,23 +96,25 @@ void GameView::render() {
     }
 
     // draw all the game objects..
-    GameState const * game_state = model->get_game_state();
     std::list<GameObj*> game_objs = game_state->get_game_objs();
     GameObj * game_obj;
+    
+    // for each game object
     std::list<GameObj*>::iterator i;
     for (i = game_objs.begin(); i != game_objs.end(); i++) {         
         game_obj = (*i);
+        
+        // draw the game object
         render_texture(game_obj->texture, renderer, 
             game_obj->x - game_obj->half_width, game_obj->y - game_obj->half_height);
 
+        // draw a bounding box around the game object
         render_bounding_box(renderer, game_obj);
-        // render_texture(game_obj->texture, renderer, 
-        //                cell_width * game_obj->x, cell_height * game_obj->y);
     }    
 
     // draw the title
     SDL_Rect src = { 0, 0, title_text->w, title_text->h };
-    SDL_Rect dest = { 30, 30, title_text->w, title_text->h};
+    SDL_Rect dest = { window_width - title_text->w - 30, 30, title_text->w, title_text->h};
     SDL_RenderCopy(renderer, title_texture, &src, &dest);    
 
     // draw the pause button if we're paused

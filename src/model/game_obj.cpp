@@ -46,8 +46,8 @@ GameObj::GameObj(float x, float y, SDL_Texture * texture, bool movable) {
     y_max_vel_per_sec = 10.0f * SCALE;    
     
     // acceleration and deceleration
-    x_acc_per_sec = 0.2f * SCALE;
-    x_dec_per_sec = 0.3f * SCALE;
+    x_acc_per_sec = 0.55f * SCALE;
+    x_dec_per_sec = 0.8f * SCALE;
 
      // set jump and gravity forces
     y_jump_start_vel_per_sec = 8.f * SCALE;
