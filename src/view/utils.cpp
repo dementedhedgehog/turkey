@@ -53,6 +53,7 @@ SDL_Texture* load_texture(const std::string & fname, SDL_Renderer * renderer) {
 
 
 
+
 /**
  * Draw an SDL_Texture to an SDL_Renderer at position x, y, preserving
  * the texture's width and height

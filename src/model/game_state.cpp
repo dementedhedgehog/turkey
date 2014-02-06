@@ -5,9 +5,8 @@
 #include "model/game_state.h"
 #include "model/model.h"
 
-const int CHARACTER_MOVE = 8;
+const int CHARACTER_MOVE = 12;
 
-const int N_SPECULATIVE_CONTACTS_ITERATIONS = 1;
 
 GameState::GameState(Model * model) {
     this->model = model;    
@@ -106,7 +105,6 @@ void GameState::update(const Uint8 * key_states) {
     
     // For each pairwise collision move the object as far as it can.
     // do this a number of times to avoid jitter..
-    // for (int i = 0; i < N_SPECULATIVE_CONTACTS_ITERATIONS; i++) {
        
     // how many steps do we have to take to get per pixel testing?
     float dt = delta_time / max_distance;
@@ -220,21 +218,9 @@ float GameState::calc_initial_projected_move(const float delta_time) {
 }
 
 
-// commits the current position of the movable objects to their projected, 
-// collision-resolved positions.
-// void GameState::commit_changes_in_positions() {
-
-//     // for each movable game object
-//     std::list<GameObj*>::iterator i;
-//     GameObj * game_obj;
-//     for (i = movable_game_objs.begin(); i != movable_game_objs.end(); i++) {
-//         // set the game objects current position to the projected position 
-//         // after we've taken into account all the collisions.
-//         game_obj = *i;
-//         game_obj->commit_change_in_position();
-//     }
-// }
-
+//
+// Deal with user input
+//
 void GameState::handle_keyboard(const Uint8 * key_states) {
 
     // Process player keyboard input?
@@ -318,10 +304,10 @@ void GameState::detect_potential_collisions_brute_force(
         std::list<Collision*> & moving_collisions,
         std::list<Collision*> & fixed_collisions) {
 
-    std::cout << std::endl;
-    std::cout << std::endl;
-    std::cout << std::endl;
-    std::cout << "---" << std::endl;
+    // std::cout << std::endl;
+    // std::cout << std::endl;
+    // std::cout << std::endl;
+    // std::cout << "---" << std::endl;
         
     // clear the list so there are no collisions left.
     moving_collisions.clear();
@@ -372,6 +358,6 @@ void GameState::detect_potential_collisions_brute_force(
             }
         }
     }  
-    std::cout << "---" << std::endl;
+    //std::cout << "---" << std::endl;
 }
 

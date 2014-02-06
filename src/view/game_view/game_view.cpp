@@ -9,6 +9,14 @@
 const int N_CELLS_WIDE = 80;
 const int N_CELLS_HIGH = 50;
 
+// void render_bounding_box(SDL_Renderer *renderer, GameObj * game_obj);
+void render_bounding_box(SDL_Renderer * renderer, GameObj * game_obj) {
+    SDL_RenderDrawLine(renderer, game_obj->ax, game_obj->ay, game_obj->bx, game_obj->ay);
+    SDL_RenderDrawLine(renderer, game_obj->bx, game_obj->ay, game_obj->bx, game_obj->by);
+    SDL_RenderDrawLine(renderer, game_obj->bx, game_obj->by, game_obj->ax, game_obj->by);
+    SDL_RenderDrawLine(renderer, game_obj->ax, game_obj->by, game_obj->ax, game_obj->ay);
+}
+
 
 GameView::GameView(Model * model, SDL_Window * window, SDL_Renderer * renderer) :
     SubView(model, window, renderer) {
@@ -89,7 +97,10 @@ void GameView::render() {
     std::list<GameObj*>::iterator i;
     for (i = game_objs.begin(); i != game_objs.end(); i++) {         
         game_obj = (*i);
-        render_texture(game_obj->texture, renderer, game_obj->x, game_obj->y);
+        render_texture(game_obj->texture, renderer, 
+            game_obj->x - game_obj->half_width, game_obj->y - game_obj->half_height);
+
+        render_bounding_box(renderer, game_obj);
         // render_texture(game_obj->texture, renderer, 
         //                cell_width * game_obj->x, cell_height * game_obj->y);
     }    
