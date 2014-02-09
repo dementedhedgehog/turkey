@@ -64,3 +64,7 @@ GameState * Model::get_game_state() {
 void Model::update(const Uint8 * key_states) {
     current_state->update(key_states);
 }
+
+void Model::handle_mouse(const int mouse_x, const int mouse_y, const Uint8 mouse_button_state) {
+    current_state->handle_mouse(mouse_x, mouse_y, mouse_button_state);
+}

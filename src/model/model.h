@@ -16,6 +16,7 @@ class FatalErrorState : public IState {
  public:
     State get_state() { return State::FATAL_ERROR; }    
     void update(const Uint8 * key_states) { }
+    void handle_mouse(const int x, const int y, const Uint8 mouse_button_state) {};
 };
 
 class IStateListener {
@@ -64,5 +65,8 @@ public:
 
     // change the positions of the game objects, do collision detection etc.
     void update(const Uint8 * key_states);
+
+    // handle a mouse event
+    void handle_mouse(const int x, const int y, const Uint8 mouse_button_state);
 };
 #endif

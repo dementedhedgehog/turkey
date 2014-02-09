@@ -36,13 +36,16 @@ class GameObj {
     // (we use this field to optimize collision detection).    
     bool movable; 
 
-    // Axis Aligned Bounding Box (used for collision detection)
+    // Axis Aligned Bounding Box *including* Move!! (used for collision detection)
     // Note: not quite a bounding box for the object because it's really the box for the 
     // object and the object if it were moved to where it wants to be (ignoring collisions).
     float ax, ay, bx, by;
 
     // is the player jumping (space held down?)
     bool jumping;
+
+    // if this flag is true the game object will be removed
+    bool dead;
 
     //
     // FPS Invariant Movement Variables
@@ -65,6 +68,11 @@ class GameObj {
     float y_acc_per_sec; 
     float y_jump_start_vel_per_sec;
 
+    // the time-to-live for the game object
+    // if this is >= 0.0 then the ttl will be reduced every time the state is updated
+    // when the ttl goes from being positive to negative it is removed for good.
+    float ttl_in_secs;
+
     //
     // Scaled Movement Variables
     // 
@@ -74,26 +82,28 @@ class GameObj {
     float px;
     float py;
 
+    // stepped axis aligned bounding box..
+    // This is the bounding box of the object after we have stepped it.
+    // recalculate this after changing px or py
+    float pax, pay, pbx, pby;
+
+   
+    // Axis
+
     // if a game object is a potential collider (or collidee) *and* movable then
     // we will need to iterate it's movement at collision detection time.
     // movable objects that aren't potential colliders can just jump to their potential 
     // displacement. Immovable game objects are never colliders.
     bool potential_collider;
     
-
     // constructor
     GameObj(float x, float y, SDL_Texture * texture = nullptr, bool movable = false); 
 
     
-    bool contains_point(float x, float y);
+    //bool contains_point(float x, float y);
 
     // print position, speed, acceleration info to stdout
     void dump_position(std::string name);
-
-    // moving the game object
-    void accelerate_left();
-    void accelerate_right();
-    void jump();
 
 
     //
@@ -102,6 +112,11 @@ class GameObj {
     
     // change in speed when there's no direction input
     void decelerate();
+
+    // moving the game object
+    void accelerate_left();
+    void accelerate_right();
+    void jump();
 
     //
     // Methods used in collision detection
@@ -115,8 +130,6 @@ class GameObj {
 
     // work out (hypothetically) where this object would move to
     void calc_projected_move(const float step_t);
-    //float calc_projected_move(GameObj * other_game_obj);
-
 
     // calculate the position of this object after moving if nothing effected its movement.  
     // This method also calculates the AABB bounding boxes for all movable objects.
@@ -130,15 +143,16 @@ class GameObj {
 
     // Check whether the projected position of this object will collide with the projected 
     // position of another movable object.
-    collision_type_t check_for_projected_movable_collision(GameObj * other_game_obj);
+    CollisionType check_for_projected_movable_collision(GameObj * other_game_obj);
 
     // Check whether the projected position of this object will collide with the fixed 
     // position of a fixed object.
-    collision_type_t check_for_projected_fixed_collision(GameObj * other_game_obj);
+    CollisionType check_for_projected_fixed_collision(GameObj * other_game_obj);
 
-    // set the position of the object to the current projected position 
-    // (after collisions have been resolved).
-    //void commit_change_in_position();
+    // set the velocity of the game object 
+    // use these to slow or stop the object when colliding.    
+    void collision_set_x_velocity(float x_vel_per_sec);
+    void collision_set_y_velocity(float y_vel_per_sec);
 };
 
 #endif

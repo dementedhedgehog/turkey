@@ -18,8 +18,10 @@ void render_bounding_box(SDL_Renderer * renderer, GameObj * game_obj) {
 }
 
 
-GameView::GameView(Model * model, SDL_Window * window, SDL_Renderer * renderer) :
-    SubView(model, window, renderer) {
+GameView::GameView(Model * model, 
+    SDL_Window * window, SDL_Renderer * renderer, 
+    ImageManager * image_manager, FontManager * font_manager, SoundManager * sound_manager) :
+    BaseView(model, window, renderer, image_manager, font_manager, sound_manager) {
     
     // display the cell grid.. for development and debugging
     debug_draw_grid = true;
@@ -73,7 +75,7 @@ int GameView::init() {
 }
 
 
-void GameView::render() {
+int GameView::render() {
 
     // get the game state to render
     GameState const * game_state = model->get_game_state();
@@ -121,10 +123,12 @@ void GameView::render() {
     if (game_state->is_paused()) {
         render_texture(pause_symbol, renderer, window_width - 90, 30);
     }
+
+    return 0; // success
 }
 
 
-void GameView::clean_up() {
+int GameView::clean_up() {
     // clean up the sdl objects
     SDL_DestroyTexture(background);
     SDL_DestroyTexture(pause_symbol);
@@ -134,6 +138,8 @@ void GameView::clean_up() {
     // clean up the font 
     TTF_CloseFont(font);
     font = NULL; // to be safe...
+
+    return 0; // success
 }    
 
 void  GameView::mouse_button() { }

@@ -8,9 +8,11 @@
 #include "model/model.h"
 #include "view/utils.h"
 #include "view/intro_view.h"
+#include "view/image_manager.h"
 
-IntroView::IntroView(Model * model, SDL_Window * window, SDL_Renderer * renderer) :
-    SubView(model, window, renderer) {}
+IntroView::IntroView(Model * model, SDL_Window * window, SDL_Renderer * renderer,
+    ImageManager * image_manager, FontManager * font_manager, SoundManager * sound_manager) :
+    BaseView(model, window, renderer, image_manager, font_manager, sound_manager) {}
 
 
 int IntroView::init() {
@@ -43,25 +45,41 @@ int IntroView::init() {
         return 5;
     }        
 
+    // frames = image_manager->load_from_sprite_sheet(
+    //     "./res/samurai.png", renderer, 67, 91, 13, 5);
+    frames = image_manager->load_from_sprite_sheet(
+        "./res/ken.png", renderer, 52, 70, 23, 9);
+
     // success
     return 0;
 }
 
 
+static int x = 0;
 
-void IntroView::render() {
+int IntroView::render() {
 
     // tile background
     int backgroundWidth, backgroundHeight;
     SDL_QueryTexture(background, NULL, NULL, &backgroundWidth, &backgroundHeight);
     render_texture(background, renderer, 0, 0);
 
+    // render the text
     SDL_Rect src = { 0, 0, title_text->w, title_text->h };
     SDL_Rect dest = { 30, 30, title_text->w, title_text->h};
     SDL_RenderCopy(renderer, title_texture, &src, &dest);
+
+    // draw the background
+    int xx = (x / 10) % 13;
+    // move it in the ken png 
+    xx += 7 * 23;
+    render_texture((*frames)[xx], renderer, 100, 100);
+    x += 1;
+
+    return 0; // success
 }
 
-void IntroView::clean_up() {
+int IntroView::clean_up() {
     // clean up the sdl objects
     SDL_DestroyTexture(background);
 
@@ -71,6 +89,10 @@ void IntroView::clean_up() {
     // clean up the font 
     TTF_CloseFont(font);
     font = NULL; // to be safe...
+
+    delete frames;
+
+    return 0; // success
 }
 
 void  IntroView::mouse_button() {};

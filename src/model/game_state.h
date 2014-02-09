@@ -4,12 +4,13 @@
 #include <list>
 
 #include "model/i_state.h"
-#include "model/game_obj.h"
+#include "model/i_game_obj_manager.h"
 #include "model/collision.h"
 #include "model/camera.h"
+#include "model/particle_system.h"
 
 
-class GameState : public IState {
+class GameState : public IState, public IGameObjManager {
  private:
     Model * model;
 
@@ -25,6 +26,9 @@ class GameState : public IState {
 
     // and a list for game objs that don't move
     std::list<GameObj*> immovable_game_objs;
+
+    // and a list for game objs that we check for a time to live
+    std::list<GameObj*> ttl_game_objs;
     
     // the main dude that the player controls (he's also in the game_objs list).
     // the character also appears in the list of game_objs and the movable_game_objs
@@ -44,6 +48,7 @@ class GameState : public IState {
 
     // is the game paused?
     bool paused;
+
     // need this to avoid turning the pause off/on/off/on.. strobe-style
     bool pause_key_pressed;
 
@@ -56,8 +61,18 @@ class GameState : public IState {
     // need this to avoid strobing the jump button
     bool jump_key_pressed;
 
+    // a particle system!
+    ParticleSystem * particle_system;
+
+    //
+    // Stuff used for timing movement
+    // 
+
     // last time we moved the game objs in milliseconds.
     Uint32 last_time_updated;
+
+    // return the delta time since the last state update
+    inline float get_time_since_last_update();
 
     //
     // Internal methods
@@ -79,6 +94,12 @@ class GameState : public IState {
     // Camera
     //
     Camera * camera;
+
+
+    // Garbage Collection
+    inline void age_ttl_game_objs(float delta_time);
+    inline void remove_dead_game_objs();
+
     
 public:
     // constructor
@@ -96,8 +117,14 @@ public:
     // add a special game object.. the players sprite
     void add_character_game_obj(GameObj * game_obj);
 
+    // add a particle system to the game
+    void add_particle_system(ParticleSystem * particle_system);
+
     // handle keyboard input
     inline void handle_keyboard(const Uint8 * key_states);
+
+    // handle mouse button events
+    inline void handle_mouse(const int x, const int y, const Uint8 mouse_button_state);
 
     // update the positions of all the game objects based on their velocity
     void update(const Uint8 * key_states);

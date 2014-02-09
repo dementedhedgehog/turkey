@@ -4,11 +4,10 @@
  * Game view that playes the side scroller game itself.
  *
  */
-//#include "control/control.h"
 #include "model/model.h"
-#include "view/sub_view.h"
+#include "view/base_view.h"
 
-class GameView : public SubView {
+class GameView : public BaseView {
  private:
 
     // some renderer textures FIXME: remove this stuff!
@@ -38,16 +37,17 @@ class GameView : public SubView {
     int cell_height;
 
  public:
-    GameView(Model * model, SDL_Window * window, SDL_Renderer * renderer);
+    GameView(Model * model, SDL_Window * window, SDL_Renderer * renderer, 
+        ImageManager * image_manager, FontManager * font_manager, SoundManager * sound_manager);
 
     // start displaying this view
     int init();
 
     // render to the window
-    void render();
+    int render();
 
     // clean up all the resources
-    void clean_up();
+    int clean_up();
 
     // handle mouse events
     void mouse_button();

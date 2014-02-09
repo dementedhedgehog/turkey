@@ -5,7 +5,6 @@
 #include "model/game_state.h"
 #include "model/model.h"
 
-const int CHARACTER_MOVE = 12;
 
 
 GameState::GameState(Model * model) {
@@ -20,6 +19,9 @@ GameState::GameState(Model * model) {
     // pause state
     paused = false;
     pause_key_pressed = false;
+
+    // create a particle system
+    particle_system = nullptr; //new ParticleSystem()
 
     // character jumping state
     jump_key_pressed = false;
@@ -36,6 +38,16 @@ void GameState::add_game_obj(GameObj * game_obj) {
     else {
         immovable_game_objs.push_back(game_obj);
     }
+
+    // keep a special list of game objects which will be removed after a while
+    if (game_obj->ttl_in_secs >= 0.0f) {
+        ttl_game_objs.push_back(game_obj);
+    }
+}
+
+void GameState::add_particle_system(ParticleSystem * particle_system) {
+    //partoc.push_back(game_obj);
+    this->particle_system = particle_system;
 }
 
 
@@ -46,33 +58,83 @@ void GameState::add_character_game_obj(GameObj * game_obj) {
 }
 
 
+void GameState::age_ttl_game_objs(float delta_time) {
+    std::list<GameObj*>::iterator i;
+    GameObj * game_obj;
+
+    // reduce the ttl for the game_obj.. 
+    for (i = ttl_game_objs.begin(); i != ttl_game_objs.end(); ) {
+        game_obj = *i;
+        game_obj->ttl_in_secs -= delta_time;
+
+        std::cout << "ttl " << game_obj->ttl_in_secs << std::endl;
+
+        if (game_obj->ttl_in_secs <= 0.0f) {
+
+            // this object is dead jim..
+            // the next time remove_dead_game_objs() is called it'll be erased from everywhere
+            game_obj->dead = true;
+
+            // remove from the ttl list straight away if it's dead (since we're here)
+            i = ttl_game_objs.erase(i);
+        }
+        else {
+            // otherwise check the next ttl object
+            i++;
+        }
+    }
+}
+
+
+
+void GameState::remove_dead_game_objs() {
+    std::list<GameObj*>::iterator i;
+    GameObj * game_obj;
+
+    for (i = movable_game_objs.begin(); i != movable_game_objs.end();) {
+        game_obj = *i;
+        if (game_obj->dead) {
+            i = movable_game_objs.erase(i);
+        }
+        else {
+            i++;
+        }
+    }
+
+    for (i = immovable_game_objs.begin(); i != immovable_game_objs.end();) {
+        game_obj = *i;
+        if (game_obj->dead) {
+            i = immovable_game_objs.erase(i);
+        }
+        else {
+            i++;
+        }
+    }
+
+    // cull game objects whose time to live is over before worrying about collisions
+    for (i = game_objs.begin(); i != game_objs.end();) {
+        game_obj = *i;
+        if (game_obj->dead) {
+
+            std::cout << "DEAD " << std::endl;
+            i = game_objs.erase(i);
+            delete game_obj;
+        }
+        else {
+            i++;
+        }
+    }
+}
+
+
 
 std::list<GameObj*> const GameState::get_game_objs() const {
     return game_objs;
 }
 
 
-static int count = 0;
 
-void GameState::update(const Uint8 * key_states) {
-
-    // work out the user commands
-    handle_keyboard(key_states);
-
-    // don't update any positions if the game is paused
-    if (paused) {
-        //std::cout << "paused " << std::endl;
-        return;
-    }
-    
-    // first time through don't bother doing anything (no way to get a meaningful delta time)
-    if (last_time_updated == 0) {
-        last_time_updated = SDL_GetTicks();
-        return;
-    }
-
-    // FIXME: use contact points?
-
+float GameState::get_time_since_last_update() {
     // We want objects to move at a constant rate irrespective of the number of 
     // frames per second so we scale the velocities and accelerations by the time 
     // since the last render.
@@ -85,13 +147,45 @@ void GameState::update(const Uint8 * key_states) {
     // remember that now is the new last time we moved the objects!
     last_time_updated = time_now;
 
-    //if (character) character->dump_position("character");
+    // and return the time since the last update in seconds
+    return delta_time;
+}
 
+
+void GameState::update(const Uint8 * key_states) {
+    std::list<GameObj*>::iterator i;
+    GameObj * game_obj;
+
+    // work out the user commands
+    handle_keyboard(key_states);
+
+    // don't update any positions if the game is paused
+    if (paused) {
+        return;
+    }
+    
+    // first time through don't bother doing anything (no way to get a meaningful delta time)
+    if (last_time_updated == 0) {
+        last_time_updated = SDL_GetTicks();
+        return;
+    }
+
+    // FIXME: use contact points?
+
+    // get the time elapsed since the last update 
+    float delta_time = get_time_since_last_update();
+
+    // 
+    age_ttl_game_objs(delta_time);
+
+    remove_dead_game_objs();
+    
     // calculate the positions that movable objects would be in after moving if nothing 
     // effected their movement.  This method also calculates the AABB bounding boxes
     // for all movable objects (aka aabb rects).   We use this information to optimize 
     // collision detection in an approach called the Bounding Box Optimization.
     float max_distance = calc_initial_projected_move(delta_time);
+
 
     // get a list of possible collisions (i.e. a list of objects whose aabb rects overlap)
     // all possible collisions will be in this list.. i.e. it might contain false positives 
@@ -99,37 +193,31 @@ void GameState::update(const Uint8 * key_states) {
     detect_potential_collisions_brute_force(
         game_objs, 
         potential_movable_collisions,
-        potential_fixed_collisions);
-    // if (potential_fixed_collisions.size() > 0 || potential_movable_collisions.size() > 0) {
-    //     std::cout << "potential collisions: " 
-    //               << potential_movable_collisions.size() + potential_fixed_collisions.size()  
-    //               << std::endl;
-    // };
-    
-    // For each pairwise collision move the object as far as it can.
-    // do this a number of times to avoid jitter..
+        potential_fixed_collisions);    
        
     // how many steps do we have to take to get per pixel testing?
     float dt = delta_time / max_distance;
 
-    // FIXME: handle max_distance = 0 (no possible collisions)??
-    // if (character) character->dump_position("character");
-    // std::cout << "MAX_DISTANCE " << max_distance << std::endl;
-    // std::cout << "DELTA_TIME " << delta_time << std::endl;
-    // std::cout << "DT " << dt << std::endl << std::endl << std::endl;
-    //exit(4);
+    // any moving object that can't possibly be in a collision can be moved 
+    // its entire movement straight away.. no need to take incremental steps
+    // looking for a collision. (we don't step these so it's faster)
+    for (i = movable_game_objs.begin(); i != movable_game_objs.end(); i++) {
+        game_obj = *i;
+        if (!game_obj->potential_collider) {
+            game_obj->move(delta_time);
+        }
+    }
         
-    GameObj * game_obj;
-    std::list<GameObj*>::iterator i;
-    //for (float t = 0.0f; t < 1.001; t += dt) {
+    // For each pairwise collision move the object as far as it can.
+    // do this a number of times to avoid jitter..
     for (float t = 0.0f; t < delta_time; t += dt) {
-        // std::cout << count << std::endl;
 
         // calculate the projected positions of movable objects that might be in a collision
         for (i = movable_game_objs.begin(); i != movable_game_objs.end(); i++) {
             game_obj = *i;
             
             if (game_obj->potential_collider) {
+                // this object might be in a collision so work out where it's going
                 game_obj->calc_projected_delta_position(dt);
             }
         }
@@ -142,9 +230,6 @@ void GameState::update(const Uint8 * key_states) {
 
             // check for a collision..
             if (collision->check_for_projected_movable_collision()) {
-
-                // FIXME: resolve collision here!
-                // std::cout << "COLLISION OCCURRED !!!!!!!!!!!!!!!!!!!!!!" << std::endl;
 
                 // handle the collision
                 collision->resolve();
@@ -160,9 +245,6 @@ void GameState::update(const Uint8 * key_states) {
             // check for a collision..
             if (collision->check_for_projected_fixed_collision()) {
 
-                // FIXME: resolve collision here!
-                // std::cout << "COLLISION OCCURRED !!!!!!!!!!!!!!!!!!!!!!" << std::endl;
-
                 // handle the collision
                 collision->resolve();
             }
@@ -177,21 +259,6 @@ void GameState::update(const Uint8 * key_states) {
             if (game_obj->potential_collider) {
                 game_obj->move(dt);
             }
-        }
-    }
-
-    count += 1;
-    // if (count > 16) {
-    //     //exit(3);
-    //     paused = true;
-    // }
-
-    // now move any movable objects that can't be in a collision
-    for (i = movable_game_objs.begin(); i != movable_game_objs.end(); i++) {
-        game_obj = *i;
-            
-        if (!game_obj->potential_collider) {
-            game_obj->move(delta_time);
         }
     }
 }    
@@ -322,6 +389,15 @@ void GameState::handle_keyboard(const Uint8 * key_states) {
             // jump key released (logic to avoid strobing the jump key)
             rctrl_key_pressed = false;
         }
+    }
+}
+
+
+void GameState::handle_mouse(const int x, const int y, const Uint8 mouse_button_state) {
+    if (mouse_button_state & SDL_BUTTON(1)) {
+        std::cout << "Mouse Button 1(left) is pressed.\n" << x << " , " << y << std::endl;
+
+        particle_system->generate_particles(this, x, y);
     }
 }
 

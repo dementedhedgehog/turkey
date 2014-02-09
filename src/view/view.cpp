@@ -28,22 +28,18 @@ const uint FRAMES_PER_SECOND = 60;
 const uint MOVES_PER_SECOND = 60;
 
 
-View::View() {
+View::View() :
+    BaseView(model, window, renderer, image_manager, font_manager, sound_manager) {
 
     // determine how long to wait between frames
     ms_per_frame = 1000 / FRAMES_PER_SECOND;
     ms_per_move = 1000 / MOVES_PER_SECOND;
 
-    // set the default value to run in fullscreen mode 
-    //fullscreen = false;    
-
     // enable fps counter?
     fps = NULL;
 
-    font_manager = FontManager();
-    
-    // play sound 
-    sound_enabled = false;
+    // sound_manager = new SoundManager();
+    // font_manager = new FontManager();    
 
     // set this true to stop looping in the message loop and quit the application
     finished = false;
@@ -52,14 +48,8 @@ View::View() {
     current_view = NULL;
 }
 
-// View::~View() {
-
-// }
-
-
-
 // start up sdl
-int View::init_sdl() {
+int View::init() {
 
     // init sdl
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
@@ -79,15 +69,13 @@ int View::init_sdl() {
         return 3;
     }
 
-    // init tne SDL_mixer library - for sound 
-    if (sound_enabled && (Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096) == -1)) { 
-        std::cerr << "Mix_OpenAudio: \n" << Mix_GetError() << std::endl;
-        return 4; 
-    }
+    // // init tne SDL_mixer library - for sound 
+    // if (!sound_manager->init()) {
+    //     return 4;
+    // }
 
-    font_manager.init();
-
-    // setup the game views
+    // // initialize the font manager
+    // font_manager->init();
 
     // success
     return 0;
@@ -97,7 +85,7 @@ int View::init_sdl() {
 // show an sdl window
 int View::display_window(Model * model) {
 
-    // keep a referemce to the model
+    // keep a reference to the model
     this->model = model;
 
     // create the window
@@ -118,27 +106,12 @@ int View::display_window(Model * model) {
         return 3;
     }
 
-    // load the music 
-    if (sound_enabled) {
-        music = Mix_LoadMUS("./res/beat.wav"); 
-        // if there was a problem loading the music 
-        if (music == NULL) { 
-            return 8; 
-        } 
-        // load the sound effects 
-        scratch = Mix_LoadWAV("./res/scratch.wav"); 
-        high = Mix_LoadWAV("./res/high.wav"); 
-        med = Mix_LoadWAV("./res/medium.wav"); 
-        low = Mix_LoadWAV("./res/low.wav"); 
-        // if there was a problem loading the sound effects 
-        if ((scratch == NULL) || (high == NULL) || (med == NULL) || (low == NULL)) { 
-            return 9; 
-        }
-    }
 
     // init the various game views
-    intro_view = new IntroView(model, window, renderer);
-    game_view = new GameView(model, window, renderer);
+    intro_view = new IntroView(model, window, renderer, 
+        image_manager, font_manager, sound_manager);
+    game_view = new GameView(model, window, renderer, 
+        image_manager, font_manager, sound_manager);
     current_view = intro_view;        
 
     // init the various renderers
@@ -190,18 +163,10 @@ int View::clean_up() {
     game_view->clean_up();
 
     // cleanup the sound effects 
-    if (sound_enabled) {
-        Mix_FreeChunk(scratch); 
-        Mix_FreeChunk(high); 
-        Mix_FreeChunk(med); 
-        Mix_FreeChunk(low); 
+    // sound_manager->clean_up();
 
-        // clean up the music 
-        Mix_FreeMusic(music); 
-    }
-
-    // clean up the font manager
-    font_manager.clean_up();
+    // // clean up the font manager
+    // font_manager->clean_up();
 
     // clean up the ttf library
     TTF_Quit();
@@ -231,89 +196,6 @@ int View::msg_loop() {
     uint last_frame_time = SDL_GetTicks();
     uint last_move_time = last_frame_time;  
 
-    //         case SDLK_0:
-    //             current_view->key_0_down();
-
-    //             // if 0 was pressed stop the music 
-    //             if (sound_enabled) {
-    //                 Mix_HaltMusic(); 
-    //             }
-    //             break;
-
-    //         case SDLK_1: 
-    //             current_view->key_1_down();
-
-    //             // if 1 was pressed play the scratch effect 
-    //             if (sound_enabled) {
-    //                 if (Mix_PlayChannel(-1, scratch, 0 ) == -1) { 
-    //                     return 1; 
-    //                 } 
-    //             }
-    //             break;
-
-    //         case SDLK_2: 
-    //             current_view->key_2_down();
-
-    //             // if 2 was pressed play the high hit effect 
-    //             if (sound_enabled) {
-    //                 if (Mix_PlayChannel(-1, high, 0) == -1) { 
-    //                     return 1; 
-    //                 } 
-    //             }
-    //             break;
-
-    //         case SDLK_3: 
-    //             current_view->key_3_down();
-
-    //             if (sound_enabled) {
-    //                 // if 3 was pressed play the medium hit effect 
-    //                 if (Mix_PlayChannel(-1, med, 0) == -1) {
-    //                     return 1; 
-    //                 } 
-    //             }
-    //             break;
-
-    //         case SDLK_4: 
-    //             current_view->key_4_down();
-
-    //             if (sound_enabled) {
-    //                 // if 4 was pressed play the low hit effect 
-    //                 if (Mix_PlayChannel(-1, low, 0) == -1) { 
-    //                     return 1; 
-    //                 } 
-    //             }
-    //             break;
-                            
-    //         case SDLK_9: 
-    //             current_view->key_9_down();
-
-    //             // if 9 was pressed and there is no music playing 
-    //             if (sound_enabled) {
-    //                 if (Mix_PlayingMusic() == 0) {
-    //                     // play the music 
-    //                     if (Mix_PlayMusic(music, -1) == -1) { 
-    //                         return 1; 
-    //                     } 
-    //                 }
-    //             }
-    //             else { 
-    //                 // music is being played...
-    //                 if (sound_enabled) {
-                                    
-    //                     // if the music is paused 
-    //                     if (Mix_PausedMusic() == 1) { 
-    //                         // resume the music 
-    //                         Mix_ResumeMusic(); 
-    //                     } 
-    //                     // If the music is currently playing 
-    //                     else { 
-    //                         // pause the music 
-    //                         Mix_PauseMusic(); 
-    //                     } 
-    //                 }
-    //             }
-    //             break;
-
 
     // loop handling messages till someone exists the game 
     while (!finished) {
@@ -330,6 +212,7 @@ int View::msg_loop() {
 
                         case SDLK_F1: {
                             // should toggle fullscreen in all views
+                            // don't overload this.
                             toggle_fullscreen(window);
                             break;
                         }
@@ -350,12 +233,20 @@ int View::msg_loop() {
                 case SDL_MOUSEBUTTONDOWN: {
                     // Handle mouse clicks here.
                     std::cout << "mouse button down" << std::endl;
+
+                    // get info about the mouse event
+                    int mouse_x, mouse_y;
+                    Uint32 mouse_button_states;
+                    mouse_button_states = SDL_GetMouseState(&mouse_x, &mouse_y);
+
+                    // and pass it to the model
+                    model->handle_mouse(mouse_x, mouse_y, mouse_button_states);
                     break;
                 }
                     
                 case SDL_QUIT: {
                     // closing the game window quits the game..
-                    finished = true;
+                    quit();
                     break;
                 }
 
@@ -453,7 +344,7 @@ void View::debug_set_draw_fps(const bool draw_fps) {
     // turn on fps (if it isn't already on)
     if (draw_fps) {
         if (fps == NULL) {        
-            fps = new FPS(font_manager.get_fps_font());
+            fps = new FPS(font_manager->get_fps_font());
         }
     }
     // turn off fps (if it's already on)
@@ -464,3 +355,10 @@ void View::debug_set_draw_fps(const bool draw_fps) {
         }
     }
 } 
+
+
+// Set the finished flag.   The next time through the messsage 
+// loop we'll drop out of it and clean up and exit the application.
+void View::quit() { 
+    finished = true; 
+}

@@ -5,10 +5,11 @@
 
 
 
-class Animation {
+/* class Animation { */
     
     
-};
+/* }; */
+
 
 
 /*
@@ -18,10 +19,18 @@ class Animation {
 
 class Sprite
 {
+    // sprites 
+
+    // current animation state 
+
+
+
+
  public:
 
     // construct a sprite with regular sized images
     Sprite(const std::string fname, uint sprite_width, uint sprite_height);
+
 
 };
 

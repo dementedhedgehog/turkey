@@ -31,9 +31,10 @@ PROG = turkey
 
 all: $(PROG)
 
-$(PROG): main.o model.o view.o fps.o scripting.o sub_view.o \
+$(PROG): main.o model.o view.o fps.o scripting.o base_view.o \
 	intro_view.o game_view.o sprite.o game_state.o intro_state.o game_obj.o \
-	utils.o font_manager.o collision.o camera.o # position.o 
+	utils.o font_manager.o collision.o camera.o collision_type.o particle_system.o \
+	sound_manager.o image_manager.o
 	$(CXX) $^ $(LDFLAGS) -o $@
 
 main.o: src/main.cpp
@@ -46,6 +47,12 @@ view.o: src/view/view.cpp src/view/view.h src/view/fps.h
 	$(CXX) $(CXXFLAGS) $< -o $@
 
 font_manager.o: src/view/font_manager.cpp src/view/font_manager.h src/view/utils.h
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+sound_manager.o: src/view/sound_manager.cpp src/view/sound_manager.h src/view/utils.h
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+image_manager.o: src/view/image_manager.cpp src/view/image_manager.h src/view/utils.h
 	$(CXX) $(CXXFLAGS) $< -o $@
 
 utils.o: src/view/utils.cpp src/view/utils.h
@@ -64,22 +71,25 @@ scripting.o: src/shared/scripting.cpp src/shared/scripting.h
 collision.o: src/model/collision.cpp src/model/collision.h
 	$(CXX) $(CXXFLAGS) $< -o $@
 
+collision_type.o: src/model/collision_type.cpp src/model/collision_type.h
+	$(CXX) $(CXXFLAGS) $< -o $@
+
 sprite.o: src/view/sprite.cpp src/view/sprite.h
 	$(CXX) $(CXXFLAGS) $< -o $@
 
-sub_view.o: src/view/sub_view.cpp src/view/sub_view.h 
+base_view.o: src/view/base_view.cpp src/view/base_view.h 
 	$(CXX) $(CXXFLAGS) $< -o $@
 
 intro_view.o: \
-	src/view/intro_view/intro_view.cpp \
-	src/view/intro_view/intro_view.h \
-	src/view/sub_view.h 
+	src/view/intro_view.cpp \
+	src/view/intro_view.h \
+	src/view/base_view.h 
 	$(CXX) $(CXXFLAGS) $< -o $@
 
 game_view.o: \
-	src/view/game_view/game_view.cpp \
-	src/view/game_view/game_view.h \
-	src/view/sub_view.h 
+	src/view/game_view.cpp \
+	src/view/game_view.h \
+	src/view/base_view.h 
 	$(CXX) $(CXXFLAGS) $< -o $@
 
 game_state.o: \
@@ -90,6 +100,11 @@ game_state.o: \
 intro_state.o: \
 	src/model/intro_state.cpp \
 	src/model/intro_state.h 
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+particle_system.o: \
+	src/model/particle_system.cpp \
+	src/model/particle_system.h 
 	$(CXX) $(CXXFLAGS) $< -o $@
 
 game_obj.o: \

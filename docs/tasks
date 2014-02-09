@@ -2,25 +2,38 @@
 tasks
 =====
 
-   * collision detection
-      - return where collision occurred
+  * return where collision occurred..  (collision internal?) BUGGY!   
 
+      - array based collision resolution system 
+      - static strings
+      - slopes
+      - bamboo l-system/IFS
+      - parallax backgrounds      
+      - build using autogen
+      - sprites
+      - profiling
+
+   * customizable keyboard handler
+   * collision detection
       - scaling acceleration!
       - quad trees?
-      - internal edges
+      - internal edges / slopes
       - n moving bodies
       - ladders
       - collision handling: friction, hysterisis, programmable callbacks  
       - needs penetration resolution for two objects moving towards each other??
 
 
-   * move camera
    * settings in python (debug etc)
        - screen boundaries
        - aabb bounding boxes
    * set backgrounds in python
-   * parallax
 
+  * build in windows
+
+   
+   * parallax backgrounds
+   * background manager
 
    * sprite implementation and animation
    * load sprites in python
@@ -49,12 +62,15 @@ done
   * create the world from a python script
   * game_objects list with positions and bounding boxes
   * embed python     
-  * new keyboard handler for fighting
+  * new keyboard handler for fighting 
   * pause needs to display something on the screen!
   * settings in python
        - draw grid
        - draw fps
-   * rename game components to game views
+  * rename game components to game views
   * collision detection
       - speculative collisions
       - check collisions before moving
+  * move camera
+  * particle systems
+      

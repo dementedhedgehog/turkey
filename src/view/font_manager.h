@@ -15,8 +15,8 @@ class FontManager {
 
     TTF_Font * get_fps_font();    
 
-    void init();
-    void clean_up();
+    int init();
+    int clean_up();
 };
 
 

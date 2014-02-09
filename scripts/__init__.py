@@ -21,10 +21,18 @@ def initialize_levels():
            # print "add_game_obj " + str(turkey.add_game_obj(i, i, stone))
            turkey.add_game_obj(i * CELL_WIDTH, 20 * CELL_HEIGHT, stone)
 
+
+        for i in range(15, 32):
+           # print "add_game_obj " + str(turkey.add_game_obj(i, i, stone))
+           turkey.add_game_obj(i * CELL_WIDTH, 20 * CELL_HEIGHT, stone)
+
+        turkey.add_game_obj(28 * CELL_WIDTH, 19 * CELL_HEIGHT, stone)
+        turkey.add_game_obj(27 * CELL_WIDTH, 19 * CELL_HEIGHT, stone)
+
         #turkey.add_game_obj(4 * CELL_WIDTH, 20 * CELL_HEIGHT, stone)
         #turkey.add_game_obj(5 * CELL_WIDTH, 20 * CELL_HEIGHT, stone)
 
-        for i in range(2,5):
+        for i in range(2,35):
            # print "add_game_obj " + str(turkey.add_game_obj(i, i, stone))
            turkey.add_game_obj(i * CELL_WIDTH, 40 * CELL_HEIGHT, stone)
 
@@ -38,6 +46,10 @@ def initialize_levels():
         print "add_game_obj " + str(turkey.add_character_game_obj(3 * CELL_WIDTH,
                                                                   15 * CELL_HEIGHT,
                                                                   dwarf))
+
+        star = turkey.load_texture("./res/star.png")
+        print "add_particle_system " + str(turkey.add_particle_system(star))
+        
     except Exception as err:
         print err
         turkey.quit()

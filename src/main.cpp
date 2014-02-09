@@ -10,49 +10,46 @@
 #include <iostream>
 #include <string>
 
-// #include <stdio.h>
-// #include <execinfo.h>
-// #include <signal.h>
-// // #include <stdlib.h>
-// // #include <unistd.h>
-
-
 #include "model/model.h"
 #include "view/view.h"
 #include "shared/scripting.h"
 
 
-// void error_handler(int sig) {
-//     void *array[10];
-//     size_t size;
-
-//     // get void*'s for all entries on the stack
-//     size = backtrace(array, 10);
-
-//     // print out all the frames to stderr
-//     std::cerr <<  "Error: signal " << sig << ":" << std::endl;
-//     backtrace_symbols_fd(array, size, STDERR_FILENO);
-//     exit(1);
-// }
-
-
 int main(int argc, char **argv){
     int result;
 
-    // install an exception handler
-    // signal(SIGSEGV, error_handler);   
-
     Model * model = new Model();
+
+    ImageManager * image_manager = new ImageManager();
+    FontManager * font_manager = new FontManager();
+    SoundManager * sound_manager = new SoundManager();
     View * view = new View();
 
     // the view gets change notifications from the model
     model->register_state_listener(view);
 
     // init the UI libraries or die
-    if ((result = view->init_sdl()) != 0) {
-        log_msg("init sdl failed!");
+    if ((result = view->init()) != 0) {
+        log_msg("init view failed!");
         return result;
     }
+
+    // initialize the managers
+    if ((result = font_manager->init()) != 0) {
+        log_msg("init font manager failed!");
+        return result;
+    };
+    if ((result = image_manager->init(view->get_window())) != 0) {
+        log_msg("init image manager failed!");
+        return result;
+    };
+    if ((result = sound_manager->init()) != 0) {
+        log_msg("init sound manager failed!");
+        return result;
+    };
+
+    // seed the random number generator
+    srand(SDL_GetTicks());
 
     // display the window or die
     if ((result = view->display_window(model)) != 0) { 
@@ -77,10 +74,18 @@ int main(int argc, char **argv){
     // clean up the ui objects
     view->clean_up();
 
+    // clean up the image manager
+    image_manager->clean_up();
+    font_manager->clean_up();
+    sound_manager->clean_up();
+   
     // clean up
     delete view;
     delete model;
     delete scripting;
+    delete image_manager;
+    delete font_manager;
+    delete sound_manager;
 
     // done.
 	return 0;

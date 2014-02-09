@@ -44,7 +44,6 @@ SDL_Texture* load_texture(const std::string & fname, SDL_Renderer * renderer) {
 
     // Make sure converting went ok too
     if (texture == nullptr) {
-        log_msg("XXXX");
         log_sdl_error((std::string("CreateTextureFromSurface ") + fname).c_str());
 	}
 
@@ -84,10 +83,10 @@ void render_texture(SDL_Texture * tex, SDL_Renderer * renderer, int x, int y) {
 * @param clip The sub-section of the texture to draw (clipping rect)
 *		default of nullptr draws the entire texture
 */
-void renderTexture(SDL_Texture *tex, SDL_Renderer *renderer, SDL_Rect destination,
-	SDL_Rect *clip = nullptr) {
-	SDL_RenderCopy(renderer, tex, clip, &destination);
-}
+// void renderTexture(SDL_Texture *tex, SDL_Renderer *renderer, SDL_Rect destination,
+// 	SDL_Rect *clip = nullptr) {
+// 	SDL_RenderCopy(renderer, tex, clip, &destination);
+// }
 
 /**
  * Draw an SDL_Texture to an SDL_Renderer at position x, y, preserving
@@ -101,22 +100,22 @@ void renderTexture(SDL_Texture *tex, SDL_Renderer *renderer, SDL_Rect destinatio
  * @param clip The sub-section of the texture to draw (clipping rect)
  *		default of nullptr draws the entire texture
  */
-void renderTexture(SDL_Texture *tex, SDL_Renderer * renderer, int x, int y,
-	SDL_Rect *clip = nullptr) {
-	SDL_Rect destination;
+// void renderTexture(SDL_Texture *tex, SDL_Renderer * renderer, int x, int y,
+// 	SDL_Rect *clip = nullptr) {
+// 	SDL_Rect destination;
 
-	destination.x = x;
-	destination.y = y;
-	if (clip != nullptr) {
-		destination.w = clip->w;
-		destination.h = clip->h;
-	}
-	else {
-		SDL_QueryTexture(tex, NULL, NULL, &destination.w, &destination.h);
-    }
+// 	destination.x = x;
+// 	destination.y = y;
+// 	if (clip != nullptr) {
+// 		destination.w = clip->w;
+// 		destination.h = clip->h;
+// 	}
+// 	else {
+// 		SDL_QueryTexture(tex, NULL, NULL, &destination.w, &destination.h);
+//     }
 
-	renderTexture(tex, renderer, destination, clip);
-}
+// 	renderTexture(tex, renderer, destination, clip);
+// }
 
 
 // FIXME: need to move this somewhere!! or do it better .. we've got state lying around here.

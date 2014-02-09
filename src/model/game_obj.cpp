@@ -1,11 +1,11 @@
 
 #include <SDL2/SDL_image.h>
 
+#include "constants.h"
 #include "model/game_obj.h"
 
-// Used to set acceleration and speed
-const float SCALE = 60.f;  // pixels 
-//const float SCALE_SQUARED = 60.f;  // pixels 
+//const float ZERO = 0.2f;  // pixels 
+//const float SCLE_SQUARED = 60.f;  // pixels 
  
 GameObj::GameObj(float x, float y, SDL_Texture * texture, bool movable) {
 
@@ -16,6 +16,13 @@ GameObj::GameObj(float x, float y, SDL_Texture * texture, bool movable) {
     // is this a movable object?
     this->movable = movable;    
     this->jumping = false;
+
+    // set this to true to clean this up
+    // we use this in a mark and sweep garbage collection
+    this->dead = false;
+
+    // a time to live value
+    this->ttl_in_secs = -1.0;
 
     // draw this
     this->texture = texture;
@@ -28,10 +35,18 @@ GameObj::GameObj(float x, float y, SDL_Texture * texture, bool movable) {
 
     // we calculate the AABB bounding boxes now
     // movable objects get their bounding boxes calculated on the fly
+    // this is really just for the fixed game objects
     ax = x - half_width;
     ay = y - half_height;
     bx = x + half_width;
     by = y + half_height;
+
+    // do this so we have these values for fixed game objects as well as movable game objects
+    // (makes things simpler for the collision detection stuff).
+    pax = ax;
+    pbx = bx;
+    pay = ay;
+    pby = by;
 
     // sanity checks
     assert(ax < bx);
@@ -42,16 +57,23 @@ GameObj::GameObj(float x, float y, SDL_Texture * texture, bool movable) {
     y_vel_per_sec = 0.0;
 
     // clamp speed to these values.
-    x_max_vel_per_sec = 5.0f * SCALE;
-    y_max_vel_per_sec = 10.0f * SCALE;    
+    x_max_vel_per_sec = 5.0f * MOVEMENT_SCALE;
+    y_max_vel_per_sec = 10.0f * MOVEMENT_SCALE;    
     
     // acceleration and deceleration
-    x_acc_per_sec = 0.55f * SCALE;
-    x_dec_per_sec = 0.8f * SCALE;
+    x_acc_per_sec = 0.55f * MOVEMENT_SCALE;
+    x_dec_per_sec = 0.8f * MOVEMENT_SCALE;
 
      // set jump and gravity forces
-    y_jump_start_vel_per_sec = 8.f * SCALE;
-    y_acc_per_sec = 0.5f * SCALE;
+    y_jump_start_vel_per_sec = 8.f * MOVEMENT_SCALE;
+    y_acc_per_sec = 0.5f * MOVEMENT_SCALE;
+
+    // {
+    //     { 5,  0  }, { 15, 0  }, // Top of head
+    //     { 5,  40 }, { 15, 40 }, // Feet
+    //     { 0,  10 }, { 0,  30 }, // Left arm
+    //     { 20, 10 }, { 20, 30 }  // Right arm
+    // };
 }
 
 // bool GameObj::contains_point(float x, float y) {    
@@ -86,10 +108,7 @@ bool GameObj::potentially_collides_with(GameObj * other_game_obj) {
     // If this objects top edge is below the others bottom edge,
     // then this object is totally below the other object.
     // (remember that y increases downwards in sdl).
-    if (ay > other_game_obj->by) {
-        //std::cout << " below " << std::endl;
-        return false;
-    }
+    if (ay > other_game_obj->by) { return false; }
         
     // If this objects left edge is to the right of the others right edge,
     // then this object is totally to the right of the other object.
@@ -97,10 +116,7 @@ bool GameObj::potentially_collides_with(GameObj * other_game_obj) {
 
     // If this objects bottom edge is above the others top edge,
     // then this object is totally above the other object.
-    if (by < other_game_obj->ay) {
-        //std::cout << " above " << std::endl;
-        return false;
-    }
+    if (by < other_game_obj->ay) { return false; }
 
     // If this objects right edge is to the left of the others left edge,
     // then this object is totally to the left of the other object.
@@ -119,45 +135,27 @@ bool GameObj::potentially_collides_with(GameObj * other_game_obj) {
 // Check whether the projected position of this object will collide with the projected 
 // position of another movable object.  
 //
-collision_type_t GameObj::check_for_projected_movable_collision(GameObj * other_game_obj) {
+CollisionType GameObj::check_for_projected_movable_collision(GameObj * other_game_obj) {
     assert(other_game_obj->movable);
 
-    // std::cout << " *** check collides with " << std::endl;
-
-    // If this objects top edge is below the others bottom edge,
-    // then this object is totally below the other object.
-    // (remember that y increases downwards in sdl).
-    if (py - half_height > other_game_obj->py + other_game_obj->half_height) {
-        //std::cout << " below " << std::endl;
-        return NONE;
-    }
+    // If this objects top edge is below the others bottom edge, then this object is totally 
+    // below the other object (remember that y increases downwards in sdl).
+    if (pay > other_game_obj->pby) { return CollisionType::NONE; }
         
     // If this objects left edge is to the right of the others right edge,
     // then this object is totally to the right of the other object.
-    if (px - half_width > other_game_obj->px + other_game_obj->half_width) {
-        //std::cout << " right " << std::endl;
-        return NONE;
-    }
+    if (pax > other_game_obj->pbx) { return CollisionType::NONE; }
 
     // If this objects bottom edge is above the others top edge,
     // then this object is totally above the other object.
-    if (py + half_height < other_game_obj->py - other_game_obj->half_height) {
-        //std::cout << " above " << std::endl;
-        return NONE;
-    }
-
+    if (pby < other_game_obj->pay) { return CollisionType::NONE; }
 
     // If this objects right edge is to the left of the others left edge,
     // then this object is totally to the left of the other object.
-    if (px + half_width < other_game_obj->px - other_game_obj->half_width) {
-        //std::cout << " left " << std::endl;
-        return NONE;
-    }
+    if (pbx < other_game_obj->pax) { return CollisionType::NONE; }
 
     // may be a collision!
-    //std::cout << " collision " << std::endl;
-
-    return BOTTOM;  // FIXME: this is bull shit .. I just want to see it run.
+    return CollisionType::POTENTIAL;  
 }
 
 
@@ -165,45 +163,77 @@ collision_type_t GameObj::check_for_projected_movable_collision(GameObj * other_
 // Check whether the projected position of this object will collide with the fixed position 
 // of a fixed object.
 //
-collision_type_t GameObj::check_for_projected_fixed_collision(GameObj * other_game_obj) {
-    // std::cout << " *** check collides fixed with " << std::endl;
-    // dump_position("a");
-    // other_game_obj->dump_position("b");
-    // std::cout << std::endl;
-    // std::cout << std::endl;
-
-    // If this objects top edge is below the others bottom edge,
-    // then this object is totally below the other object.
-    // (remember that y increases downwards in sdl).
-    if (py - half_height > other_game_obj->y + other_game_obj->half_height) {
-        //std::cout << " below " << std::endl;
-        return NONE;
-    }
+CollisionType GameObj::check_for_projected_fixed_collision(GameObj * other_game_obj) {
         
     // If this objects left edge is to the right of the others right edge,
     // then this object is totally to the right of the other object.
-    if (px - half_width > other_game_obj->x + other_game_obj->half_width) {
-        //std::cout << " right " << std::endl;
-        return NONE;
-    }
-
-    // If this objects bottom edge is above the others top edge,
-    // then this object is totally above the other object.
-    if (py + half_height < other_game_obj->y - other_game_obj->half_height) {
-        //std::cout << " above " << std::endl;
-        return NONE;
-    }
+    if (pax > other_game_obj->pbx) { return CollisionType::NONE; }
 
     // If this objects right edge is to the left of the others left edge,
     // then this object is totally to the left of the other object.
-    if (px + half_width < other_game_obj->x - other_game_obj->half_width) {
-        //std::cout << " left " << std::endl;
-        return NONE;
+    if (pbx < other_game_obj->pax) { return CollisionType::NONE; }
+
+    // If this objects top edge is below the others bottom edge, then this object is 
+    // totally below the other object (remember that y increases downwards in sdl).
+    if (pay > other_game_obj->pby) { return CollisionType::NONE; }
+
+    // If this objects bottom edge is above the others top edge,
+    // then this object is totally above the other object.
+    if (pby < other_game_obj->pay) { return CollisionType::NONE; }
+    
+    // we know we've had a collision work out the relative velocity between 
+    // this game object and the other game object
+    // float vx = x_vel_per_sec - other_game_obj->x_vel_per_sec;
+    // float vy = y_vel_per_sec + other_game_obj->y_vel_per_sec;
+
+    // std::cout << vx << ", " << vy << std::endl;
+
+    // check where we'd get the collision
+    CollisionType result = CollisionType::NONE;
+    if (x_vel_per_sec > 0) {
+        // moving left
+        if (pbx > other_game_obj->ax) {
+            result = result | CollisionType::LEFT;
+        }
+    }
+    else {            
+        // moving right
+        if (pax < other_game_obj->bx) {
+            result = result | CollisionType::RIGHT;
+            std::cout << " collision " << result << std::endl;
+        }
     }
 
+    if (y_vel_per_sec > 0) {
+        // moving down
+        if (pby > other_game_obj->ay) {
+            result = result | CollisionType::BOTTOM;
+        }
+    }
+    else {            
+        // moving up
+        if (pay < other_game_obj->by) {
+            result = result | CollisionType::TOP;
+        }
+    }
+
+
+    // if (px < x) {
+    //     result = result | CollisionType::LEFT;
+    // } 
+    // else {
+    //     result = result | CollisionType::RIGHT;
+    // }
+
+    // if (py < y) {
+    //     result = result | CollisionType::TOP;
+    // }
+    // else {
+    //     result = result | CollisionType::BOTTOM;
+    // }
+
     // may be a collision!
-    //std::cout << " collision " << std::endl;
-    return BOTTOM;  // FIXME: this is bull shit .. I just want to see it run.
+    return result;
 }
 
 // 
@@ -294,6 +324,11 @@ void GameObj::jump() {
 void GameObj::calc_projected_delta_position(const float step_t) {
     px = x + step_t * x_vel_per_sec;
     py = y + step_t * y_vel_per_sec;
+
+    pax = px - half_width;
+    pbx = px + half_width;
+    pay = py - half_height;
+    pby = py + half_height;
 }
 
 
@@ -303,3 +338,35 @@ void GameObj::move(const float step_t) {
     y += step_t * y_vel_per_sec;
 }
 
+
+// set the velocity of the game object (use these when colliding).
+void GameObj::collision_set_x_velocity(float x_vel_per_sec) {
+    assert(this->x_vel_per_sec >= x_vel_per_sec);
+    
+    //if (abs(this->x_vel_per_sec) > ZERO) {
+    //py *= x_vel_per_sec / this->x_vel_per_sec;    
+    this->x_vel_per_sec = x_vel_per_sec;    
+
+        // don't inch along (leave this out till I know it's necessry)
+        // if (abs(this->x_vel_per_sec) <= ZERO) {
+        //     this->x_vel_per_sec = 0.0f;
+        //     py = 0.0f;
+        // }
+        //}
+}
+
+void GameObj::collision_set_y_velocity(float y_vel_per_sec) {
+    assert(this->y_vel_per_sec >= y_vel_per_sec);
+
+    //if (abs(this->y_vel_per_sec) > ZERO) {
+    //py *= y_vel_per_sec / this->y_vel_per_sec;    
+    this->y_vel_per_sec = y_vel_per_sec;    
+
+        // don't inch along (leave this out till I know it's necessry)
+        // if (abs(this->x_vel_per_sec) <= ZERO) {
+        //     this->x_vel_per_sec = 0.0f;
+        //     py = 0.0f;
+        // }
+
+        //}
+}

@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include "shared/scripting.h"
+#include "model/particle_system.h"
 #include "view/utils.h"
 
 
@@ -96,7 +97,7 @@ static PyObject* turkey_debug_set_draw_fps(PyObject *self, PyObject *args)
 }
 
 
-/* Returns the number of game objects added (0 or 1) */
+/* Adds a new game object to the game */
 static PyObject* turkey_add_game_obj(PyObject *self, PyObject *args)    
 {    
     float x, y;
@@ -133,6 +134,47 @@ static PyObject* turkey_add_game_obj(PyObject *self, PyObject *args)
     GameObj * game_obj = new GameObj(x, y, texture, (bool)movable);
     GameState * game_state = model->get_game_state();
     game_state->add_game_obj(game_obj);
+
+    return Py_BuildValue("i", 1);
+}
+
+
+
+/* Adds a particle system to the game */
+static PyObject* turkey_add_particle_system(PyObject *self, PyObject *args)    
+{    
+    PyObject * texture_object = nullptr;
+    
+    if (!PyArg_ParseTuple(args, "O:add_particle_system", &texture_object)) {
+        return NULL;
+    }
+       
+    Model * model = (Model*)PyCapsule_Import("turkey._MODEL", 0);
+    if (model == NULL) {
+        log_msg("Problem extracting the c++ model object.");
+        return Py_BuildValue("i", 0);
+    }
+        
+    SDL_Texture * texture = nullptr;
+    if (texture_object != nullptr) {
+        texture = (SDL_Texture *)PyCapsule_GetPointer(texture_object, "turkey._TEXTURE");
+    }
+
+    if (texture == NULL) {
+        // throw an exception!
+        PyErr_SetString(
+            FailedToLoadTextureErr,
+            (std::string(
+                "Problem extracting the texture at ") + 
+                //__FILE__ + "," + (char*)__LINE__ + ": " +
+                SDL_GetError()
+             ).c_str());
+        return NULL;
+    }
+
+    ParticleSystem * particle_system = new ParticleSystem(texture);
+    GameState * game_state = model->get_game_state();
+    game_state->add_particle_system(particle_system);
 
     return Py_BuildValue("i", 1);
 }
@@ -246,6 +288,11 @@ static PyMethodDef InitializeTurkeyMethods[] = {
      turkey_add_game_obj, 
      METH_VARARGS, 
      "Add a game object to be displayed."},
+
+    {"add_particle_system", 
+     turkey_add_particle_system, 
+     METH_VARARGS, 
+     "Add a particle system to the game."},
 
     {"add_character_game_obj", 
      turkey_add_character_game_obj, 
