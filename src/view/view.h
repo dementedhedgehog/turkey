@@ -47,7 +47,8 @@ class View : public IStateListener, public BaseView {
  public:    
 
     // constructor
-    View();
+    View(Model * model, SDL_Window * window, SDL_Renderer * renderer,
+         ImageManager * image_manager, FontManager * font_manager, SoundManager * sound_manager);
 
     /* // access the renderer */
     SDL_Renderer * get_renderer();
@@ -59,7 +60,7 @@ class View : public IStateListener, public BaseView {
     void mouse_button() {};
 
     // show an sdl window
-    int display_window(Model * model);
+    int display_window();
 
     // draw to a window
     // return 0 for success of some non-zero error code

@@ -16,7 +16,7 @@ class IntroView : public BaseView {
     SDL_Surface * title_text;
     SDL_Texture * title_texture;
 
-    std::vector<SDL_Texture *> * frames;
+    std::vector<SDL_Texture*> * frames;
 
     // an example of a ttf font
     TTF_Font * font;  // FIXME get the font from a loader object..

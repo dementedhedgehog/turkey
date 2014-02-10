@@ -128,3 +128,8 @@ clean:
 	rm -f TAGS
 	find . -name '*~' -exec rm {} \; # clean up emacs temporary files
 	find . -name '*.pyc' -exec rm {} \; # clean up compiled python scripts
+
+
+.PHONY: check_memory
+check_memory:
+	valgrind --leak-check=full -v ./turkey

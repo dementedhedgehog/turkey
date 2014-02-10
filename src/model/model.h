@@ -68,5 +68,7 @@ public:
 
     // handle a mouse event
     void handle_mouse(const int x, const int y, const Uint8 mouse_button_state);
+
+    int clean_up();
 };
 #endif

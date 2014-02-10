@@ -6,19 +6,6 @@
 #include "view/utils.h"
 #include "view/fps.h"
 
-// FIXME: get these values from a configuration
-
-// screen size
-const int SCREEN_WIDTH  = 1280;
-const int SCREEN_HEIGHT = 800;
-
-// screen pos (from top left)
-const int SCREEN_POS_X = 50;
-const int SCREEN_POS_Y = 20;
-
-// game name string
-const char * GAME_NAME = "Turkey";
-
 // number of frames per second we want to draw
 // 60 FPS is a good number.. it's widely considered that you can't see any more
 // and the frame rate is often capped by other the graphics card at 60.
@@ -28,8 +15,12 @@ const uint FRAMES_PER_SECOND = 60;
 const uint MOVES_PER_SECOND = 60;
 
 
-View::View() :
+View::View(Model * model, SDL_Window * window, SDL_Renderer * renderer,
+    ImageManager * image_manager, FontManager * font_manager, SoundManager * sound_manager) :
+    IStateListener(),
     BaseView(model, window, renderer, image_manager, font_manager, sound_manager) {
+
+    assert(image_manager != NULL);
 
     // determine how long to wait between frames
     ms_per_frame = 1000 / FRAMES_PER_SECOND;
@@ -37,9 +28,6 @@ View::View() :
 
     // enable fps counter?
     fps = NULL;
-
-    // sound_manager = new SoundManager();
-    // font_manager = new FontManager();    
 
     // set this true to stop looping in the message loop and quit the application
     finished = false;
@@ -51,31 +39,6 @@ View::View() :
 // start up sdl
 int View::init() {
 
-    // init sdl
-	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
-        log_sdl_error("SDL_Init");
-		return 1;
-	}
-    
-    // init the img reading library
-    if ((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) != IMG_INIT_PNG) {
-        log_sdl_error("IMG_Init");
-        return 2;
-    }
-
-    // init the font library
-    if (TTF_Init() == -1) {
-        std::cerr << "TTF_Init: %s\n" << TTF_GetError() << std::endl;
-        return 3;
-    }
-
-    // // init tne SDL_mixer library - for sound 
-    // if (!sound_manager->init()) {
-    //     return 4;
-    // }
-
-    // // initialize the font manager
-    // font_manager->init();
 
     // success
     return 0;
@@ -83,35 +46,13 @@ int View::init() {
 
 
 // show an sdl window
-int View::display_window(Model * model) {
+int View::display_window() {
 
-    // keep a reference to the model
-    this->model = model;
-
-    // create the window
-    window = SDL_CreateWindow(GAME_NAME, 
-        SCREEN_POS_X, SCREEN_POS_Y, 
-        SCREEN_WIDTH, SCREEN_HEIGHT,
-        SDL_WINDOW_SHOWN);
-    if (window == nullptr) {
-        log_sdl_error("CreateWindow");
-        return 2;
-    }
-
-    // get a renderer for the window
-    renderer = SDL_CreateRenderer(window, -1, 
-        SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-    if (renderer == nullptr) {
-        log_sdl_error("CreateRenderer");
-        return 3;
-    }
-
+    assert(image_manager);
 
     // init the various game views
-    intro_view = new IntroView(model, window, renderer, 
-        image_manager, font_manager, sound_manager);
-    game_view = new GameView(model, window, renderer, 
-        image_manager, font_manager, sound_manager);
+    intro_view = new IntroView(model, window, renderer, image_manager, font_manager, sound_manager);
+    game_view = new GameView(model, window, renderer, image_manager, font_manager, sound_manager);
     current_view = intro_view;        
 
     // init the various renderers
@@ -162,22 +103,9 @@ int View::clean_up() {
     intro_view->clean_up();
     game_view->clean_up();
 
-    // cleanup the sound effects 
-    // sound_manager->clean_up();
-
-    // // clean up the font manager
-    // font_manager->clean_up();
-
-    // clean up the ttf library
-    TTF_Quit();
-   
-    // clean up the img library
-    IMG_Quit();
-
     // clean up the sdl objects
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
-	SDL_Quit();
 
     // clean up the frame-per-second counter
     if (fps) {

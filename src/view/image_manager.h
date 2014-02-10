@@ -2,8 +2,10 @@
 #define IMAGE_MANAGER_H
 
 #include <vector>
+#include <list>
 #include <string>
 
+#include "SDL2/SDL.h"
 #include "SDL2/SDL_image.h"
 
 #include "view/utils.h"
@@ -13,10 +15,16 @@ class ImageManager {
  private:
     SDL_Window * window;
 
+    // keep a list of all textures used
+    std::list<SDL_Texture*> all_textures;
+
  public:
+    
+    // constructor
+    ImageManager(SDL_Window * window);
 
     // initialize the image manager
-    int init(SDL_Window * window);
+    int init();
 
     // load the images
     SDL_Texture * load(const std::string & fname, SDL_Renderer * renderer); 

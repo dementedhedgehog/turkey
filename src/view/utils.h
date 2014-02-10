@@ -23,6 +23,12 @@ void log_msg(const std::string &msg);
 
 
 /**
+ * Log execution context information
+ */
+void log_debug_info();
+
+
+/**
  * Loads a BMP image into a texture on the rendering device
  * @param file The BMP image file to load
  * @param ren The renderer to load the texture onto

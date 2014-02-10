@@ -27,6 +27,27 @@ void log_msg(const std::string &msg) {
 }
 
 
+std::ostream& operator<<(std::ostream& os, SDL_version const& version)
+{
+    return os <<
+        static_cast<int>(version.major) << "." <<
+        static_cast<int>(version.minor) << "." <<
+        static_cast<int>(version.patch);
+}
+
+
+void log_debug_info() {
+
+    // print SDL library version information
+    SDL_version compiled;
+    SDL_GetVersion(&compiled);
+    std::cout << "We compiled against SDL version " << compiled << " ..." << std::endl;
+
+    SDL_version linked;
+    SDL_GetVersion(&linked);
+    std::cout << "We are linked against SDL version " << linked << std::endl;
+}
+
 
 /**
  * Loads a BMP image into a texture on the rendering device

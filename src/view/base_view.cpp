@@ -8,8 +8,12 @@
 
 #include "view/base_view.h"
 
-BaseView::BaseView(Model * model, SDL_Window * window, SDL_Renderer * renderer,
-    ImageManager * image_manager, FontManager * font_manager, SoundManager * sound_manager) {
+BaseView::BaseView(Model * model, 
+                   SDL_Window * window, 
+                   SDL_Renderer * renderer,
+                   ImageManager * image_manager, 
+                   FontManager * font_manager, 
+                   SoundManager * sound_manager) {
     this->model = model;
     this->window = window;
     this->renderer = renderer;
@@ -17,5 +21,6 @@ BaseView::BaseView(Model * model, SDL_Window * window, SDL_Renderer * renderer,
     this->font_manager = font_manager;
     this->sound_manager = sound_manager;
 }
+
 
 

@@ -11,14 +11,15 @@ int SoundManager::init() {
     // play sound 
     sound_enabled = false;
 
-    // returns 0 on success, -1 on error
-    int result = Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096) ;
+    // // returns 0 on success, -1 on error
+    // int result = Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096) ;
 
-    // sound_enabled && 
-    if (result == -1) {
-        log_msg("Mix_OpenAudio: \n" + (std::string)Mix_GetError() + "\n");
-    }
-    return result;
+    // // sound_enabled && 
+    // if (result == -1) {
+    //     log_msg("Mix_OpenAudio: \n" + (std::string)Mix_GetError() + "\n");
+    // }
+    // return result;
+    return false;
 }
 
 

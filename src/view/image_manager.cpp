@@ -1,4 +1,5 @@
 
+#include <iostream>
 #include "view/image_manager.h"
 
 #include "SDL2/SDL.h"
@@ -6,13 +7,17 @@
 // an SDL thing..
 const Uint32 UNUSED = 0;
 
+ImageManager::ImageManager(SDL_Window * window) {
+    this->window = window;
+}
+
+
 /*
  * Manages loading and unloading textures..
  * Attempts to make sure duplicate images are not loaded twice.
  */
 
-int ImageManager::init(SDL_Window * window) {
-    this->window = window;
+int ImageManager::init() {
     return 0; // success
 }
 
@@ -40,12 +45,13 @@ SDL_Texture * ImageManager::load(const std::string & fname, SDL_Renderer * rende
 	return texture;
 }
 
-std::vector<SDL_Texture *> * ImageManager::load_from_sprite_sheet(
+std::vector<SDL_Texture*> * ImageManager::load_from_sprite_sheet(
     const std::string & fname, 
     SDL_Renderer * renderer,
     unsigned int width, unsigned int height, // size of a "frame" in pixels
     unsigned int n_frames_wide, unsigned int n_frames_high) { 
 
+    // the result .. a 1D vector of image frames
     std::vector<SDL_Texture *> * frames = new std::vector<SDL_Texture *>(0);
 
 	// Load a surface
@@ -88,18 +94,14 @@ std::vector<SDL_Texture *> * ImageManager::load_from_sprite_sheet(
     amask = 0xff000000;
 #endif
 
-    //SDL_SetAlpha(frame_surface, );
-
-
+    // create a surface to store a frame
     frame_surface = SDL_CreateRGBSurface(UNUSED, width, height, 32, rmask, gmask, bmask, amask);
     if (!frame_surface) {
         SDL_FreeSurface(sprite_sheet);
         delete frames;
         return nullptr;
     }
-
-    //SDL_SetSurfaceBlendMode(frame_surface, SDL_BLENDMODE_BLEND);
-    SDL_SetSurfaceBlendMode(frame_surface, SDL_BLENDMODE_NONE);
+    SDL_SetSurfaceBlendMode(frame_surface, SDL_BLENDMODE_BLEND);
 
     SDL_Texture * frame;
     SDL_Rect clip;
@@ -107,7 +109,7 @@ std::vector<SDL_Texture *> * ImageManager::load_from_sprite_sheet(
     clip.h = height;
     for (unsigned int row = 0; row < n_frames_high; row++) {
         for (unsigned int column = 0; column < n_frames_wide; column++) {
-            
+
             // blit from the sprite sheet to the frame surface
             clip.x = column * width;
             clip.y = row * height;
@@ -123,7 +125,14 @@ std::vector<SDL_Texture *> * ImageManager::load_from_sprite_sheet(
                 return nullptr;
             }
 
+            // clear the fram (otherwise we just get a composite of all frames drawn to the frame_surface).
+            SDL_FillRect(frame_surface, NULL, 0x000000);
+
+            // and add it to the list
             frames->push_back(frame);
+
+            // keep a reference because we clean up everything here
+            all_textures.push_back(frame);
         }
     }
     
@@ -132,31 +141,15 @@ std::vector<SDL_Texture *> * ImageManager::load_from_sprite_sheet(
     SDL_FreeSurface(frame_surface);
 
     return frames;
-}
-
-    
-
-
-//  //If nothing went wrong in loading the image if( loadedImage != NULL ) { //Create an optimized image optimizedImage = SDL_DisplayFormat( loadedImage ); //Free the old image SDL_FreeSurface( loadedImage ); }
-
-
-// 	// // Initialize to nullptr to avoid dangling pointer issues
-// 	// SDL_Texture *texture = nullptr;
-
-// 	// // Load the sprite_sheet_texture
-//     // texture = IMG_LoadTexture(renderer, fname.c_str()); 
-
-//     // // Make sure converting went ok too
-//     // if (texture == nullptr) {
-//     //     log_sdl_error((std::string("CreateTextureFromSurface ") + fname).c_str());
-// 	// }
-
-// 	return texture;
-// }
-
-
+}  
 
 
 int ImageManager::clean_up() {
+
+    // clean up all the textures we've allocated
+    for (std::list<SDL_Texture *>::iterator i = all_textures.begin(); i != all_textures.end(); i++) {
+        SDL_DestroyTexture(*i);
+    }
+
     return 0; // success
 }

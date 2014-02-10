@@ -47,8 +47,10 @@ int IntroView::init() {
 
     // frames = image_manager->load_from_sprite_sheet(
     //     "./res/samurai.png", renderer, 67, 91, 13, 5);
+    std::cout << "xfgdgfYYYa" << std::endl;
+    printf("image manager  %p\n", image_manager);
     frames = image_manager->load_from_sprite_sheet(
-        "./res/ken.png", renderer, 52, 70, 23, 9);
+        "./res/ken.png", renderer, 53, 71, 23, 9);
 
     // success
     return 0;
@@ -70,10 +72,15 @@ int IntroView::render() {
     SDL_RenderCopy(renderer, title_texture, &src, &dest);
 
     // draw the background
-    int xx = (x / 10) % 13;
+    //int xx = (x / 10) % 13;
+
     // move it in the ken png 
-    xx += 7 * 23;
+    int xx = ((x / 3) % 23) + (7*23);
+    //render_texture((*frames)[xx], renderer, 100, 100);
+    //render_texture((*frames)[0], renderer, 100, 100);
+    //std::cout << xx << std::endl;
     render_texture((*frames)[xx], renderer, 100, 100);
+    //render_texture((*frames)[1], renderer, 100, 100);
     x += 1;
 
     return 0; // success
@@ -90,7 +97,7 @@ int IntroView::clean_up() {
     TTF_CloseFont(font);
     font = NULL; // to be safe...
 
-    delete frames;
+    //delete frames;
 
     return 0; // success
 }
