@@ -54,19 +54,23 @@ int main(int argc, char **argv){
         return 3;
     }
 
-    ImageManager * image_manager = new ImageManager(window);
-    FontManager * font_manager = new FontManager();
-    SoundManager * sound_manager = new SoundManager();
 
-    // initialize the managers
+    // initialize the font manager
+    FontManager * font_manager = new FontManager();
     if ((result = font_manager->init()) != 0) {
         log_msg("init font manager failed!");
         return result;
     };
+
+    // initialize the image manager
+    ImageManager * image_manager = new ImageManager(window);
     if ((result = image_manager->init()) != 0) {
         log_msg("init image manager failed!");
         return result;
     };
+
+    // initialize the sound
+    SoundManager * sound_manager = new SoundManager();
     if ((result = sound_manager->init()) != 0) {
         log_msg("init sound manager failed!");
         return result;

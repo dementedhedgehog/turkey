@@ -39,6 +39,11 @@ If you're getting memory errors on linux run: gdb, run turkey, kill the turkey p
 (not literally)
 
 
+You need the libasound2-dev files installed if you're building SDL from scratch to get sound working on unix machines run:
+ sudo yum install alsa-lib-devel
+
+
+
       
 building on windows
 -------------------

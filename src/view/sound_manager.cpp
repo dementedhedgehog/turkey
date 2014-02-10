@@ -11,15 +11,15 @@ int SoundManager::init() {
     // play sound 
     sound_enabled = false;
 
-    // // returns 0 on success, -1 on error
-    // int result = Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096) ;
-
-    // // sound_enabled && 
-    // if (result == -1) {
-    //     log_msg("Mix_OpenAudio: \n" + (std::string)Mix_GetError() + "\n");
-    // }
-    // return result;
-    return false;
+    // returns 0 on success, -1 on error
+    int result = Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096) ;
+    if (result == -1) {
+        log_msg(" *** Mix_OpenAudio failed to initialize! ***: " + 
+                (std::string)Mix_GetError() + "\n");
+        sound_enabled = false;
+        result = 0;            
+    }
+    return result;
 }
 
 
@@ -149,6 +149,8 @@ int SoundManager::clean_up() {
 
         // clean up the music 
         Mix_FreeMusic(music); 
+
+        Mix_CloseAudio();
     }
 
     return 0;
