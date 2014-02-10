@@ -34,7 +34,7 @@ all: $(PROG)
 $(PROG): main.o model.o view.o fps.o scripting.o base_view.o \
 	intro_view.o game_view.o sprite.o game_state.o intro_state.o game_obj.o \
 	utils.o font_manager.o collision.o camera.o collision_type.o particle_system.o \
-	sound_manager.o image_manager.o
+	sound_manager.o image_manager.o scenery_manager.o
 	$(CXX) $^ $(LDFLAGS) -o $@
 
 main.o: src/main.cpp
@@ -53,6 +53,9 @@ sound_manager.o: src/view/sound_manager.cpp src/view/sound_manager.h src/view/ut
 	$(CXX) $(CXXFLAGS) $< -o $@
 
 image_manager.o: src/view/image_manager.cpp src/view/image_manager.h src/view/utils.h
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+scenery_manager.o: src/view/scenery_manager.cpp src/view/scenery_manager.h 
 	$(CXX) $(CXXFLAGS) $< -o $@
 
 utils.o: src/view/utils.cpp src/view/utils.h

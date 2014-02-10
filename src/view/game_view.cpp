@@ -37,6 +37,25 @@ int GameView::init() {
         return 1;
     }
 
+
+    //
+    // FIXME: playing around with the scenery manager
+    //
+    background = load_texture("./res/background.jpg", renderer);
+    if (background == nullptr) {
+        log_sdl_error("Load game view background image failed");
+        return 1;
+    }
+    scenery_manager.add_background(background, 0.3, 0, 0);
+
+    tree = load_texture("./res/tree.png", renderer);
+    if (tree == nullptr) {
+        log_sdl_error("Load game view tree image failed");
+        return 1;
+    }
+    scenery_manager.add_background(tree, 0.7, 100, 100);
+
+
     // the pause indicator
     pause_symbol = load_texture("./res/pause.png", renderer);
     if (pause_symbol == nullptr) {
@@ -83,7 +102,11 @@ int GameView::render() {
     game_state->get_camera_position(&camera_x, &camera_y);
 
     // draw the background
-    render_texture(background, renderer, 0 - camera_x, 0-camera_y);
+    //render_texture(background, renderer, 0 - camera_x, 0-camera_y);
+
+    std::cout << camera_x << ", " << camera_y << std::endl;
+    scenery_manager.render_background(renderer, camera_x, camera_y);
+    //scenery_manager.render_background(renderer, 0, 0);
 
     // draw the cell lines
     if (debug_draw_grid) {

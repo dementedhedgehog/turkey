@@ -6,13 +6,17 @@
  */
 #include "model/model.h"
 #include "view/base_view.h"
+#include "view/scenery_manager.h"
 
 class GameView : public BaseView {
  private:
 
     // some renderer textures FIXME: remove this stuff!
     SDL_Texture * background;
+    SDL_Texture * tree; 
     SDL_Texture * stone; // block of stone  - just hacking this in here for the moment
+
+    SceneryManager scenery_manager;
 
     // the pause symbol (displayed when the game is paused)
     SDL_Texture * pause_symbol;
