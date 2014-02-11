@@ -19,7 +19,7 @@ BUILD_FLAGS=-ggdb -g3
 CXXFLAGS = $(BUILD_FLAGS) \
 	-Wall -Werror \
 	-c -std=c++0x \
-	$(SDL_INCLUDE) -I src -I/usr/include/python2.7 -I/usr/include/python2.7 \
+	$(SDL_INCLUDE) -I src -I/usr/include/python2.7 \
 	-fno-strict-aliasing \
 	-fwrapv -fstack-protector \
 	--param=ssp-buffer-size=4 -Wformat -Wformat-security 

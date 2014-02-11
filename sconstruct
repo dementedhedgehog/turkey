@@ -1,0 +1,9 @@
+# -*-python-*-
+
+Program("turkey",
+        ["src/main.cpp", Glob("src/model/*.cpp"), Glob("src/view/*.cpp"), Glob("src/shared/*.cpp")],
+        CPPPATH = ["./src", "/usr/local/include", "/usr/include/python2.7", ],
+        CXXFLAGS = "-std=c++11 -Wall -Werror",
+        LIBPATH = ["/usr/local/lib", ],
+        LIBS = ["SDL2", "SDL2_image", "SDL2_ttf", "SDL2_mixer", "python2.7", ],        
+        )
