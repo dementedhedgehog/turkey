@@ -55,13 +55,22 @@ else:
     patch_cxx_flags = ""
     python_lib_name = "python2.7"
 
+    special_windows_libs = []
+
+    #
+    # NOTE..
+    #  -std=c++11 requires gcc version 4.7 or later!
+    #
+    # Deal with this properly some other time.
+    #
+
 Program("turkey",
         ["src/main.cpp", 
          Glob("src/model/*.cpp"), 
          Glob("src/view/*.cpp"), 
          Glob("src/shared/*.cpp")],
         CPPPATH = ["./src", ] + include_path,
-        CXXFLAGS = "-std=c++11 -Wall -Werror" + patch_cxx_flags,
+        CXXFLAGS = " -std=c++11 -Wall -Werror" + patch_cxx_flags,
         LIBPATH = lib_path,
         LIBS = special_windows_libs + [
         "SDL2", "SDL2_image", "SDL2_ttf", "SDL2_mixer", python_lib_name, 
