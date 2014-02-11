@@ -60,6 +60,7 @@ building on windows
        git clone https://github.com/dementedhedgehog/turkey.git
 
    So now you'll have C:\turkey\turkey\..lots..of..files
+   We will put all the other SDL dependencies into c:\turkey as well (trying to keep it a bit neat (although that's nigh impossible on windows)).
 
 
  ii) Install mingw in c:\mingw 
@@ -73,9 +74,31 @@ building on windows
    gunzip it and untar it into c:\turkey    
 
 
+ Also get the SDL_image, SDL_mixer and SDL_ttf libraries from here..
+ http://www.libsdl.org/projects/SDL_image/
+ http://www.libsdl.org/projects/SDL_image/release/SDL2_image-devel-2.0.0-mingw.tar.gz
+  
+ http://www.libsdl.org/projects/SDL_ttf/
+ http://www.libsdl.org/projects/SDL_ttf/release/SDL2_ttf-devel-2.0.12-mingw.tar.gz
 
- v) run mingw32-make
+ http://www.libsdl.org/projects/SDL_mixer/
+ http://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-devel-2.0.0-mingw.tar.gz
  
+Unzip them all in c:\turkey (7 zip will do it.. extract here to ungzip and extract here again to untar).
 
-     
+
+install python from here
+http://www.python.org/ftp/python/2.7.6/python-2.7.6.msi 
+
+install scons from here
+run as administrator
+http://prdownloads.sourceforge.net/scons/scons-2.3.0-setup.exe
+
+Add to path
+C:\Python27\Scripts  
+and this C:\Python27 while you're there
+
+
+Patch this bug in mingw... 
+http://sourceforge.net/p/mingw/bugs/2024/
 

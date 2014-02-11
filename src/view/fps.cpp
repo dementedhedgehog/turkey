@@ -55,8 +55,10 @@ void FPS::increment(SDL_Renderer * renderer) {
         // render on the GPU by making textures for each digit and displaying them 
         fps_text_surface = TTF_RenderText_Solid(
             fps_font, 
-            //std::to_string(fps->get_fps()).c_str(), 
-            std::to_string(current_frame_count).c_str(), 
+            // This doesn't work because of a bug in the current version of mingw/gcc!!
+            // http://gcc.gnu.org/bugzilla/show_bug.cgi?id=52015
+            // std::to_string(current_frame_count).c_str(), 
+            "FIX THE FPS STUFF!!!", 
             fps_font_color);
 
         if (!fps_text_surface) {

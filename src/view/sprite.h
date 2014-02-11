@@ -29,7 +29,7 @@ class Sprite
  public:
 
     // construct a sprite with regular sized images
-    Sprite(const std::string fname, uint sprite_width, uint sprite_height);
+    Sprite(const std::string fname, uint32_t sprite_width, uint32_t sprite_height);
 
 
 };

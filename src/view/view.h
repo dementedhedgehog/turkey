@@ -25,10 +25,10 @@ class View : public IStateListener, public BaseView {
  private:
 
     // determines how many frames per second we get
-    uint ms_per_frame;
+    uint32_t ms_per_frame;
 
     // determines how many moves per second we get
-    uint ms_per_move;
+    uint32_t ms_per_move;
  
     // fps counter (null if we're not counting fps).
     FPS * fps;

@@ -47,8 +47,6 @@ int IntroView::init() {
 
     // frames = image_manager->load_from_sprite_sheet(
     //     "./res/samurai.png", renderer, 67, 91, 13, 5);
-    std::cout << "xfgdgfYYYa" << std::endl;
-    printf("image manager  %p\n", image_manager);
     frames = image_manager->load_from_sprite_sheet(
         "./res/ken.png", renderer, 53, 71, 23, 9);
 

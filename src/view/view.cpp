@@ -9,10 +9,10 @@
 // number of frames per second we want to draw
 // 60 FPS is a good number.. it's widely considered that you can't see any more
 // and the frame rate is often capped by other the graphics card at 60.
-const uint FRAMES_PER_SECOND = 60;
+const uint32_t FRAMES_PER_SECOND = 60;
 
 // number of moves to perform a second (best effort).
-const uint MOVES_PER_SECOND = 60;
+const uint32_t MOVES_PER_SECOND = 60;
 
 
 View::View(Model * model, SDL_Window * window, SDL_Renderer * renderer,
@@ -120,9 +120,9 @@ int View::clean_up() {
 
 int View::msg_loop() {    
     SDL_Event event;
-    uint time_now;
-    uint last_frame_time = SDL_GetTicks();
-    uint last_move_time = last_frame_time;  
+    uint32_t time_now;
+    uint32_t last_frame_time = SDL_GetTicks();
+    uint32_t last_move_time = last_frame_time;  
 
 
     // loop handling messages till someone exists the game 

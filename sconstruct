@@ -1,9 +1,69 @@
 # -*-python-*-
 
+import platform
+import os
+from os.path import join
+
+if platform.system() == "Windows":
+    sdl_path = "C:/turkey/SDL2-2.0.1/i686-w64-mingw32" 
+    sdl_lib_path = join(sdl_path, "lib")
+    sdl_include_path = join(sdl_path, "include")
+    # some of the third party sdl add on libs are trying to include SDL headers directly.
+    sdl_include_path2 = join(sdl_include_path, "SDL2") 
+    
+    sdl_ttf_path = "C:/turkey/SDL2_ttf-2.0.12/i686-w64-mingw32"
+    sdl_ttf_lib_path = join(sdl_ttf_path, "lib")
+    sdl_ttf_include_path = join(sdl_ttf_path, "include")
+    
+    sdl_image_path = "C:/turkey/SDL2_image-2.0.0/i686-w64-mingw32"
+    sdl_image_lib_path = join(sdl_image_path, "lib")
+    sdl_image_include_path = join(sdl_image_path, "include")
+    
+    sdl_mixer_path = "C:/turkey/SDL2_mixer-2.0.0/i686-w64-mingw32"
+    sdl_mixer_lib_path = join(sdl_mixer_path, "lib")
+    sdl_mixer_include_path = join(sdl_mixer_path, "include")
+    
+    python_path = "C:/Python27"
+    python_lib_path = join(python_path, "libs")
+    python_include_path = join(python_path, "include")
+    
+    include_path = [sdl_include_path, sdl_include_path2, 
+                    sdl_ttf_include_path, sdl_image_include_path, sdl_mixer_include_path, python_include_path]
+    lib_path = [sdl_lib_path, sdl_ttf_lib_path, sdl_image_lib_path, sdl_mixer_lib_path, python_lib_path]
+    python_lib_name = "python27"
+    
+    special_windows_libs = ["mingw32", "SDL2Main", ]
+
+    # COMPILATION NOTES AND BUG FIXES FOR MINGW/GCC/ETC
+    
+    # you may need to manually patch header files to handle this bug
+    # http://sourceforge.net/p/mingw/bugs/2024/
+    # TLDR: In c:\mingw\include\io.h query replace off64_t with _off64_t
+    
+    # work around for bug 11566: problems with mingw and python http://bugs.python.org/issue11566
+    # TLDR: you do't have to do anything
+    patch_cxx_flags = " -include cmath "
+    
+    # work around for weird string related bug
+    # http://gcc.gnu.org/bugzilla/show_bug.cgi?id=52015
+    # http://tehsausage.com/mingw-to-string
+    # I've just avoided it in the code.. we can wait a bit for the fix
+    
+else:
+    include_path = ["/usr/local/include", "/usr/include/python2.7", ]
+    lib_path = ["/usr/local/lib", ]
+    patch_cxx_flags = ""
+    python_lib_name = "python2.7"
+
 Program("turkey",
-        ["src/main.cpp", Glob("src/model/*.cpp"), Glob("src/view/*.cpp"), Glob("src/shared/*.cpp")],
-        CPPPATH = ["./src", "/usr/local/include", "/usr/include/python2.7", ],
-        CXXFLAGS = "-std=c++11 -Wall -Werror",
-        LIBPATH = ["/usr/local/lib", ],
-        LIBS = ["SDL2", "SDL2_image", "SDL2_ttf", "SDL2_mixer", "python2.7", ],        
+        ["src/main.cpp", 
+         Glob("src/model/*.cpp"), 
+         Glob("src/view/*.cpp"), 
+         Glob("src/shared/*.cpp")],
+        CPPPATH = ["./src", ] + include_path,
+        CXXFLAGS = "-std=c++11 -Wall -Werror" + patch_cxx_flags,
+        LIBPATH = lib_path,
+        LIBS = special_windows_libs + [
+        "SDL2", "SDL2_image", "SDL2_ttf", "SDL2_mixer", python_lib_name, 
+        ],
         )
