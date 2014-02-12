@@ -25,6 +25,46 @@ const int TRUE = 0;
  */
 
 
+/* Adds a new scenery object to the game */
+static PyObject* turkey_add_scenery(PyObject *self, PyObject *args)    
+{    
+    float x, y, scroll_rate;
+    PyObject * texture_object = nullptr;
+    
+    if (!PyArg_ParseTuple(args, "fffO:add_scenery", 
+            &scroll_rate, &x, &y, &texture_object)) {
+        return NULL;
+    }
+
+    View * view = (View*)PyCapsule_Import("turkey._VIEW", 0);
+    if (view == NULL) {
+        log_msg("Problem extracting the c++ view object.");
+        return Py_BuildValue("i", 0);
+    }
+        
+    SDL_Texture * texture = nullptr;
+    if (texture_object != nullptr) {
+        texture = (SDL_Texture *)PyCapsule_GetPointer(texture_object, "turkey._TEXTURE");
+    }
+
+    if (texture == NULL) {
+        // throw an exception!
+        PyErr_SetString(
+            FailedToLoadTextureErr,
+            (std::string(
+                "Problem extracting the texture at ") + 
+                //__FILE__ + "," + (char*)__LINE__ + ": " +
+                SDL_GetError()
+             ).c_str());
+        return NULL;
+    }
+
+    view->add_scenery(scroll_rate, x, y, texture);
+
+    return Py_BuildValue("i", 1);
+}
+
+
 /*
  * Quit the game!!!
  */
@@ -274,6 +314,11 @@ static PyMethodDef InitializeTurkeyMethods[] = {
      METH_VARARGS, 
      "Quit the game!!!"},
 
+    {"add_scenery", 
+     turkey_add_scenery, 
+     METH_VARARGS, 
+     "Add a new piece of scenery to the game."},
+
     {"debug_set_draw_grid", 
      turkey_debug_set_draw_grid, 
      METH_VARARGS, 
@@ -323,6 +368,9 @@ int Scripting::init(char * program_fname) {
     // add the directory containing the executable to the python path
     // (no return value to check!)
     Py_SetProgramName(program_fname);
+
+    // Disable importing site.py
+    Py_NoSiteFlag = 1;  
 
     // initialize embedded python scripting
     // (no return value to check!)

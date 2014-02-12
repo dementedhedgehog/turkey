@@ -27,20 +27,21 @@ class SceneryManager {
 
  private:
     
-    // sets are sorted
+    // a list of all scenery elements sorted back to front
+    // FIXME: we will almost certainly want to do this a bit smarter..
+    //        e.g loading and unloading background textures on demand
+    //        but this will do for now.
     std::vector<Scenery*> backgrounds;
-    //std::list<Scenery*> foreground;
-
+    std::vector<Scenery*> foregrounds;
 
  public:
 
     int render_background(SDL_Renderer * renderer, float camera_x, float camera_y);
+    int render_foreground(SDL_Renderer * renderer, float camera_x, float camera_y);
 
-    int add_background(SDL_Texture * texture, 
-        float scroll_rate, 
-        float x, float y);
-    //int add_foreground(const std::string fname, float scroll_rate);
-
+    // if scroll_rate <= 1.0 the scenery will appear in the background
+    // otherwise it will appear in the foreground
+    int add_scenery(float scroll_rate, float x, float y, SDL_Texture * texture);
 };
 
 #endif

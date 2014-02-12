@@ -49,6 +49,19 @@ def initialize_levels():
 
         star = turkey.load_texture("./res/star.png")
         print "add_particle_system " + str(turkey.add_particle_system(star))
+
+
+        background = turkey.load_texture("./res/background.jpg")
+        turkey.add_scenery(0.3, 0, 0, background)
+
+        tree = turkey.load_texture("./res/tree.png")
+        turkey.add_scenery(0.7, 100, 78, tree)
+
+        turkey.add_scenery(0.5999, 240, 52, tree)
+        turkey.add_scenery(0.6, 240, 82, tree)
+
+        plant = turkey.load_texture("./res/plant.png")
+        turkey.add_scenery(1.2, 120, 250, plant)
         
     except Exception as err:
         print err

@@ -30,32 +30,6 @@ GameView::GameView(Model * model,
 
 int GameView::init() {
 
-    // FIXME: all this should be done using config files? 
-    background = load_texture("./res/background.jpg", renderer);
-    if (background == nullptr) {
-        log_sdl_error("Load game view background image failed");
-        return 1;
-    }
-
-
-    //
-    // FIXME: playing around with the scenery manager
-    //
-    background = load_texture("./res/background.jpg", renderer);
-    if (background == nullptr) {
-        log_sdl_error("Load game view background image failed");
-        return 1;
-    }
-    scenery_manager.add_background(background, 0.3, 0, 0);
-
-    tree = load_texture("./res/tree.png", renderer);
-    if (tree == nullptr) {
-        log_sdl_error("Load game view tree image failed");
-        return 1;
-    }
-    scenery_manager.add_background(tree, 0.7, 100, 100);
-
-
     // the pause indicator
     pause_symbol = load_texture("./res/pause.png", renderer);
     if (pause_symbol == nullptr) {
@@ -104,7 +78,7 @@ int GameView::render() {
     // draw the background
     //render_texture(background, renderer, 0 - camera_x, 0-camera_y);
 
-    std::cout << camera_x << ", " << camera_y << std::endl;
+    //std::cout << camera_x << ", " << camera_y << std::endl;
     scenery_manager.render_background(renderer, camera_x, camera_y);
     //scenery_manager.render_background(renderer, 0, 0);
 
@@ -137,6 +111,9 @@ int GameView::render() {
         render_bounding_box(renderer, game_obj);
     }    
 
+    // draw the foregrond scenery
+    scenery_manager.render_foreground(renderer, camera_x, camera_y);
+
     // draw the title
     SDL_Rect src = { 0, 0, title_text->w, title_text->h };
     SDL_Rect dest = { window_width - title_text->w - 30, 30, title_text->w, title_text->h};
@@ -153,7 +130,6 @@ int GameView::render() {
 
 int GameView::clean_up() {
     // clean up the sdl objects
-    SDL_DestroyTexture(background);
     SDL_DestroyTexture(pause_symbol);
     SDL_FreeSurface(title_text);
     SDL_DestroyTexture(title_texture);
@@ -166,4 +142,11 @@ int GameView::clean_up() {
 }    
 
 void  GameView::mouse_button() { }
+
+
+// expose this to python
+int GameView::add_scenery(float scroll_rate, float x, float y, SDL_Texture * texture) 
+{
+    return scenery_manager.add_scenery(scroll_rate, x, y, texture);
+}
 

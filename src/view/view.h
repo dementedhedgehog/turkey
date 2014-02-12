@@ -96,6 +96,10 @@ class View : public IStateListener, public BaseView {
     // access the window 
     // (the image renderer needs it).
     SDL_Window * get_window() { return window; };
+
+    // expose to the python interface
+    // FIXME: this stuff is all over the place at the moment
+    int add_scenery(float scroll_rate, float x, float y, SDL_Texture * texture);
 };
 
 #endif

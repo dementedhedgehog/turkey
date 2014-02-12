@@ -2,6 +2,17 @@
 tasks
 =====
 
+  * set backgrounds/foregrounds from python
+
+  * render fps text on the GPU
+  * gpu side static text class
+  * load sprites in python
+
+  * windows installer
+     - what dlls do I need?
+
+  
+
   * return where collision occurred..  (collision internal?) BUGGY!   
 
       - array based collision resolution system 
@@ -13,7 +24,7 @@ tasks
       - sprites
       - profiling
 
-   * customizable keyboard handler
+   * customizable keyboard handler (map keys to actions).
    * collision detection
       - scaling acceleration!
       - quad trees?
@@ -23,23 +34,13 @@ tasks
       - collision handling: friction, hysterisis, programmable callbacks  
       - needs penetration resolution for two objects moving towards each other??
 
-
    * settings in python (debug etc)
        - screen boundaries
        - aabb bounding boxes
-   * set backgrounds in python
-
-  * build in windows
-
-   
-   * parallax backgrounds
-   * background manager
 
    * sprite implementation and animation
-   * load sprites in python
 
    * triggers in python.. collisions or collisions and inputs
-   * particle system (to check the collision system)
    * dump a stack trace on error
    * screens/view contexts.. need an intro, main menu, etc
    * sound manager
@@ -51,7 +52,6 @@ later
    * ui widget library
    * parallax, fake 3d tunnels, snow etc
    * particle system for flashy stuff
-   * render fps text on the GPU
 
 done
 ====
@@ -73,4 +73,8 @@ done
       - check collisions before moving
   * move camera
   * particle systems
+  * parallax backgrounds
+  * background manager
+  * build in windows   
+  * particle system (to check the collision system)
       

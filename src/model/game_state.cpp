@@ -67,7 +67,7 @@ void GameState::age_ttl_game_objs(float delta_time) {
         game_obj = *i;
         game_obj->ttl_in_secs -= delta_time;
 
-        std::cout << "ttl " << game_obj->ttl_in_secs << std::endl;
+        //std::cout << "ttl " << game_obj->ttl_in_secs << std::endl;
 
         if (game_obj->ttl_in_secs <= 0.0f) {
 
@@ -380,9 +380,9 @@ void GameState::handle_keyboard(const Uint8 * key_states) {
                 rctrl_key_pressed = true;
                 if (character) character->dump_position("character");
                 
-                std::cout << "--------- " << std::endl;
-                std::cout << "movable " << movable_game_objs.size() << std::endl;
-                std::cout << "all " << game_objs.size() << std::endl;
+                // // std::cout << "--------- " << std::endl;
+                // // std::cout << "movable " << movable_game_objs.size() << std::endl;
+                // // std::cout << "all " << game_objs.size() << std::endl;
                }
         }
         else {
@@ -395,7 +395,7 @@ void GameState::handle_keyboard(const Uint8 * key_states) {
 
 void GameState::handle_mouse(const int x, const int y, const Uint8 mouse_button_state) {
     if (mouse_button_state & SDL_BUTTON(1)) {
-        std::cout << "Mouse Button 1(left) is pressed.\n" << x << " , " << y << std::endl;
+        // std::cout << "Mouse Button 1(left) is pressed.\n" << x << " , " << y << std::endl;
 
         particle_system->generate_particles(this, x, y);
     }

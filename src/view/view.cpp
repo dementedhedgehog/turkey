@@ -290,3 +290,9 @@ void View::debug_set_draw_fps(const bool draw_fps) {
 void View::quit() { 
     finished = true; 
 }
+
+// expose this to python
+int View::add_scenery(float scroll_rate, float x, float y, SDL_Texture * texture) 
+{
+    return game_view->add_scenery(scroll_rate, x, y, texture);
+}

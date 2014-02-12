@@ -10,12 +10,6 @@
 
 class GameView : public BaseView {
  private:
-
-    // some renderer textures FIXME: remove this stuff!
-    SDL_Texture * background;
-    SDL_Texture * tree; 
-    SDL_Texture * stone; // block of stone  - just hacking this in here for the moment
-
     SceneryManager scenery_manager;
 
     // the pause symbol (displayed when the game is paused)
@@ -62,6 +56,8 @@ class GameView : public BaseView {
 
     // 
     void debug_set_draw_grid(const bool draw_grid) { debug_draw_grid = draw_grid; } 
+
+    int add_scenery(float scroll_rate, float x, float y, SDL_Texture * texture);
 };
 
 #endif 

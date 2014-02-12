@@ -200,7 +200,7 @@ CollisionType GameObj::check_for_projected_fixed_collision(GameObj * other_game_
         // moving right
         if (pax < other_game_obj->bx) {
             result = result | CollisionType::RIGHT;
-            std::cout << " collision " << result << std::endl;
+            //std::cout << " collision " << result << std::endl;
         }
     }
 

@@ -42,7 +42,6 @@ class Collision {
         // stop it falling through the floor?
         if (((collision_type & CollisionType::BOTTOM) != CollisionType::NONE) && !b->movable) {
 
-            //std::cout << "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" << std::endl;
             //a->y_vel_per_sec = 0.0f;
             a->collision_set_y_velocity(0.0f);
             a->jumping = false;
