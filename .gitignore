@@ -1,0 +1,9 @@
+.sconsign.dblite
+*.pyc
+*~
+*.o
+*.obj
+turkey
+turkey.exe
+
+

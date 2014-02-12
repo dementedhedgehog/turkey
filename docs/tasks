@@ -2,15 +2,12 @@
 tasks
 =====
 
-  * set backgrounds/foregrounds from python
+  * windows installer
+     - what dlls do I need?
 
   * render fps text on the GPU
   * gpu side static text class
   * load sprites in python
-
-  * windows installer
-     - what dlls do I need?
-
   
 
   * return where collision occurred..  (collision internal?) BUGGY!   
@@ -77,4 +74,5 @@ done
   * background manager
   * build in windows   
   * particle system (to check the collision system)
+  * set backgrounds/foregrounds from python
       
