@@ -13,9 +13,9 @@ IntroState::IntroState(Model * model) {
 State IntroState::get_state() { return State::INTRO; };
 
 void IntroState::update(const Uint8 * key_states) { 
-    if (key_states[SDL_SCANCODE_RCTRL]) { 
+    //if (key_states[SDL_SCANCODE_RCTRL]) { 
         model->change_state(State::GAME);
-    }
+    //}
 }
 
 

@@ -1,0 +1,286 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<!-- -*-xml-*-
+
+ candle.exe turkey_installer.wxs
+ light.exe turkey_installer.wixobj 
+
+ -->
+<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
+    <Product Name='Turkey' Id='6773ae8d-b604-44b9-9e61-2e92731db40e'
+        UpgradeCode='0b859ef6-7906-42da-8fcd-27e3aebdfb93'
+        Language='1033' Version='0.0.0.2' Manufacturer='Unusual Suspects'>
+
+        <Package 
+            Id='*' 
+            InstallerVersion='200' 
+            Compressed='yes' />
+
+        <Media Id='1' Cabinet='SampleApp.cab' EmbedCab='yes' />
+        
+        
+        <!-- Step 1: Define the directory structure -->
+        <Directory Id="TARGETDIR" Name="SourceDir">
+            <Directory Id="ProgramFilesFolder">
+                <Directory Id="APPLICATIONROOTDIRECTORY" Name="Turkey">
+                    <Directory Id="TURKEY_RESOURCE_DIR" Name="res"/>
+                    <Directory Id="TURKEY_SCRIPTS_DIR" Name="scripts"/>
+                </Directory>
+            </Directory>
+        </Directory>
+
+        <!-- Step 2: Add files to your installer package -->
+        <DirectoryRef Id="APPLICATIONROOTDIRECTORY">
+            <Component Id="turkey.exe" Guid="6b9ab9cc-7b49-49a4-a755-b97d917d3ff0">
+                <File Id="turkey.exe" Source="bin\turkey.exe" KeyPath="yes" Checksum="yes"/>
+            </Component>
+            <Component Id="python27.dll" Guid="ac5132fe-6b12-4b87-ac5d-c778784d91c7">
+                <File Id="python27.dll" Source="bin\python27.dll" KeyPath="yes"/>
+            </Component>
+            
+            <Component Id="LICENSE.FLAC.txt" Guid="523da94b-18cf-4863-9c4f-7a5046ea2262">
+                <File Id="LICENSE.FLAC.txt" Source="bin\LICENSE.FLAC.txt" KeyPath="yes" Checksum="yes"/>
+            </Component>
+
+            <Component Id="LICENSE.freetype.txt" Guid="dd0c065f-50b6-4ba4-8f97-33a1c3e3da79">
+                <File Id="LICENSE.freetype.txt" Source="bin\LICENSE.freetype.txt" KeyPath="yes" Checksum="yes"/>
+            </Component>
+
+            <Component Id="LICENSE.jpeg.txt" Guid="f4759849-7df6-464c-8014-6e438152e2b8">
+                <File Id="LICENSE.jpeg.txt" Source="bin\LICENSE.jpeg.txt" KeyPath="yes" Checksum="yes"/>
+            </Component>
+
+            <Component Id="LICENSE.modplug.txt" Guid="d1849fb8-ce3f-434c-bac2-fec0d884a9cd">
+                <File Id="LICENSE.modplug.txt" Source="bin\LICENSE.modplug.txt" KeyPath="yes" Checksum="yes"/>
+            </Component>
+
+            <Component Id="LICENSE.ogg_vorbis.txt" Guid="b5728246-950f-4e0c-9aad-d923efdbe76a">
+                <File Id="LICENSE.ogg_vorbis.txt" Source="bin\LICENSE.ogg-vorbis.txt" KeyPath="yes" Checksum="yes"/>
+            </Component>
+
+            <Component Id="LICENSE.png.txt" Guid="435fb7a3-a728-4198-8ae9-708fa7f658a6">
+                <File Id="LICENSE.png.txt" Source="bin\LICENSE.png.txt" KeyPath="yes" Checksum="yes"/>
+            </Component>
+
+            <Component Id="LICENSE.smpeg.txt" Guid="85fdbce9-7624-4cdc-80f5-bcfe37811c2e">
+                <File Id="LICENSE.smpeg.txt" Source="bin\LICENSE.smpeg.txt" KeyPath="yes" Checksum="yes"/>
+            </Component>
+
+            <Component Id="LICENSE.tiff.txt" Guid="2614bbad-a755-4004-803e-063212a40da3">
+                <File Id="LICENSE.tiff.txt" Source="bin\LICENSE.tiff.txt" KeyPath="yes" Checksum="yes"/>
+            </Component>
+
+            <Component Id="LICENSE.webp.txt" Guid="bfcf7c69-84c3-4e2c-aff3-f4ec9ccafad7">
+                <File Id="LICENSE.webp.txt" Source="bin\LICENSE.webp.txt" KeyPath="yes" Checksum="yes"/>
+            </Component>
+
+            <Component Id="LICENSE.zlib.txt" Guid="a350b7f8-6073-4d2a-8899-47f2e0649df8">
+                <File Id="LICENSE.zlib.txt" Source="bin\LICENSE.zlib.txt" KeyPath="yes" Checksum="yes"/>
+            </Component>
+
+            <Component Id="SDL2.dll" Guid="8e04b64c-abda-4d6f-92c8-632f51903325">
+                <File Id="SDL2.dll" Source="bin\SDL2.dll" KeyPath="yes" Checksum="yes"/>
+            </Component>
+
+            <Component Id="SDL2_image.dll" Guid="060f9dc9-8b47-46b4-92a7-036218d2e91e">
+                <File Id="SDL2_image.dll" Source="bin\SDL2_image.dll" KeyPath="yes" Checksum="yes"/>
+            </Component>
+
+            <Component Id="SDL2_mixer.dll" Guid="6065c782-87ed-4ab1-939c-dc5ea4f54bd4">
+                <File Id="SDL2_mixer.dll" Source="bin\SDL2_mixer.dll" KeyPath="yes" Checksum="yes"/>
+            </Component>
+
+            <Component Id="SDL2_ttf.dll" Guid="bc68b189-59cc-42d4-89c5-cb74427552a3">
+                <File Id="SDL2_ttf.dll" Source="bin\SDL2_ttf.dll" KeyPath="yes" Checksum="yes"/>
+            </Component>
+
+            <Component Id="libFLAC_8.dll" Guid="f22e214d-3bcb-41b1-9bea-1d7abff62808">
+                <File Id="libFLAC_8.dll" Source="bin\libFLAC-8.dll" KeyPath="yes" Checksum="yes"/>
+            </Component>
+
+            <Component Id="libfreetype_6.dll" Guid="b0e32a71-0156-4023-b66b-f448831ec68f">
+                <File Id="libfreetype_6.dll" Source="bin\libfreetype-6.dll" KeyPath="yes" Checksum="yes"/>
+            </Component>
+
+            <Component Id="libgcc_s_dw2_1.dll" Guid="f8970803-770a-46a9-a13b-4c198d055e48">
+                <File Id="libgcc_s_dw2_1.dll" Source="bin\libgcc_s_dw2-1.dll" KeyPath="yes" Checksum="yes"/>
+            </Component>
+
+            <Component Id="libjpeg_9.dll" Guid="f25783bf-6416-4220-bcdf-dc19a92a8565">
+                <File Id="libjpeg_9.dll" Source="bin\libjpeg-9.dll" KeyPath="yes" Checksum="yes"/>
+            </Component>
+
+            <Component Id="libmodplug_1.dll" Guid="2570acfa-1982-4112-9003-38ee5226ae0e">
+                <File Id="libmodplug_1.dll" Source="bin\libmodplug-1.dll" KeyPath="yes" Checksum="yes"/>
+            </Component>
+
+            <Component Id="libogg_0.dll" Guid="d21ba003-39f3-4e9e-95ad-2ffcbd1057c1">
+                <File Id="libogg_0.dll" Source="bin\libogg-0.dll" KeyPath="yes" Checksum="yes"/>
+            </Component>
+
+            <Component Id="libpng16_16.dll" Guid="cb5d1c48-68ff-40fd-879e-3fbb6311e817">
+                <File Id="libpng16_16.dll" Source="bin\libpng16-16.dll" KeyPath="yes" Checksum="yes"/>
+            </Component>
+
+            <Component Id="libstdcpp_6.dll" Guid="04d69668-a6fc-4559-9c3c-cdf078593ccf">
+                <File Id="libstdcpp_6.dll" Source="bin\libstdc++-6.dll" KeyPath="yes" Checksum="yes"/>
+            </Component>
+
+            <Component Id="libtiff_5.dll" Guid="1ce9248a-75fa-4cec-90fe-76f5f2f6ee21">
+                <File Id="libtiff_5.dll" Source="bin\libtiff-5.dll" KeyPath="yes" Checksum="yes"/>
+            </Component>
+
+            <Component Id="libvorbis_0.dll" Guid="9222efb9-e7af-4059-830f-bcc028054ef4">
+                <File Id="libvorbis_0.dll" Source="bin\libvorbis-0.dll" KeyPath="yes" Checksum="yes"/>
+            </Component>
+
+            <Component Id="libvorbisfile_3.dll" Guid="23fddfc7-1afd-4d2c-81b8-2349ae88bc55">
+                <File Id="libvorbisfile_3.dll" Source="bin\libvorbisfile-3.dll" KeyPath="yes" Checksum="yes"/>
+            </Component>
+
+            <Component Id="libwebp_4.dll" Guid="565a2574-a3aa-41de-b0b7-708d10268151">
+                <File Id="libwebp_4.dll" Source="bin\libwebp-4.dll" KeyPath="yes" Checksum="yes"/>
+            </Component>
+
+            <Component Id="smpeg2.dll" Guid="d531b640-2034-4d38-915a-d82a1e1d9989">
+                <File Id="smpeg2.dll" Source="bin\smpeg2.dll" KeyPath="yes" Checksum="yes"/>
+            </Component>
+
+            <Component Id="zlib1.dll" Guid="8a7ad7c6-9455-4439-ab26-f16059dff577">
+                <File Id="zlib1.dll" Source="bin\zlib1.dll" KeyPath="yes" Checksum="yes"/>
+            </Component>            
+        </DirectoryRef>
+
+        <DirectoryRef Id="TURKEY_RESOURCE_DIR">
+            <Component Id="res_background.jpg" Guid="682a8946-a4f9-43c4-a24f-e88aa96edfcb">
+                <File Id="res_background.jpg" Source="bin\res\background.jpg" KeyPath="yes" Checksum="yes"/>
+            </Component>            
+            
+            <Component Id="res_beat.wav" Guid="cc121f38-f2da-45be-afc5-dd7334294806">
+                <File Id="res_beat.wav" Source="bin\res\beat.wav" KeyPath="yes" Checksum="yes"/>
+            </Component>            
+
+            <Component Id="res_dwarf.png" Guid="94883eeb-f059-4509-9de9-cbddb2e1720c">
+                <File Id="res_dwarf.png" Source="bin\res\dwarf.png" KeyPath="yes" Checksum="yes"/>
+            </Component>            
+
+            <Component Id="res_high.wav" Guid="5c6878c9-78b9-4871-9bb6-a7cedc938df5">
+                <File Id="res_high.wav" Source="bin\res\high.wav" KeyPath="yes" Checksum="yes"/>
+            </Component>            
+
+            <Component Id="res_hobbiton_brush_hand.ttf" Guid="a69225ee-c745-4433-a21f-6d62e79c51a2">
+                <File Id="res_hobbiton_brush_hand.ttf" Source="bin\res\hobbiton_brush_hand.ttf" KeyPath="yes" Checksum="yes"/>
+            </Component>            
+
+            <Component Id="res_intro_background.jpg" Guid="8acae9a8-28b0-4347-a447-57a5002c78cb">
+                <File Id="res_intro_background.jpg" Source="bin\res\intro_background.jpg" KeyPath="yes" Checksum="yes"/>
+            </Component>            
+
+            <Component Id="res_ken.png" Guid="4bceece7-d036-4e6a-8152-e2e449adfb56">
+                <File Id="res_ken.png" Source="bin\res\ken.png" KeyPath="yes" Checksum="yes"/>
+            </Component>            
+
+            <Component Id="res_low.wav" Guid="1f4624c7-6da0-4bb3-8790-15b98f61ac9b">
+                <File Id="res_low.wav" Source="bin\res\low.wav" KeyPath="yes" Checksum="yes"/>
+            </Component>            
+
+            <Component Id="res_medium.wav" Guid="8ea3f493-4316-4606-83cc-4720cd712af6">
+                <File Id="res_medium.wav" Source="bin\res\medium.wav" KeyPath="yes" Checksum="yes"/>
+            </Component>            
+
+            <Component Id="res_pause.png" Guid="e0674977-3af9-4bb3-8533-bfb93bc7fbee">
+                <File Id="res_pause.png" Source="bin\res\pause.png" KeyPath="yes" Checksum="yes"/>
+            </Component>            
+
+            <Component Id="res_plant.png" Guid="c80af2ca-a871-4f90-9a6c-2f2d79373b39">
+                <File Id="res_plant.png" Source="bin\res\plant.png" KeyPath="yes" Checksum="yes"/>
+            </Component>            
+
+            <Component Id="res_samurai.png" Guid="8937fa76-c5ec-4590-8953-5c12a62f7a68">
+                <File Id="res_samurai.png" Source="bin\res\samurai.png" KeyPath="yes" Checksum="yes"/>
+            </Component>            
+
+            <Component Id="res_scratch.wav" Guid="1a341df3-9ad7-43ea-9b2f-e17fbc34e175">
+                <File Id="res_scratch.wav" Source="bin\res\scratch.wav" KeyPath="yes" Checksum="yes"/>
+            </Component>            
+
+            <Component Id="res_star.png" Guid="4c5e58e7-aa66-4901-8691-b92a4a15d673">
+                <File Id="res_star.png" Source="bin\res\star.png" KeyPath="yes" Checksum="yes"/>
+            </Component>            
+
+            <Component Id="res_stone.png" Guid="530f8f3e-b080-46bd-bf4c-f8376234a9e2">
+                <File Id="res_stone.png" Source="bin\res\stone.png" KeyPath="yes" Checksum="yes"/>
+            </Component>            
+
+            <Component Id="res_tree.png" Guid="45ccc0a8-f556-416a-b2e6-a56571e5641b">
+                <File Id="res_tree.png" Source="bin\res\tree.png" KeyPath="yes" Checksum="yes"/>
+            </Component>            
+
+            <Component Id="res_turkey.ico" Guid="5f9739c3-1c21-4d30-875b-e0ce4480cfb7">
+                <File Id="res_turkey.ico" Source="bin\res\turkey.ico" KeyPath="yes" Checksum="yes"/>
+            </Component>            
+        </DirectoryRef>
+        
+        <DirectoryRef Id="TURKEY_SCRIPTS_DIR">
+            <Component Id="scripts___init__.py" Guid="f5e6d6ba-6583-44d7-917f-23dc342df0b3">
+                <File Id="scripts___init__.py" Source="bin\scripts\__init__.py" KeyPath="yes" Checksum="yes"/>
+            </Component>                    
+        </DirectoryRef>
+
+        
+        <!-- Step 3: Tell WiX to install the files -->
+        <Feature Id="MainApplication" Title="Main Application" Level="1">
+            <ComponentRef Id="turkey.exe" />
+            <ComponentRef Id="python27.dll" />
+            <ComponentRef Id="LICENSE.FLAC.txt" />
+            <ComponentRef Id="LICENSE.freetype.txt" />
+            <ComponentRef Id="LICENSE.jpeg.txt" />
+            <ComponentRef Id="LICENSE.modplug.txt" />
+            <ComponentRef Id="LICENSE.ogg_vorbis.txt" />
+            <ComponentRef Id="LICENSE.png.txt" />
+            <ComponentRef Id="LICENSE.smpeg.txt" />
+            <ComponentRef Id="LICENSE.tiff.txt" />
+            <ComponentRef Id="LICENSE.webp.txt" />
+            <ComponentRef Id="LICENSE.zlib.txt" />
+            <ComponentRef Id="SDL2.dll" />
+            <ComponentRef Id="SDL2_image.dll" />
+            <ComponentRef Id="SDL2_mixer.dll" />
+            <ComponentRef Id="SDL2_ttf.dll" />
+            <ComponentRef Id="libFLAC_8.dll" />
+            <ComponentRef Id="libfreetype_6.dll" />
+            <ComponentRef Id="libgcc_s_dw2_1.dll" />
+            <ComponentRef Id="libjpeg_9.dll" />
+            <ComponentRef Id="libmodplug_1.dll" />
+            <ComponentRef Id="libogg_0.dll" />
+            <ComponentRef Id="libpng16_16.dll" />
+            <ComponentRef Id="libstdcpp_6.dll" />
+            <ComponentRef Id="libtiff_5.dll" />
+            <ComponentRef Id="libvorbis_0.dll" />
+            <ComponentRef Id="libvorbisfile_3.dll" />
+            <ComponentRef Id="libwebp_4.dll" />
+            <ComponentRef Id="smpeg2.dll" />
+            <ComponentRef Id="zlib1.dll" />
+            
+            <!-- resources -->
+            <ComponentRef Id="res_background.jpg" />
+            <ComponentRef Id="res_beat.wav" />
+            <ComponentRef Id="res_dwarf.png" />
+            <ComponentRef Id="res_high.wav" />
+            <ComponentRef Id="res_hobbiton_brush_hand.ttf" />
+            <ComponentRef Id="res_intro_background.jpg" />
+            <ComponentRef Id="res_ken.png" />
+            <ComponentRef Id="res_low.wav" />
+            <ComponentRef Id="res_medium.wav" />
+            <ComponentRef Id="res_pause.png" />
+            <ComponentRef Id="res_plant.png" />
+            <ComponentRef Id="res_samurai.png" />
+            <ComponentRef Id="res_scratch.wav" />
+            <ComponentRef Id="res_star.png" />
+            <ComponentRef Id="res_stone.png" />
+            <ComponentRef Id="res_tree.png" />
+            <ComponentRef Id="res_turkey.ico" />
+            
+            <!-- scripts -->
+            <ComponentRef Id="scripts___init__.py" />
+        </Feature>
+    </Product>
+</Wix>
