@@ -8,13 +8,17 @@
 #include "model/particle_system.h"
 #include "view/utils.h"
 
+#define __STR(X) #X
+#define STR(X) __STR(X)
+
 // capsule names
-const char * VIEW = "turkey._VIEW";
-const char * IMAGE_MANAGER = "turkey._IMAGE_MANAGER";
-const char * MODEL = "turkey._MODEL";
-const char * RENDERER = "turkey._RENDERER";
-//const char * GAME_VIEW = "turkey._GAME_VIEW";
-const char * TEXTURE = "turkey._TEXTURE";
+#define MODULE "turkey"
+#define DOT "."
+#define VIEW "_VIEW"
+#define IMG_MGR "_IMG_MGR"
+#define MODEL "_MODEL"
+#define RENDERER "_RENDERER"
+#define TEXTURE "_TEXTURE"
 
 // python exceptions we throw from c++
 static PyObject * FailedToLoadTextureErr;
@@ -26,11 +30,12 @@ const int TRUE = 0;
 
 
 // helper function..
-static int add_capsule(PyObject * module, void * c_obj, const char * name) {
+static int add_capsule(PyObject * module, void * c_obj, 
+    const char * qualified_name, const char * name) {
     PyObject * c_api_object;
 
     // Create a capsule containing the view pointer 
-    c_api_object = PyCapsule_New((void *)c_obj, name, NULL);
+    c_api_object = PyCapsule_New((void *)c_obj, qualified_name, NULL);
     if (c_api_object == NULL) {
         log_msg("Problem creating view object for the python scripts!");
         return 1;
@@ -65,7 +70,7 @@ static PyObject* turkey_add_scenery(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    View * view = (View*)PyCapsule_Import(VIEW, 0);
+    View * view = (View*)PyCapsule_Import(MODULE DOT VIEW, 0);
     if (view == NULL) {
         log_msg("Problem extracting the c++ view object.");
         return Py_BuildValue("i", 0);
@@ -80,8 +85,7 @@ static PyObject* turkey_add_scenery(PyObject *self, PyObject *args)
         // throw an exception!
         PyErr_SetString(
             FailedToLoadTextureErr,
-            (std::string(
-                "Problem extracting the texture at ") + 
+            (std::string("Problem extracting the texture at ") + 
                 //__FILE__ + "," + (char*)__LINE__ + ": " +
                 SDL_GetError()
              ).c_str());
@@ -103,7 +107,7 @@ static PyObject* turkey_quit(PyObject *self, PyObject *args)
         return NULL;
     }
        
-    View * view = (View*)PyCapsule_Import(VIEW, 0);
+    View * view = (View*)PyCapsule_Import(MODULE DOT VIEW, 0);
     if (view == NULL) {
         log_msg("Problem extracting the c++ view object.");
         return Py_BuildValue("i", 0);
@@ -128,7 +132,7 @@ static PyObject* turkey_debug_set_draw_grid(PyObject *self, PyObject *args)
         return NULL;
     }
        
-    View * view = (View*)PyCapsule_Import(VIEW, 0);
+    View * view = (View*)PyCapsule_Import(MODULE DOT VIEW, 0);
     if (view == NULL) {
         log_msg("Problem extracting the c++ view object.");
         return Py_BuildValue("i", 0);
@@ -152,7 +156,7 @@ static PyObject* turkey_debug_set_draw_fps(PyObject *self, PyObject *args)
         return NULL;
     }
        
-    View * view = (View*)PyCapsule_Import(VIEW, 0);
+    View * view = (View*)PyCapsule_Import(MODULE DOT VIEW, 0);
     if (view == NULL) {
         log_msg("Problem extracting the c++ view object.");
         return Py_BuildValue("i", 0);
@@ -166,29 +170,32 @@ static PyObject* turkey_debug_set_draw_fps(PyObject *self, PyObject *args)
 }
 
 
+
 /* Adds a new game object to the game */
 static PyObject* turkey_add_game_obj(PyObject *self, PyObject *args)    
 {    
     float x, y;
     int movable = FALSE;
     PyObject * texture_object = nullptr;
+
+    std::cout << "XX" << std::endl;
+    std::cout << "Xbvc" << std::endl;
     
     if (!PyArg_ParseTuple(args, "ff|Oi:add_game_obj", &x, &y, &texture_object, &movable)) {
         return NULL;
     }
-       
-    Model * model = (Model*)PyCapsule_Import(MODEL, 0);
+ 
+    std::cout << "cc" << std::endl;
+      
+    Model * model = (Model*)PyCapsule_Import(MODULE DOT MODEL, 0);
     if (model == NULL) {
         log_msg("Problem extracting the c++ model object.");
         return Py_BuildValue("i", 0);
     }
-        
-    SDL_Texture * texture = nullptr;
-    if (texture_object != nullptr) {
-        texture = (SDL_Texture *)PyCapsule_GetPointer(texture_object, TEXTURE);
-    }
 
-    if (texture == NULL) {
+    std::cout << "cc" << std::endl;
+        
+    if (texture_object == nullptr) {
         // throw an exception!
         PyErr_SetString(
             FailedToLoadTextureErr,
@@ -198,11 +205,18 @@ static PyObject* turkey_add_game_obj(PyObject *self, PyObject *args)
                 SDL_GetError()
              ).c_str());
         return NULL;
-    }
+    }    
+
+    std::cout << "cff" << std::endl;
+
+    SDL_Texture * texture = nullptr;
+    texture = (SDL_Texture *)PyCapsule_GetPointer(texture_object, TEXTURE);
 
     GameObj * game_obj = new GameObj(x, y, texture, (bool)movable);
     GameState * game_state = model->get_game_state();
     game_state->add_game_obj(game_obj);
+
+    std::cout << "YY" << std::endl;
 
     return Py_BuildValue("i", 1);
 }
@@ -218,7 +232,7 @@ static PyObject* turkey_add_particle_system(PyObject *self, PyObject *args)
         return NULL;
     }
        
-    Model * model = (Model*)PyCapsule_Import(MODEL, 0);
+    Model * model = (Model*)PyCapsule_Import(MODULE DOT MODEL, 0);
     if (model == NULL) {
         log_msg("Problem extracting the c++ model object.");
         return Py_BuildValue("i", 0);
@@ -262,7 +276,7 @@ static PyObject* turkey_add_character_game_obj(PyObject *self, PyObject *args)
         return NULL;
     }
        
-    Model * model = (Model*)PyCapsule_Import(MODEL, 0);
+    Model * model = (Model*)PyCapsule_Import(MODULE DOT MODEL, 0);
     if (model == NULL) {
         log_msg("Problem extracting the c++ model object.");
         return Py_BuildValue("i", 0);
@@ -280,7 +294,7 @@ static PyObject* turkey_add_character_game_obj(PyObject *self, PyObject *args)
             FailedToLoadTextureErr,
             (std::string(
                 "Problem extracting the texture at ") + 
-                __FILE__ + "," + (char*)__LINE__ + ": " +
+                __FILE__ + "," + STR(__LINE__) + ": " +
                 SDL_GetError()
              ).c_str());
         return NULL;
@@ -302,19 +316,29 @@ static PyObject* turkey_add_character_game_obj(PyObject *self, PyObject *args)
 static PyObject* turkey_load_texture(PyObject *self, PyObject *args)
 {    
 
+    std::cout << "1" << std::endl;
+
     char * texture_fname;
     if(!PyArg_ParseTuple(args, "s:load_texture", &texture_fname)) {
         log_msg("Problem parsing the python arguments");
         Py_INCREF(Py_None);
         return Py_None;
     }
+
+    std::cout << "2" << std::endl;
        
-    View * view = (View *)PyCapsule_Import(VIEW, 0);
+    View * view = (View *)PyCapsule_Import(MODULE DOT VIEW, 0);
     if (view == NULL) {
-        log_msg("Problem extracting the c++ view object.");
-        Py_INCREF(Py_None);
-        return Py_None;
+        // throw an exception!
+        PyErr_SetString(
+            FailedToLoadTextureErr,
+            "Problem extracting the c++ view object. " 
+            __FILE__ ":" STR(__LINE__) "\n");
+        return NULL;
+
     }
+
+    std::cout << "3" << std::endl;
 
     // FIXME: this is ugly..
     SDL_Texture * texture = load_texture(texture_fname, view->get_renderer());
@@ -324,12 +348,18 @@ static PyObject* turkey_load_texture(PyObject *self, PyObject *args)
         return Py_None;
     }
 
+    std::cout << "4" << std::endl;
+
+
     PyObject * texture_object = PyCapsule_New((void *)texture, TEXTURE, NULL);
     if (texture_object == NULL) {
         log_msg("Problem creating texture for the python scripts!");
         Py_INCREF(Py_None);
         return Py_None;
     }
+
+    std::cout << "5" << std::endl;
+
 
     return Py_BuildValue("O", texture_object);
 }
@@ -351,7 +381,7 @@ static PyObject* turkey_load_textures_using_grid(PyObject *self, PyObject *args)
     }
        
     // extract the image manager 
-    ImageManager * image_manager = (ImageManager *)PyCapsule_Import(IMAGE_MANAGER, 0);
+    ImageManager * image_manager = (ImageManager *)PyCapsule_Import(MODULE DOT IMG_MGR, 0);
     if (image_manager == NULL) {
         log_msg("Problem extracting the image manager from the c++ view object.");
         Py_INCREF(Py_None);
@@ -359,7 +389,7 @@ static PyObject* turkey_load_textures_using_grid(PyObject *self, PyObject *args)
     }
 
     // extract the renderer
-    SDL_Renderer * renderer = (SDL_Renderer *)PyCapsule_Import(RENDERER, 0);
+    SDL_Renderer * renderer = (SDL_Renderer *)PyCapsule_Import(MODULE DOT RENDERER, 0);
     if (renderer == NULL) {
         log_msg("Problem extracting the renderer from the c++ view object.");
         Py_INCREF(Py_None);
@@ -367,7 +397,8 @@ static PyObject* turkey_load_textures_using_grid(PyObject *self, PyObject *args)
     }
 
     // load the textures from the sprite sheet
-    std::vector<SDL_Texture*> * textures = image_manager->load_textures_from_sprite_sheet_using_grid(
+    std::vector<SDL_Texture*> * textures = 
+        image_manager->load_textures_from_sprite_sheet_using_grid(
             texture_fname, 
             renderer, 
             x, y, w, h);
@@ -425,7 +456,7 @@ static PyObject* turkey_load_textures_using_rects(PyObject *self, PyObject *args
     }
        
     // extract the image manager 
-    ImageManager * image_manager = (ImageManager *)PyCapsule_Import(IMAGE_MANAGER, 0);
+    ImageManager * image_manager = (ImageManager *)PyCapsule_Import(MODULE DOT IMG_MGR, 0);
     if (image_manager == NULL) {
         log_msg("Problem extracting the image manager from the c++ view object.");
         Py_INCREF(Py_None);
@@ -433,7 +464,8 @@ static PyObject* turkey_load_textures_using_rects(PyObject *self, PyObject *args
     }
 
     // extract the renderer
-    SDL_Renderer * renderer = (SDL_Renderer *)PyCapsule_Import(RENDERER, 0);
+    SDL_Renderer * renderer = (SDL_Renderer *)PyCapsule_Import(
+        MODULE DOT RENDERER, 0);
     if (renderer == NULL) {
         log_msg("Problem extracting the renderer from the c++ view object.");
         Py_INCREF(Py_None);
@@ -613,22 +645,22 @@ int Scripting::init(char * program_fname) {
 
     // Create capsules containing pointers to things we want to expose to the python api.
     int result;
-    result = add_capsule(module, (void *)model, MODEL);
+    result = add_capsule(module, (void *)model, MODULE DOT MODEL, MODEL);
     if (result != 0) {
         return result;
     }
 
-    result = add_capsule(module, (void *)renderer, RENDERER);
+    result = add_capsule(module, (void *)view, MODULE DOT VIEW, VIEW);
     if (result != 0) {
         return result;
     }
 
-    result = add_capsule(module, (void *)this->image_manager, IMAGE_MANAGER);
+    result = add_capsule(module, (void *)renderer, MODULE DOT RENDERER, RENDERER);
     if (result != 0) {
         return result;
     }
 
-    result = add_capsule(module, (void *)view, VIEW);
+    result = add_capsule(module, (void *)this->image_manager, MODULE DOT IMG_MGR, IMG_MGR);
     if (result != 0) {
         return result;
     }
@@ -680,14 +712,14 @@ int Scripting::run_initialize_levels_script() {
             py_value = PyObject_CallObject(py_func, py_args);
             Py_DECREF(py_args);
             if (py_value != NULL) {
-                printf("Result of call: %ld\n", PyInt_AsLong(py_value));
+                log_msg("Result of call: %ld\n" + PyInt_AsLong(py_value));
                 Py_DECREF(py_value);
             }
             else {
                 Py_DECREF(py_func);
                 Py_DECREF(py_module);
                 PyErr_Print();
-                fprintf(stderr,"Call failed\n");
+                log_msg("Call to initialize levels failed \n");
                 return 1;
             }
         }
@@ -704,6 +736,6 @@ int Scripting::run_initialize_levels_script() {
         std::cout << "Failed to load \"" << module_name << "\"" << std::endl;
         return 1;
     }
-    return 0;
+    return 0; // success
 }
 

@@ -108,7 +108,11 @@ int main(int argc, char **argv){
     };
 
     // initialize the model using python scripts
-    scripting->run_initialize_levels_script();
+    if (scripting->run_initialize_levels_script() != 0) {
+        log_msg("Failed to run the init python method!");
+        return result;
+    };
+
 
 
     //
