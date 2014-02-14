@@ -8,6 +8,7 @@ tasks
   * render fps text on the GPU
   * gpu side static text class
   * load sprites in python
+  * load textures from file
   
 
   * return where collision occurred..  (collision internal?) BUGGY!   

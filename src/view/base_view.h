@@ -50,6 +50,9 @@ public:
     
     // mouse event
     virtual void mouse_button() = 0;
+
+    // expose the image manager (for the python api)
+    ImageManager * get_image_manager();
 };
 #endif 
 

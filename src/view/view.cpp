@@ -296,3 +296,26 @@ int View::add_scenery(float scroll_rate, float x, float y, SDL_Texture * texture
 {
     return game_view->add_scenery(scroll_rate, x, y, texture);
 }
+
+
+// // returns a list of textures loaded from a sprite sheet with a regular layout of sprites
+// std::vector<SDL_Texture*> * View::load_textures_from_sprite_sheet_using_grid(
+//     const std::string & fname, 
+//     SDL_Renderer * renderer,
+//     unsigned int width, // of frame in pixels
+//     unsigned int height, // of frame in pixels
+//     unsigned int n_frames_wide = 0,
+//     unsigned int n_frames_high = 0) {
+
+    
+
+// }
+
+// // load a list of textures from an image using irregular shaped sprites
+// std::vector<SDL_Texture*> * View::load_textures_from_sprite_sheet_using_rects(
+//     const std::string & fname, 
+//     SDL_Renderer * renderer,
+//     std::vector<SDL_Rect*> rects) {
+
+// }
+

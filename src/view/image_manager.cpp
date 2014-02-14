@@ -45,7 +45,7 @@ SDL_Texture * ImageManager::load(const std::string & fname, SDL_Renderer * rende
 	return texture;
 }
 
-std::vector<SDL_Texture*> * ImageManager::load_from_sprite_sheet(
+std::vector<SDL_Texture*> * ImageManager::load_textures_from_sprite_sheet_using_grid(
     const std::string & fname, 
     SDL_Renderer * renderer,
     unsigned int width, unsigned int height, // size of a "frame" in pixels
@@ -140,6 +140,86 @@ std::vector<SDL_Texture*> * ImageManager::load_from_sprite_sheet(
     SDL_FreeSurface(sprite_sheet);
     SDL_FreeSurface(frame_surface);
 
+    return frames;
+}  
+
+
+std::vector<SDL_Texture*> * ImageManager::load_textures_from_sprite_sheet_using_rects(
+    const std::string & fname, 
+    SDL_Renderer * renderer,
+    std::vector<SDL_Rect*> rects) { 
+
+    // the result .. a 1D vector of image frames
+    std::vector<SDL_Texture *> * frames = new std::vector<SDL_Texture *>(0);
+
+	// Load a surface
+    SDL_Surface * sprite_sheet = IMG_Load(fname.c_str()); 
+    if (!sprite_sheet) {
+        log_msg("Can't load sprite sheet!? " + fname + " " + IMG_GetError());
+        delete frames;
+        return nullptr;
+    }
+    
+    // create a surface for each texture
+    SDL_Surface* frame_surface;
+    Uint32 rmask, gmask, bmask, amask;
+
+    // SDL interprets each pixel as a 32-bit number, so our masks must depend
+    // on the endianness (byte order) of the machine 
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+    rmask = 0xff000000;
+    gmask = 0x00ff0000;
+    bmask = 0x0000ff00;
+    amask = 0x000000ff;
+#else
+    rmask = 0x000000ff;
+    gmask = 0x0000ff00;
+    bmask = 0x00ff0000;
+    amask = 0xff000000;
+#endif
+
+    SDL_Texture * frame;
+    SDL_Rect * clip;
+    std::vector<SDL_Rect*>::iterator i;
+    for (i = rects.begin(); i != rects.end(); i++) {
+        clip = *i;
+
+        // create a surface to store a frame
+        frame_surface = SDL_CreateRGBSurface(UNUSED, clip->w, clip->h, 32, rmask, gmask, bmask, amask);
+        if (!frame_surface) {
+            SDL_FreeSurface(sprite_sheet);
+            delete frames;
+            return nullptr;
+        }
+        SDL_SetSurfaceBlendMode(frame_surface, SDL_BLENDMODE_BLEND);
+
+        // blit from the sprite sheet to the frame surface
+        SDL_BlitSurface(sprite_sheet, clip, frame_surface, nullptr);
+
+        // create a texture for the frame on the graphics card
+        frame = SDL_CreateTextureFromSurface(renderer, frame_surface);
+        if (!frame) {
+            log_msg("Can't create frame surface?! " + fname);
+            SDL_FreeSurface(sprite_sheet);
+            SDL_FreeSurface(frame_surface);
+            delete frames;
+            return nullptr;
+        }
+
+        // clear the fram (otherwise we just get a composite of all frames drawn to the frame_surface).
+        SDL_FillRect(frame_surface, NULL, 0x000000);
+
+        // and add it to the list
+        frames->push_back(frame);
+
+        // keep a reference because we clean up everything here
+        all_textures.push_back(frame);
+
+    }
+    
+    // clean up 
+    SDL_FreeSurface(sprite_sheet);
+    SDL_FreeSurface(frame_surface);
     return frames;
 }  
 

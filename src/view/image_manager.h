@@ -30,13 +30,20 @@ class ImageManager {
     SDL_Texture * load(const std::string & fname, SDL_Renderer * renderer); 
 
     // load a list of textures from an image
-    std::vector<SDL_Texture*> * load_from_sprite_sheet(
+    std::vector<SDL_Texture*> * load_textures_from_sprite_sheet_using_grid(
         const std::string & fname, 
         SDL_Renderer * renderer,
         unsigned int width, // of frame in pixels
         unsigned int height, // of frame in pixels
         unsigned int n_frames_wide = 0,
         unsigned int n_frames_high = 0);
+
+
+    // load a list of textures from an image
+    std::vector<SDL_Texture*> * load_textures_from_sprite_sheet_using_rects(
+        const std::string & fname, 
+        SDL_Renderer * renderer,
+        std::vector<SDL_Rect*> rects);
 
 
     // clean up all image resources

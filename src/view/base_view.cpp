@@ -23,4 +23,6 @@ BaseView::BaseView(Model * model,
 }
 
 
-
+ImageManager * BaseView::get_image_manager() {
+    return image_manager;
+}

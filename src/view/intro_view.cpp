@@ -47,7 +47,7 @@ int IntroView::init() {
 
     // frames = image_manager->load_from_sprite_sheet(
     //     "./res/samurai.png", renderer, 67, 91, 13, 5);
-    frames = image_manager->load_from_sprite_sheet(
+    frames = image_manager->load_textures_from_sprite_sheet_using_grid(
         "./res/ken.png", renderer, 53, 71, 23, 9);
 
     // success

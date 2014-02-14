@@ -12,6 +12,9 @@ class Scripting {
 private:
     Model * model;
     View * view;
+    SDL_Renderer * renderer;
+    //GameView * game_view;
+    ImageManager * image_manager;
 
 public:
     Scripting(Model * model, View * view);

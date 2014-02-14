@@ -100,6 +100,22 @@ class View : public IStateListener, public BaseView {
     // expose to the python interface
     // FIXME: this stuff is all over the place at the moment
     int add_scenery(float scroll_rate, float x, float y, SDL_Texture * texture);
+
+    /* // returns a list of textures loaded from a sprite sheet with a regular layout of sprites */
+    /* std::vector<SDL_Texture*> * load_textures_from_sprite_sheet_using_grid( */
+    /*     const std::string & fname,  */
+    /*     SDL_Renderer * renderer, */
+    /*     unsigned int width, // of frame in pixels */
+    /*     unsigned int height, // of frame in pixels */
+    /*     unsigned int n_frames_wide = 0, */
+    /*     unsigned int n_frames_high = 0); */
+
+    /* // load a list of textures from an image using irregular shaped sprites */
+    /* std::vector<SDL_Texture*> * load_textures_from_sprite_sheet_using_rects( */
+    /*     const std::string & fname,  */
+    /*     SDL_Renderer * renderer, */
+    /*     std::vector<SDL_Rect*> rects); */
+
 };
 
 #endif
