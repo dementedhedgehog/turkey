@@ -10,30 +10,15 @@ def initialize_levels():
     #try:
     print 
 
-    # # turn on drawing cell grids?
-    # turkey.debug_set_draw_grid(False);
-    # turkey.debug_set_draw_fps(False);
-
-    
-    for x in dir(turkey):
-        print str(x)
-
-
-    print "X"
-    #print turkey._VIEW
+    # turn on drawing cell grids?
+    turkey.debug_set_draw_grid(False);
+    turkey.debug_set_draw_fps(False);
 
     # build some steps
-    print ""
     stone = turkey.load_texture("./res/stone.png")
-    print "xsdfsdf" + str(stone)
-
-    print "xxvxcv"
     turkey.add_game_obj(0.0, 0.0, stone)
 
-
-    print "xxvxcvcvdv"
     for i in range(2, 12):
-        print "xxvxcvcvdv" + str(i)
         turkey.add_game_obj(i * CELL_WIDTH, 20 * CELL_HEIGHT, stone)
 
 

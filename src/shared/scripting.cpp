@@ -178,22 +178,15 @@ static PyObject* turkey_add_game_obj(PyObject *self, PyObject *args)
     int movable = FALSE;
     PyObject * texture_object = nullptr;
 
-    std::cout << "XX" << std::endl;
-    std::cout << "Xbvc" << std::endl;
-    
     if (!PyArg_ParseTuple(args, "ff|Oi:add_game_obj", &x, &y, &texture_object, &movable)) {
         return NULL;
     }
- 
-    std::cout << "cc" << std::endl;
-      
+       
     Model * model = (Model*)PyCapsule_Import(MODULE DOT MODEL, 0);
     if (model == NULL) {
         log_msg("Problem extracting the c++ model object.");
         return Py_BuildValue("i", 0);
     }
-
-    std::cout << "cc" << std::endl;
         
     if (texture_object == nullptr) {
         // throw an exception!
@@ -207,16 +200,12 @@ static PyObject* turkey_add_game_obj(PyObject *self, PyObject *args)
         return NULL;
     }    
 
-    std::cout << "cff" << std::endl;
-
     SDL_Texture * texture = nullptr;
     texture = (SDL_Texture *)PyCapsule_GetPointer(texture_object, TEXTURE);
 
     GameObj * game_obj = new GameObj(x, y, texture, (bool)movable);
     GameState * game_state = model->get_game_state();
     game_state->add_game_obj(game_obj);
-
-    std::cout << "YY" << std::endl;
 
     return Py_BuildValue("i", 1);
 }
@@ -316,8 +305,6 @@ static PyObject* turkey_add_character_game_obj(PyObject *self, PyObject *args)
 static PyObject* turkey_load_texture(PyObject *self, PyObject *args)
 {    
 
-    std::cout << "1" << std::endl;
-
     char * texture_fname;
     if(!PyArg_ParseTuple(args, "s:load_texture", &texture_fname)) {
         log_msg("Problem parsing the python arguments");
@@ -325,8 +312,6 @@ static PyObject* turkey_load_texture(PyObject *self, PyObject *args)
         return Py_None;
     }
 
-    std::cout << "2" << std::endl;
-       
     View * view = (View *)PyCapsule_Import(MODULE DOT VIEW, 0);
     if (view == NULL) {
         // throw an exception!
@@ -338,8 +323,6 @@ static PyObject* turkey_load_texture(PyObject *self, PyObject *args)
 
     }
 
-    std::cout << "3" << std::endl;
-
     // FIXME: this is ugly..
     SDL_Texture * texture = load_texture(texture_fname, view->get_renderer());
     if (texture == NULL) {
@@ -348,18 +331,12 @@ static PyObject* turkey_load_texture(PyObject *self, PyObject *args)
         return Py_None;
     }
 
-    std::cout << "4" << std::endl;
-
-
     PyObject * texture_object = PyCapsule_New((void *)texture, TEXTURE, NULL);
     if (texture_object == NULL) {
         log_msg("Problem creating texture for the python scripts!");
         Py_INCREF(Py_None);
         return Py_None;
     }
-
-    std::cout << "5" << std::endl;
-
 
     return Py_BuildValue("O", texture_object);
 }
