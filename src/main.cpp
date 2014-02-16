@@ -6,10 +6,14 @@
 #include <iostream>
 #include <string>
 
+#include <SDL2/SDL.h>
+
 #include "model/model.h"
+#include "model/keyboard_handler.h"
 #include "view/view.h"
 #include "view/utils.h"
 #include "shared/scripting.h"
+#include "shared/actions.h"
 
 
 int main(int argc, char **argv){
@@ -37,7 +41,7 @@ int main(int argc, char **argv){
         return 3;
     }
 
-    // create the baseview window
+    // create the game window
     SDL_Window * window = SDL_CreateWindow(GAME_NAME, 
         SCREEN_POS_X, SCREEN_POS_Y, 
         SCREEN_WIDTH, SCREEN_HEIGHT,
@@ -48,7 +52,8 @@ int main(int argc, char **argv){
     }
 
     // create the baseview renderer for the window
-    SDL_Renderer * renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    SDL_Renderer * renderer = SDL_CreateRenderer(window, -1, 
+        SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     if (renderer == nullptr) {
         log_sdl_error("CreateRenderer");
         return 3;
@@ -78,6 +83,9 @@ int main(int argc, char **argv){
 
     // seed the random number generator
     srand(SDL_GetTicks());
+
+
+    
 
     // create the model 
     Model * model = new Model();
@@ -114,6 +122,12 @@ int main(int argc, char **argv){
     };
 
 
+    //
+    // Set up global key binding stuff here.
+    // 
+    KeyboardHandler::add_global_action(new ToggleFullscreen(window), SDL_SCANCODE_F1);
+    KeyboardHandler::add_global_action(new Quit(view), SDL_SCANCODE_ESCAPE);
+    
 
     //
     // Main Message Loop!

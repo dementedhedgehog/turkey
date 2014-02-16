@@ -21,6 +21,9 @@ GameObj::GameObj(float x, float y, SDL_Texture * texture, bool movable) {
     // we use this in a mark and sweep garbage collection
     this->dead = false;
 
+    // should we decelerate the game object?
+    this->do_decelerate = false;
+
     // a time to live value
     this->ttl_in_secs = -1.0;
 
@@ -286,30 +289,54 @@ float GameObj::calc_initial_projected_move(float delta_time_in_secs) {
 
 
 
-void GameObj::decelerate() {
-    if (x_vel_per_sec < 0) x_vel_per_sec += x_dec_per_sec;      
-    if (x_vel_per_sec > 0) x_vel_per_sec -= x_dec_per_sec;
+void GameObj::decelerate_character() {
+    if (do_decelerate) {
+        if (x_vel_per_sec < 0) x_vel_per_sec += x_dec_per_sec;
+        if (x_vel_per_sec > 0) x_vel_per_sec -= x_dec_per_sec;
 
-    // Deceleration may produce a speed that is greater than zero but
-    // smaller than the smallest unit of deceleration. These lines ensure
-    // that the player does not keep travelling at slow speed forever after
-    // decelerating.
-    if (x_vel_per_sec > 0 && x_vel_per_sec < x_dec_per_sec) {
-        x_vel_per_sec = 0.0f;
-    }
-    if (x_vel_per_sec < 0 && x_vel_per_sec > - x_dec_per_sec) {
-        x_vel_per_sec = 0.0f;
+        // Deceleration may produce a speed that is greater than zero but
+        // smaller than the smallest unit of deceleration. These lines ensure
+        // that the player does not keep travelling at slow speed forever after
+        // decelerating.
+        if (x_vel_per_sec > 0 && x_vel_per_sec < x_dec_per_sec) {
+            x_vel_per_sec = 0.0f;
+
+            // don't slow down sideways movement till we start moving again
+            do_decelerate = false;    
+        }
+        if (x_vel_per_sec < 0 && x_vel_per_sec > - x_dec_per_sec) {
+            x_vel_per_sec = 0.0f;
+
+            // don't slow down sideways movement till we start moving again
+            do_decelerate = false;    
+        }
     }
 }
+
+void GameObj::reset_decelerate_flag() { 
+    // slow down sideways movement for the character
+    do_decelerate = true;    
+}
+
 
 void GameObj::accelerate_left() { 
     x_vel_per_sec -= x_acc_per_sec;
     if (x_vel_per_sec < -x_max_vel_per_sec) x_vel_per_sec = -x_max_vel_per_sec;         
+    do_decelerate = false;    
 }
 
 void GameObj::accelerate_right() {
     x_vel_per_sec += x_acc_per_sec;        
     if (x_vel_per_sec > x_max_vel_per_sec) x_vel_per_sec = x_max_vel_per_sec;        
+    do_decelerate = false;    
+}
+
+void GameObj::move_up() { 
+    y_vel_per_sec -= 40.0f;
+}
+
+void GameObj::move_down() { 
+    y_vel_per_sec += 40.0f;
 }
 
 void GameObj::jump() {

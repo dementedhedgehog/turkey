@@ -6,16 +6,17 @@
 //#include "cell.h"
 //#include "position.h"
 
-#include "model/i_state.h"
+#include "model/base_state.h"
 #include "model/game_state.h"
 #include "model/intro_state.h"
 #include "model/camera.h"
 
 
-class FatalErrorState : public IState {
+class FatalErrorState : public BaseState {
  public:
     State get_state() { return State::FATAL_ERROR; }    
-    void update(const Uint8 * key_states) { }
+    //void update(const Uint8 * key_states) { }
+    void update() { }
     void handle_mouse(const int x, const int y, const Uint8 mouse_button_state) {};
 };
 
@@ -42,13 +43,15 @@ private:
     GameState * game_state;
     FatalErrorState * fatal_error_state;
     
-    IState * current_state;
+    BaseState * current_state;
 
     // a list of things to notify when the game state changes
     std::list<IStateListener*> listeners;
 
     // do we have keyboard focus
     bool game_has_keyboard_focus;
+
+    /* KeyboardHandler * keyboard_handler; */
 
 public: 
     Model();    
@@ -64,7 +67,8 @@ public:
     const bool has_keyboard_focus();
 
     // change the positions of the game objects, do collision detection etc.
-    void update(const Uint8 * key_states);
+    //void update(const Uint8 * key_states);
+    void update();
 
     // handle a mouse event
     void handle_mouse(const int x, const int y, const Uint8 mouse_button_state);

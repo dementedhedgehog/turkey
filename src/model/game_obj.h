@@ -44,6 +44,9 @@ class GameObj {
     // is the player jumping (space held down?)
     bool jumping;
 
+    // flag used for character movement
+    bool do_decelerate;
+
     // if this flag is true the game object will be removed
     bool dead;
 
@@ -111,11 +114,16 @@ class GameObj {
     //
     
     // change in speed when there's no direction input
-    void decelerate();
+    void reset_decelerate_flag();
+
+    // decelerate character if required
+    void decelerate_character();
 
     // moving the game object
     void accelerate_left();
     void accelerate_right();
+    void move_up();
+    void move_down();
     void jump();
 
     //

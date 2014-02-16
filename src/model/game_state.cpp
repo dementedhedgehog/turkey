@@ -5,8 +5,172 @@
 #include "model/game_state.h"
 #include "model/model.h"
 
+//
+// Actions
+//
+class PanLeft: public IAction {
+    Camera * camera;
+    
+ public:
+    PanLeft(Camera * camera) { this->camera = camera; }
+
+    void do_action() {
+        camera->pan_left();
+    }
+};
+
+class PanRight: public IAction {
+    Camera * camera;
+    
+ public:
+    PanRight(Camera * camera) { this->camera = camera; }
+
+    void do_action() {
+        camera->pan_right();
+    }
+};
 
 
+class PanUp: public IAction {
+    Camera * camera;
+    
+ public:
+    PanUp(Camera * camera) { this->camera = camera; }
+
+    void do_action() {
+        camera->pan_up();
+    }
+};
+
+
+class PanDown: public IAction {
+    Camera * camera;
+    
+ public:
+    PanDown(Camera * camera) { this->camera = camera; }
+
+    void do_action() {
+        camera->pan_down();
+    }
+};
+
+
+
+
+// Character
+class MoveLeft: public IAction {
+    GameObj * character;
+    
+ public:
+    MoveLeft(GameObj * character) { this->character = character; }
+
+    void do_action() {
+        character->accelerate_left();
+    }
+};
+
+
+class MoveRight: public IAction {
+    GameObj * character;
+    
+ public:
+    MoveRight(GameObj * character) { this->character = character; }
+
+    void do_action() {
+        character->accelerate_right();
+    }
+};
+
+class MoveUp: public IAction {
+    GameObj * character;
+    
+ public:
+    MoveUp(GameObj * character) { this->character = character; }
+
+    void do_action() {
+        character->move_up();
+    }
+};
+
+class MoveDown: public IAction {
+    GameObj * character;
+    
+ public:
+    MoveDown(GameObj * character) { this->character = character; }
+
+    void do_action() {
+        character->move_down();
+    }
+};
+
+
+class Jump: public IAction {
+    GameObj * character;
+
+    // need this to avoid strobing the jump button
+    bool jump_key_pressed;
+    
+ public:
+    Jump(GameObj * character) { 
+        this->character = character; 
+
+        // character jumping state
+        jump_key_pressed = false;
+    }
+
+    void do_action() {
+        //character->jump();
+
+        if (!character->jumping && !jump_key_pressed) { 
+            if (character) character->jump();
+            character->jumping = true;
+            jump_key_pressed = true;
+        }
+    }
+
+    bool do_debounce() { return true; };
+    void undo_action() {
+        // jump key released (logic to avoid strobing the jump key)
+        jump_key_pressed = false;
+    };
+};
+
+
+class Pause: public IAction {
+    GameState * game_state;
+
+    // need this to avoid strobing the jump button
+    bool pause_key_pressed;
+    
+ public:
+    Pause(GameState * game_state) { 
+        this->game_state = game_state; 
+
+        // debounce the pause key state
+        pause_key_pressed = false;
+    }
+
+    void do_action() {
+        if (!pause_key_pressed) {
+            pause_key_pressed = true;
+            game_state->toggle_pause();
+        }
+    }
+
+    bool do_debounce() { return true; };
+    void undo_action() {
+        // pause key released (logic to avoid strobing the pause key)
+        pause_key_pressed = false;
+    };
+};
+
+
+
+
+
+//
+// Game State
+//
 GameState::GameState(Model * model) {
     this->model = model;    
 
@@ -18,17 +182,25 @@ GameState::GameState(Model * model) {
 
     // pause state
     paused = false;
-    pause_key_pressed = false;
 
     // create a particle system
     particle_system = nullptr; //new ParticleSystem()
 
-    // character jumping state
-    jump_key_pressed = false;
-
     // start timing movement... now (movement = velocity * time).
-    last_time_updated = 0; 
+    last_time_updated = 0;
+
+    keyboard_handler->add_action(new PanRight(camera), SDL_SCANCODE_LEFT, SDL_SCANCODE_LALT);
+    keyboard_handler->add_action(new PanRight(camera), SDL_SCANCODE_LEFT, SDL_SCANCODE_RALT);
+    keyboard_handler->add_action(new PanLeft(camera), SDL_SCANCODE_RIGHT, SDL_SCANCODE_LALT);
+    keyboard_handler->add_action(new PanLeft(camera), SDL_SCANCODE_RIGHT, SDL_SCANCODE_RALT);
+    keyboard_handler->add_action(new PanUp(camera), SDL_SCANCODE_UP, SDL_SCANCODE_LALT);
+    keyboard_handler->add_action(new PanUp(camera), SDL_SCANCODE_UP, SDL_SCANCODE_RALT);
+    keyboard_handler->add_action(new PanDown(camera), SDL_SCANCODE_DOWN, SDL_SCANCODE_LALT);
+    keyboard_handler->add_action(new PanDown(camera), SDL_SCANCODE_DOWN, SDL_SCANCODE_RALT);
+
+    keyboard_handler->add_action(new Pause(this), SDL_SCANCODE_P);
 }
+
 
 void GameState::add_game_obj(GameObj * game_obj) {
     game_objs.push_back(game_obj);
@@ -46,15 +218,21 @@ void GameState::add_game_obj(GameObj * game_obj) {
 }
 
 void GameState::add_particle_system(ParticleSystem * particle_system) {
-    //partoc.push_back(game_obj);
     this->particle_system = particle_system;
 }
 
 
 void GameState::add_character_game_obj(GameObj * game_obj) {
     assert(game_obj->movable);
-    this->add_game_obj(game_obj);
-    this->character = game_obj;
+    add_game_obj(game_obj);
+    character = game_obj;
+
+    keyboard_handler->add_action(new MoveLeft(character), SDL_SCANCODE_LEFT);
+    keyboard_handler->add_action(new MoveRight(character), SDL_SCANCODE_RIGHT);
+    keyboard_handler->add_action(new MoveUp(character), SDL_SCANCODE_UP);
+    keyboard_handler->add_action(new MoveDown(character), SDL_SCANCODE_DOWN);
+    keyboard_handler->add_action(new Jump(character), SDL_SCANCODE_SPACE);
+
 }
 
 
@@ -66,8 +244,6 @@ void GameState::age_ttl_game_objs(float delta_time) {
     for (i = ttl_game_objs.begin(); i != ttl_game_objs.end(); ) {
         game_obj = *i;
         game_obj->ttl_in_secs -= delta_time;
-
-        //std::cout << "ttl " << game_obj->ttl_in_secs << std::endl;
 
         if (game_obj->ttl_in_secs <= 0.0f) {
 
@@ -152,13 +328,21 @@ float GameState::get_time_since_last_update() {
 }
 
 
-void GameState::update(const Uint8 * key_states) {
+//void GameState::update(const Uint8 * key_states) {
+void GameState::update() {
     std::list<GameObj*>::iterator i;
     GameObj * game_obj;
 
-    // work out the user commands
-    handle_keyboard(key_states);
+    // reset the character deceleration (we decelerate unless the player is pressing
+    // the left/right keys).
+    if (character) character->reset_decelerate_flag(); 
 
+    // work out the user commands
+    keyboard_handler->do_actions();
+    
+    // Decelerate the player's sideways movement if left or right weren't pressed
+    if (character) character->decelerate_character(); 
+    
     // don't update any positions if the game is paused
     if (paused) {
         return;
@@ -175,17 +359,21 @@ void GameState::update(const Uint8 * key_states) {
     // get the time elapsed since the last update 
     float delta_time = get_time_since_last_update();
 
-    // 
+    // garbage collect dead objects
     age_ttl_game_objs(delta_time);
-
     remove_dead_game_objs();
+
+
+    //
+    // BROAD PHASE
+    // determines which pairs of shapes need to be tested for collision
+    //
     
     // calculate the positions that movable objects would be in after moving if nothing 
     // effected their movement.  This method also calculates the AABB bounding boxes
     // for all movable objects (aka aabb rects).   We use this information to optimize 
     // collision detection in an approach called the Bounding Box Optimization.
     float max_distance = calc_initial_projected_move(delta_time);
-
 
     // get a list of possible collisions (i.e. a list of objects whose aabb rects overlap)
     // all possible collisions will be in this list.. i.e. it might contain false positives 
@@ -208,21 +396,28 @@ void GameState::update(const Uint8 * key_states) {
         }
     }
         
+    //
+    // NARROW PHASE
+    // determines collision results for each pair of potential collisions identified in the 
+    // previous broad phase
+    //
+    
     // For each pairwise collision move the object as far as it can.
-    // do this a number of times to avoid jitter..
+    //                                            do this a number of times to avoid jitter.. XXXX
     for (float t = 0.0f; t < delta_time; t += dt) {
 
         // calculate the projected positions of movable objects that might be in a collision
         for (i = movable_game_objs.begin(); i != movable_game_objs.end(); i++) {
             game_obj = *i;
             
+            // this object might be in a collision so work out where it's going
             if (game_obj->potential_collider) {
-                // this object might be in a collision so work out where it's going
                 game_obj->calc_projected_delta_position(dt);
             }
         }
         
-        // find and resolve each *movable* collision
+        // find and resolve each *movable* collision 
+        // (collisions between two movable objects)
         for (auto j = potential_movable_collisions.begin(); 
                   j != potential_movable_collisions.end(); 
                   j++) {
@@ -236,7 +431,8 @@ void GameState::update(const Uint8 * key_states) {
             }
         }       
 
-        // find and resolve each *fixed* collision
+        // find and resolve each *fixed* collision 
+        // (collisions between a movable object and a fixed object)
         for (auto j = potential_fixed_collisions.begin(); 
                   j != potential_fixed_collisions.end(); 
                   j++) {
@@ -288,115 +484,9 @@ float GameState::calc_initial_projected_move(const float delta_time) {
 }
 
 
-//
-// Deal with user input
-//
-void GameState::handle_keyboard(const Uint8 * key_states) {
-
-    // Process player keyboard input?
-    bool move_player_request = false;
-    if (model->has_keyboard_focus()) {
-
-        // move left?
-        if (key_states[SDL_SCANCODE_LEFT]) { 
-
-            if (key_states[SDL_SCANCODE_LALT] || key_states[SDL_SCANCODE_LALT]) {
-                // alt left pans the camera right
-                camera->pan_left();
-            }
-            else if (character) {
-                character->accelerate_left();
-                move_player_request = true;
-            }
-        }
-
-        // move right?
-        if (key_states[SDL_SCANCODE_RIGHT]) { 
-
-            if (key_states[SDL_SCANCODE_LALT] || key_states[SDL_SCANCODE_LALT]) {
-                // alt right pans the camera right
-                camera->pan_right();
-            }
-            else if (character) {
-                // right arrow moves the camera right
-                character->accelerate_right();
-                move_player_request = true;
-            }
-        }
- 
-        // Jump if not already jumping and the jump key was released earlier
-        if (key_states[SDL_SCANCODE_SPACE]) {
-            if (!character->jumping && !jump_key_pressed) { 
-                if (character) character->jump();
-                character->jumping = true;
-                jump_key_pressed = true;
-            }
-        }
-        else {
-            // jump key released (logic to avoid strobing the jump key)
-            jump_key_pressed = false;
-        }
-
-
-        // move up (camera only)?
-        if (key_states[SDL_SCANCODE_UP]) { 
-
-            if (key_states[SDL_SCANCODE_LALT] || key_states[SDL_SCANCODE_LALT]) {
-                // alt right pans the camera right
-                camera->pan_up();
-            }
-        }
-
-        // move down (camera only)?
-        if (key_states[SDL_SCANCODE_DOWN]) { 
-
-            if (key_states[SDL_SCANCODE_LALT] || key_states[SDL_SCANCODE_LALT]) {
-                // alt right pans the camera right
-                camera->pan_down();
-            }
-        }
-
-        // when the P button is pressed the game is paused
-        // (avoid toggling the pause button off and on again really quickly)
-        if (key_states[SDL_SCANCODE_P]) {
-            if (!pause_key_pressed) {
-                paused = not paused;
-                pause_key_pressed = true;
-            }            
-        }
-        else {
-            // pause key is released! next time it's pressed we toggle pause
-            pause_key_pressed = false;
-        }            
- 
-        // Decelerate the player's sideways movement if left or right wasn't pressed
-        if (!move_player_request) {
-            if (character) character->decelerate(); 
-        }
-        
-        // Dump debug info when right control is pressed
-        if (key_states[SDL_SCANCODE_RCTRL]) {
-            if (!rctrl_key_pressed) { 
-                rctrl_key_pressed = true;
-                if (character) character->dump_position("character");
-                
-                // // std::cout << "--------- " << std::endl;
-                // // std::cout << "movable " << movable_game_objs.size() << std::endl;
-                // // std::cout << "all " << game_objs.size() << std::endl;
-               }
-        }
-        else {
-            // jump key released (logic to avoid strobing the jump key)
-            rctrl_key_pressed = false;
-        }
-    }
-}
-
 
 void GameState::handle_mouse(const int x, const int y, const Uint8 mouse_button_state) {
     if (mouse_button_state & SDL_BUTTON(1)) {
-        // std::cout << "Mouse Button 1(left) is pressed.\n" << x << " , " << y << std::endl;
-
         particle_system->generate_particles(this, x, y);
     }
 }
@@ -412,11 +502,6 @@ void GameState::detect_potential_collisions_brute_force(
         const std::list<GameObj*> game_objs, 
         std::list<Collision*> & moving_collisions,
         std::list<Collision*> & fixed_collisions) {
-
-    // std::cout << std::endl;
-    // std::cout << std::endl;
-    // std::cout << std::endl;
-    // std::cout << "---" << std::endl;
         
     // clear the list so there are no collisions left.
     moving_collisions.clear();
@@ -467,11 +552,16 @@ void GameState::detect_potential_collisions_brute_force(
             }
         }
     }  
-    //std::cout << "---" << std::endl;
 }
 
 
 // return the current camera position
 void GameState::get_camera_position(float * camera_x, float * camera_y) const {
     camera->get_camera_position(camera_x, camera_y);
+}
+
+
+// toggle game pause
+void GameState::toggle_pause() {
+    paused = not paused;
 }

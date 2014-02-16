@@ -1,5 +1,10 @@
 
 
+accumulated impulses
+internal edges
+speculative collisions
+
+
 
 game design 
 -----------
@@ -36,6 +41,18 @@ quadtrees
 
 http://code-spot.co.za/2010/06/15/region-quadtrees-in-c/
 http://gamedevelopment.tutsplus.com/tutorials/quick-tip-use-quadtrees-to-detect-likely-collisions-in-2d-space--gamedev-374
+
+
+spatial hashing
+---------------
+http://freespace.virgin.net/hugo.elias/models/m_colide.htm
+
+other collision detection
+-------------------------
+http://www.wildbunny.co.uk/blog/2012/10/31/2d-polygonal-collision-detection-and-internal-edges/
+http://en.wikipedia.org/wiki/Separating_axis_theorem
+http://physics2d.com/content/gjk-algorithm
+
 
 sprites
 -------

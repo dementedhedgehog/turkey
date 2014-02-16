@@ -2,6 +2,11 @@
 tasks
 =====
 
+  * set gravity from python 
+  * customizable keyboard handler (map keys to actions).
+  * fork for collisions
+
+
   * windows installer
      - what dlls do I need?
 
@@ -22,7 +27,6 @@ tasks
       - sprites
       - profiling
 
-   * customizable keyboard handler (map keys to actions).
    * collision detection
       - scaling acceleration!
       - quad trees?

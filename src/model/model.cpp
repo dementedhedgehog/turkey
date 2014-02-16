@@ -13,6 +13,8 @@ Model::Model() {
     current_state = intro_state;
 
     game_has_keyboard_focus = true;
+
+    //keyboard_handler = new KeyboardHandler();
 }
 
 Model::~Model() {
@@ -32,7 +34,7 @@ const bool Model::has_keyboard_focus() {
 void Model::change_state(State to_state) {
     assert(current_state != NULL);
 
-    std::cout << " state changed! " << std::endl;
+    std::cout << "model state changed! " << std::endl;
 
     State old_state_enum = this->current_state->get_state();
 
@@ -61,14 +63,19 @@ GameState * Model::get_game_state() {
     return game_state;
 }
 
-void Model::update(const Uint8 * key_states) {
-    current_state->update(key_states);
+void Model::update() {
+    current_state->update();
 }
+// void Model::update(const Uint8 * key_states) {
+//     current_state->update(key_states);
+// }
 
 void Model::handle_mouse(const int mouse_x, const int mouse_y, const Uint8 mouse_button_state) {
     current_state->handle_mouse(mouse_x, mouse_y, mouse_button_state);
 }
 
 int Model::clean_up() { 
+    //delete keyboard_handler;
+
     return 0; // success
 };

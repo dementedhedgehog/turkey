@@ -3,14 +3,14 @@
 
 #include <list>
 
-#include "model/i_state.h"
+#include "model/base_state.h"
 #include "model/i_game_obj_manager.h"
 #include "model/collision.h"
 #include "model/camera.h"
 #include "model/particle_system.h"
 
 
-class GameState : public IState, public IGameObjManager {
+class GameState : public BaseState, public IGameObjManager {
  private:
     Model * model;
 
@@ -58,8 +58,8 @@ class GameState : public IState, public IGameObjManager {
     /* // is the player jumping (space held down?) */
     /* bool jumping; */
 
-    // need this to avoid strobing the jump button
-    bool jump_key_pressed;
+    /* // need this to avoid strobing the jump button */
+    /* bool jump_key_pressed; */
 
     // a particle system!
     ParticleSystem * particle_system;
@@ -121,16 +121,20 @@ public:
     void add_particle_system(ParticleSystem * particle_system);
 
     // handle keyboard input
-    inline void handle_keyboard(const Uint8 * key_states);
+    //inline void handle_keyboard(const Uint8 * key_states);
 
     // handle mouse button events
     inline void handle_mouse(const int x, const int y, const Uint8 mouse_button_state);
 
     // update the positions of all the game objects based on their velocity
-    void update(const Uint8 * key_states);
+    //void update(const Uint8 * key_states);
+    void update();
 
     // is the game paused?
     bool is_paused() const { return paused; }
+
+    // turn pause on and off
+    void toggle_pause();
 
     // return the current camera position
     void get_camera_position(float * camera_x, float * camera_y) const;

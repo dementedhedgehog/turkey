@@ -132,31 +132,31 @@ int View::msg_loop() {
         while (!finished && SDL_PollEvent(&event)) {
 
             switch (event.type) {            
-                case SDL_KEYDOWN: {
-                    // Handle global key presses here.
+                // case SDL_KEYDOWN: {
+                //     // Handle global key presses here.
                     
-                    /* Check the SDLKey values and move change the coords */
-                    switch (event.key.keysym.sym) {
+                //     /* Check the SDLKey values and move change the coords */
+                //     switch (event.key.keysym.sym) {
 
-                        case SDLK_F1: {
-                            // should toggle fullscreen in all views
-                            // don't overload this.
-                            toggle_fullscreen(window);
-                            break;
-                        }
+                //         // case SDLK_F1: {
+                //         //     // should toggle fullscreen in all views
+                //         //     // don't overload this.
+                //         //     toggle_fullscreen(window);
+                //         //     break;
+                //         // }
 
-                        case SDLK_ESCAPE: {
-                            // exit the game in all views
-                            // don't overload this.
-                            quit();
-                            break;
-                        }
+                //         case SDLK_ESCAPE: {
+                //             // exit the game in all views
+                //             // don't overload this.
+                //             quit();
+                //             break;
+                //         }
                             
-                        default:
-                            break;
-                    }
-                    break;
-                }
+                //         default:
+                //             break;
+                //     }
+                //     break;
+                // }
                                             
                 case SDL_MOUSEBUTTONDOWN: {
                     // Handle mouse clicks here.
@@ -191,7 +191,7 @@ int View::msg_loop() {
                 }
                         
                 default: {
-                    std::cout << "unknown event " << event.type << std::endl;
+                    //std::cout << "unknown event " << event.type << std::endl;
                     break;
                 }                
             }
@@ -206,11 +206,14 @@ int View::msg_loop() {
         
         if (time_now - last_move_time >= ms_per_move) {
 
-            // pass the keyboard state to the current view for polling
-            const Uint8 * key_states = SDL_GetKeyboardState(NULL);
+            // // pass the keyboard state to the current view for polling
+            // const Uint8 * key_states = SDL_GetKeyboardState(NULL);
                 
+            // // move objects, calculate collisions, update stats etc
+            // model->update(key_states);
+
             // move objects, calculate collisions, update stats etc
-            model->update(key_states);
+            model->update();
 
             // reset the move time
             last_move_time = time_now;
