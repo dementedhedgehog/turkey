@@ -7,12 +7,32 @@ CELL_HEIGHT = 16.0
 
 def initialize_levels():
 
-    #try:
-    print 
+    #
+    # Debug Information Config
+    #
 
     # turn on drawing cell grids?
     turkey.debug_set_draw_grid(False);
     turkey.debug_set_draw_fps(False);
+    
+    #
+    # Physics Config
+    #
+
+    # y axis (+ve down)
+    turkey.set_default_gravity(0.6);
+    turkey.set_default_jump_velocity(8.0);
+
+    # velocity caps
+    turkey.set_default_max_x_velocity(5.0);
+    turkey.set_default_max_y_velocity(10.0);
+
+    # delta x when you hit the left/right controls
+    turkey.set_default_x_acceleration(0.55)
+    turkey.set_default_x_deceleration(0.80)
+    
+
+    
 
     # build some steps
     stone = turkey.load_texture("./res/stone.png")
@@ -29,17 +49,8 @@ def initialize_levels():
     turkey.add_game_obj(28 * CELL_WIDTH, 19 * CELL_HEIGHT, stone)
     turkey.add_game_obj(27 * CELL_WIDTH, 19 * CELL_HEIGHT, stone)
 
-    #turkey.add_game_obj(4 * CELL_WIDTH, 20 * CELL_HEIGHT, stone)
-    #turkey.add_game_obj(5 * CELL_WIDTH, 20 * CELL_HEIGHT, stone)
-
     for i in range(2,35):
-        # print "add_game_obj " + str(turkey.add_game_obj(i, i, stone))
         turkey.add_game_obj(i * CELL_WIDTH, 40 * CELL_HEIGHT, stone)
-
-    ## print "add_game_obj " + str(
-    ##     turkey.add_game_obj(10 * CELL_WIDTH, 10 * CELL_HEIGHT, stone))
-    ## print "add_game_obj " + str(
-    ##     turkey.add_game_obj(15 * CELL_WIDTH, 15 * CELL_HEIGHT, stone))
 
     # add the character
     dwarf = turkey.load_texture("./res/dwarf.png")
@@ -48,8 +59,7 @@ def initialize_levels():
                                                               dwarf))
 
     star = turkey.load_texture("./res/star.png")
-    #print "add_particle_system " + str(turkey.add_particle_system(star))
-    print "add_particle_system " + str(turkey.add_particle_system(dwarf))
+    print "add_particle_system " + str(turkey.add_particle_system(star))
 
 
     background = turkey.load_texture("./res/background.jpg")

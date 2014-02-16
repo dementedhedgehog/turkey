@@ -138,5 +138,6 @@ public:
 
     // return the current camera position
     void get_camera_position(float * camera_x, float * camera_y) const;
+
 };
 #endif

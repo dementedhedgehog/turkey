@@ -11,6 +11,8 @@
 class Scripting {
 private:
     Model * model;
+    GameState * game_state;
+
     View * view;
     SDL_Renderer * renderer;
     //GameView * game_view;

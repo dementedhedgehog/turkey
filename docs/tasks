@@ -3,7 +3,6 @@ tasks
 =====
 
   * set gravity from python 
-  * customizable keyboard handler (map keys to actions).
   * fork for collisions
 
 
@@ -80,4 +79,5 @@ done
   * build in windows   
   * particle system (to check the collision system)
   * set backgrounds/foregrounds from python
+  * customizable keyboard handler (map keys to actions).
       

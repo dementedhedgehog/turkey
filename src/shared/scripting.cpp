@@ -17,6 +17,7 @@
 #define VIEW "_VIEW"
 #define IMG_MGR "_IMG_MGR"
 #define MODEL "_MODEL"
+#define GAME_STATE "_GAME_STATE"
 #define RENDERER "_RENDERER"
 #define TEXTURE "_TEXTURE"
 
@@ -103,7 +104,7 @@ static PyObject* turkey_add_scenery(PyObject *self, PyObject *args)
  */
 static PyObject* turkey_quit(PyObject *self, PyObject *args)    
 {        
-    if (!PyArg_ParseTuple(args, ":debug_set_draw_grid")) {
+    if (!PyArg_ParseTuple(args, ":quit")) {
         return NULL;
     }
        
@@ -119,6 +120,124 @@ static PyObject* turkey_quit(PyObject *self, PyObject *args)
     Py_INCREF(Py_None);
     return Py_None;
 }
+
+
+/*
+ * Set the default gravity for new game objects
+ */
+static PyObject* turkey_set_default_gravity(PyObject *self, PyObject *args)    
+{    
+    float gravity; // pixels per second per second
+    
+    if (!PyArg_ParseTuple(args, "f:set_default_gravity", &gravity)) {
+        return NULL;
+    }
+    
+    // turn on the cell grid 
+    GameObj::default_gravity = gravity;
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+
+/*
+ * Set the default jump velocity for new game objects
+ */
+static PyObject* turkey_set_default_jump_velocity(PyObject *self, PyObject *args)    
+{    
+    float jump_velocity; // pixels per second 
+    
+    if (!PyArg_ParseTuple(args, "f:set_default_jump_velocity", &jump_velocity)) {
+        return NULL;
+    }
+    
+    // set the default jump velocity
+    GameObj::default_jump_velocity = jump_velocity;
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+
+
+
+/*
+ * Set the default maximum x velocity for new game objects
+ */
+static PyObject* turkey_set_default_max_x_velocity(PyObject *self, PyObject *args)    
+{    
+    float max_velocity; // pixels per second 
+    
+    if (!PyArg_ParseTuple(args, "f:set_default_max_x_velocity", &max_velocity)) {
+        return NULL;
+    }
+    
+    // set the default maximum x velocity
+    GameObj::default_x_max_velocity = max_velocity;
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+
+/*
+ * Set the default maximum y velocity for new game objects
+ */
+static PyObject* turkey_set_default_max_y_velocity(PyObject *self, PyObject *args)    
+{    
+    float max_velocity; // pixels per second 
+    
+    if (!PyArg_ParseTuple(args, "f:set_default_max_y_velocity", &max_velocity)) {
+        return NULL;
+    }
+    
+    // set the default maximum y velocity
+    GameObj::default_y_max_velocity = max_velocity;
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+
+
+/*
+ * Set the default x acceleration for new game objects (what happens when you go left or right)
+ */
+static PyObject* turkey_set_default_x_acceleration(PyObject *self, PyObject *args)    
+{    
+    float max_acceleration; // pixels per second per second
+    
+    if (!PyArg_ParseTuple(args, "f:set_default_max_x_acceleration", &max_acceleration)) {
+        return NULL;
+    }
+    
+    // set the default max x acceleration
+    GameObj::default_x_acceleration = max_acceleration;
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+
+/*
+ * Set the default default x deceleration for new game objects
+ */
+static PyObject* turkey_set_default_x_deceleration(PyObject *self, PyObject *args)    
+{    
+    float x_deceleration; // pixels per second per second
+    
+    if (!PyArg_ParseTuple(args, "f:set_default_x_deceleration", &x_deceleration)) {
+        return NULL;
+    }
+    
+    // set the default max y acceleration
+    GameObj::default_x_deceleration = x_deceleration;
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
 
 
 /*
@@ -462,7 +581,8 @@ static PyObject* turkey_load_textures_using_rects(PyObject *self, PyObject *args
         py_tuple = PySequence_Fast_GET_ITEM(py_rects, i);
 
         rect = new SDL_Rect();
-        if (!PyArg_ParseTuple(py_tuple, "ffff:load_texture", &rect->x, &rect->y, &rect->w, &rect->h)) {
+        if (!PyArg_ParseTuple(py_tuple, "ffff:load_texture", 
+                &rect->x, &rect->y, &rect->w, &rect->h)) {
             Py_DECREF(py_tuple);
             log_msg("Problem parsing tuple python arguments");
             Py_INCREF(Py_None);
@@ -475,10 +595,11 @@ static PyObject* turkey_load_textures_using_rects(PyObject *self, PyObject *args
     
 
     // load the textures from the sprite sheet
-    std::vector<SDL_Texture*> * textures = image_manager->load_textures_from_sprite_sheet_using_rects(
-        texture_fname, 
-        renderer, 
-        rects);
+    std::vector<SDL_Texture*> * textures = 
+        image_manager->load_textures_from_sprite_sheet_using_rects(
+            texture_fname, 
+            renderer, 
+            rects);
     
     // free the rects
     for (j = rects.begin(); j != rects.end(); j++) {
@@ -548,6 +669,36 @@ static PyMethodDef InitializeTurkeyMethods[] = {
      METH_VARARGS, 
      "DEBUG METHOD: Set whether to display the frames per second or not."},
 
+    {"set_default_gravity", 
+     turkey_set_default_gravity, 
+     METH_VARARGS, 
+     "Set the default gravity."},
+
+    {"set_default_jump_velocity", 
+     turkey_set_default_jump_velocity, 
+     METH_VARARGS, 
+     "Set the default jump velocity (effects or affects the jump height)."},
+
+    {"set_default_max_x_velocity", 
+     turkey_set_default_max_x_velocity, 
+     METH_VARARGS, 
+     "Set the default max velocity in the x axis."},
+
+    {"set_default_max_y_velocity", 
+     turkey_set_default_max_y_velocity, 
+     METH_VARARGS, 
+     "Set the default max velocity in the y axis."},
+
+    {"set_default_x_acceleration", 
+     turkey_set_default_x_acceleration, 
+     METH_VARARGS, 
+     "Set the default x acceleration (your acceleration when moving left or right)."},
+
+    {"set_default_x_deceleration", 
+     turkey_set_default_x_deceleration, 
+     METH_VARARGS, 
+     "Set the default x deceleration (your deceleration when you stop moving left or right)."},
+
     {"add_game_obj", 
      turkey_add_game_obj, 
      METH_VARARGS, 
@@ -592,6 +743,7 @@ Scripting::Scripting(Model * model, View * view) {
 
     this->renderer = view->get_renderer();
     //this->game_view = view->get_game_view();
+    this->game_state = model->get_game_state();
     this->image_manager = view->get_image_manager();
 
 }
@@ -623,6 +775,11 @@ int Scripting::init(char * program_fname) {
     // Create capsules containing pointers to things we want to expose to the python api.
     int result;
     result = add_capsule(module, (void *)model, MODULE DOT MODEL, MODEL);
+    if (result != 0) {
+        return result;
+    }
+
+    result = add_capsule(module, (void *)game_state, MODULE DOT GAME_STATE, GAME_STATE);
     if (result != 0) {
         return result;
     }

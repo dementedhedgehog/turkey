@@ -21,6 +21,24 @@
 class GameObj {
  public:
 
+    //
+    // Scripts can set this stuff
+    // 
+
+    // maximum speeds
+    static float default_x_max_velocity;
+    static float default_y_max_velocity;
+
+    // side ways movement
+    static float default_x_acceleration;
+    // side ways deceleration
+    static float default_x_deceleration;
+
+    // set jump and gravity forces
+    static float default_jump_velocity;
+    static float default_gravity;
+
+
     // current position
     float x;
     float y;
@@ -161,6 +179,9 @@ class GameObj {
     // use these to slow or stop the object when colliding.    
     void collision_set_x_velocity(float x_vel_per_sec);
     void collision_set_y_velocity(float y_vel_per_sec);
+
+    // set the gravity
+    static void set_default_gravity(const float gravity);
 };
 
 #endif

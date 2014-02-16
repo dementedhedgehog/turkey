@@ -4,8 +4,26 @@
 #include "constants.h"
 #include "model/game_obj.h"
 
-//const float ZERO = 0.2f;  // pixels 
-//const float SCLE_SQUARED = 60.f;  // pixels 
+//
+// c++ requires us to initalize static variables outside classes
+//
+
+// default gravity
+float GameObj::default_gravity = 0.5f;
+
+// maximum speeds
+float GameObj::default_x_max_velocity = 5.0f;
+float GameObj::default_y_max_velocity = 10.0f;
+
+// side ways movement
+float GameObj::default_x_acceleration = 0.55f;
+// side ways deceleration
+float GameObj::default_x_deceleration = 0.8f;
+
+// set jump and gravity forces
+float GameObj::default_jump_velocity = 8.f;
+
+
  
 GameObj::GameObj(float x, float y, SDL_Texture * texture, bool movable) {
 
@@ -60,16 +78,16 @@ GameObj::GameObj(float x, float y, SDL_Texture * texture, bool movable) {
     y_vel_per_sec = 0.0;
 
     // clamp speed to these values.
-    x_max_vel_per_sec = 5.0f * MOVEMENT_SCALE;
-    y_max_vel_per_sec = 10.0f * MOVEMENT_SCALE;    
+    x_max_vel_per_sec = GameObj::default_x_max_velocity * MOVEMENT_SCALE;
+    y_max_vel_per_sec = GameObj::default_y_max_velocity * MOVEMENT_SCALE;    
     
     // acceleration and deceleration
-    x_acc_per_sec = 0.55f * MOVEMENT_SCALE;
-    x_dec_per_sec = 0.8f * MOVEMENT_SCALE;
+    x_acc_per_sec = GameObj::default_x_acceleration * MOVEMENT_SCALE;
+    x_dec_per_sec = GameObj::default_x_deceleration * MOVEMENT_SCALE;
 
      // set jump and gravity forces
-    y_jump_start_vel_per_sec = 8.f * MOVEMENT_SCALE;
-    y_acc_per_sec = 0.5f * MOVEMENT_SCALE;
+    y_jump_start_vel_per_sec = GameObj::default_jump_velocity * MOVEMENT_SCALE;
+    y_acc_per_sec = GameObj::default_gravity * MOVEMENT_SCALE;
 
     // {
     //     { 5,  0  }, { 15, 0  }, // Top of head
@@ -373,13 +391,6 @@ void GameObj::collision_set_x_velocity(float x_vel_per_sec) {
     //if (abs(this->x_vel_per_sec) > ZERO) {
     //py *= x_vel_per_sec / this->x_vel_per_sec;    
     this->x_vel_per_sec = x_vel_per_sec;    
-
-        // don't inch along (leave this out till I know it's necessry)
-        // if (abs(this->x_vel_per_sec) <= ZERO) {
-        //     this->x_vel_per_sec = 0.0f;
-        //     py = 0.0f;
-        // }
-        //}
 }
 
 void GameObj::collision_set_y_velocity(float y_vel_per_sec) {
@@ -388,12 +399,9 @@ void GameObj::collision_set_y_velocity(float y_vel_per_sec) {
     //if (abs(this->y_vel_per_sec) > ZERO) {
     //py *= y_vel_per_sec / this->y_vel_per_sec;    
     this->y_vel_per_sec = y_vel_per_sec;    
-
-        // don't inch along (leave this out till I know it's necessry)
-        // if (abs(this->x_vel_per_sec) <= ZERO) {
-        //     this->x_vel_per_sec = 0.0f;
-        //     py = 0.0f;
-        // }
-
-        //}
 }
+
+
+// void GameObj::set_default_gravity(const float gravity) {
+//     GameObj::default_gravity = gravity;
+// }
