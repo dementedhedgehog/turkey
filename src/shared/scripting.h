@@ -17,6 +17,7 @@ private:
     SDL_Renderer * renderer;
     //GameView * game_view;
     ImageManager * image_manager;
+    SoundManager * sound_manager;
 
 public:
     Scripting(Model * model, View * view);

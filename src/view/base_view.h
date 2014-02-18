@@ -53,6 +53,9 @@ public:
 
     // expose the image manager (for the python api)
     ImageManager * get_image_manager();
+
+    // get a pointer to the sound manager
+    SoundManager * get_sound_manager();
 };
 #endif 
 

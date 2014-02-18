@@ -26,7 +26,7 @@ class ImageManager {
     // initialize the image manager
     int init();
 
-    // load the images
+    // load an image
     SDL_Texture * load(const std::string & fname, SDL_Renderer * renderer); 
 
     // load a list of textures from an image

@@ -2,18 +2,23 @@
 tasks
 =====
 
-  * set gravity from python 
+  * play sound?
+
   * fork for collisions
 
+  * strip all the stupid manager classes out of the views.. make them globals,
+    same with the view and the model???
 
   * windows installer
      - what dlls do I need?
 
+  * move load_texture into the image manager
+  * why does each view keep a reference to the image manager (can't I just make them globals?
+
   * render fps text on the GPU
   * gpu side static text class
   * load sprites in python
-  * load textures from file
-  
+  * load textures from file  
 
   * return where collision occurred..  (collision internal?) BUGGY!   
 
@@ -80,4 +85,5 @@ done
   * particle system (to check the collision system)
   * set backgrounds/foregrounds from python
   * customizable keyboard handler (map keys to actions).
+  * set gravity from python 
       

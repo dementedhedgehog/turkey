@@ -20,9 +20,13 @@
 #define GAME_STATE "_GAME_STATE"
 #define RENDERER "_RENDERER"
 #define TEXTURE "_TEXTURE"
+#define SOUND_MGR "_SOUND_MGR"
+#define MUSIC "_MUSIC"
 
 // python exceptions we throw from c++
-static PyObject * FailedToLoadTextureErr;
+static PyObject * FailedToLoadTextureError;
+static PyObject * FailedToLoadMusicError;
+static PyObject * FailedToPlayMusicError;
 
 // embedded python treats bools like ints.. 
 // we use these consts to make our intention a little clearer
@@ -60,6 +64,99 @@ static int add_capsule(PyObject * module, void * c_obj,
  */
 
 
+
+/* loads a piece of music from a file */
+static PyObject* turkey_load_music(PyObject *self, PyObject *args)    
+{    
+    char * music_fname;
+    if(!PyArg_ParseTuple(args, "s:load_music", &music_fname)) {
+        log_msg("Problem parsing the python arguments");
+        Py_INCREF(Py_None);
+        return Py_None;
+    }
+
+    // extract the sound manager
+    SoundManager * sound_manager = (SoundManager*)PyCapsule_Import(MODULE DOT SOUND_MGR, 0);
+    if (sound_manager == NULL) {
+        log_msg("Problem extracting the c++ sound_manager object.");
+        return Py_BuildValue("i", 0);
+    }
+
+    // load the music object
+    Mix_Music * music = sound_manager->load_music(music_fname);
+    if (music == nullptr) {
+        // throw an exception!
+        PyErr_SetString(
+            FailedToLoadMusicError,
+            (std::string("Problem extracting the music at ") + 
+                __FILE__ + "," + STR(__LINE__) + ": " +
+                SDL_GetError()
+             ).c_str());
+        return NULL;
+    }
+    
+    // wrap the music object in a python capsule
+    PyObject * music_object = PyCapsule_New((void *)music, MUSIC, NULL);
+    if (music_object == NULL) {
+        log_msg("Problem creating music capsule for the python scripts!");
+        Py_INCREF(Py_None);
+        return Py_None;
+    }
+    return Py_BuildValue("O", music_object);
+}
+
+
+
+/* plays a piece of music in a loop with a 2 second fade in */
+static PyObject* turkey_play_music(PyObject *self, PyObject *args)    
+{        
+    // get the music object from the arguments
+    PyObject * music_object = nullptr;
+    if (!PyArg_ParseTuple(args, "O:play_music", &music_object)) {
+        return NULL;
+    }
+
+    if (music_object == NULL) {
+        // throw an exception!
+        PyErr_SetString(
+            FailedToPlayMusicError,
+            (std::string("Problem extracting the music at ") + 
+                __FILE__ + "," + STR(__LINE__) + ": " +
+                SDL_GetError()
+             ).c_str());
+        return NULL;
+    }
+
+
+    // extract the sound manager
+    SoundManager * sound_manager = (SoundManager*)PyCapsule_Import(MODULE DOT SOUND_MGR, 0);
+    if (sound_manager == NULL) {
+        log_msg("Problem extracting the c++ sound_manager object.");
+        return Py_BuildValue("i", 0);
+    }
+
+
+    // extract the music from the python capsule
+    Mix_Music * music = nullptr;
+    music = (Mix_Music *)PyCapsule_GetPointer(music_object, MUSIC);
+    if (music == NULL) {
+        // throw an exception!
+        PyErr_SetString(
+            FailedToLoadTextureError,
+            (std::string("Problem extracting the texture at ") + 
+                __FILE__ + "," + STR(__LINE__) + ": " +
+                SDL_GetError()
+             ).c_str());
+        return NULL;
+    }
+
+    // play it again sam..
+    sound_manager->play_music(music);
+
+    return Py_BuildValue("i", 1);
+}
+
+
 /* Adds a new scenery object to the game */
 static PyObject* turkey_add_scenery(PyObject *self, PyObject *args)    
 {    
@@ -85,9 +182,9 @@ static PyObject* turkey_add_scenery(PyObject *self, PyObject *args)
     if (texture == NULL) {
         // throw an exception!
         PyErr_SetString(
-            FailedToLoadTextureErr,
+            FailedToLoadTextureError,
             (std::string("Problem extracting the texture at ") + 
-                //__FILE__ + "," + (char*)__LINE__ + ": " +
+                __FILE__ + "," + STR(__LINE__) + ": " +
                 SDL_GetError()
              ).c_str());
         return NULL;
@@ -310,10 +407,10 @@ static PyObject* turkey_add_game_obj(PyObject *self, PyObject *args)
     if (texture_object == nullptr) {
         // throw an exception!
         PyErr_SetString(
-            FailedToLoadTextureErr,
+            FailedToLoadTextureError,
             (std::string(
                 "Problem extracting the texture at ") + 
-                //__FILE__ + "," + (char*)__LINE__ + ": " +
+                __FILE__ + "," + STR(__LINE__) + ": " +
                 SDL_GetError()
              ).c_str());
         return NULL;
@@ -354,10 +451,10 @@ static PyObject* turkey_add_particle_system(PyObject *self, PyObject *args)
     if (texture == NULL) {
         // throw an exception!
         PyErr_SetString(
-            FailedToLoadTextureErr,
+            FailedToLoadTextureError,
             (std::string(
                 "Problem extracting the texture at ") + 
-                //__FILE__ + "," + (char*)__LINE__ + ": " +
+                __FILE__ + "," + STR(__LINE__) + ": " +
                 SDL_GetError()
              ).c_str());
         return NULL;
@@ -399,7 +496,7 @@ static PyObject* turkey_add_character_game_obj(PyObject *self, PyObject *args)
     if (texture == NULL) {
         // throw an exception!
         PyErr_SetString(
-            FailedToLoadTextureErr,
+            FailedToLoadTextureError,
             (std::string(
                 "Problem extracting the texture at ") + 
                 __FILE__ + "," + STR(__LINE__) + ": " +
@@ -430,16 +527,16 @@ static PyObject* turkey_load_texture(PyObject *self, PyObject *args)
         Py_INCREF(Py_None);
         return Py_None;
     }
-
+    
+    /* FIXME: clean this shit up */
     View * view = (View *)PyCapsule_Import(MODULE DOT VIEW, 0);
     if (view == NULL) {
         // throw an exception!
         PyErr_SetString(
-            FailedToLoadTextureErr,
+            FailedToLoadTextureError,
             "Problem extracting the c++ view object. " 
             __FILE__ ":" STR(__LINE__) "\n");
         return NULL;
-
     }
 
     // FIXME: this is ugly..
@@ -654,6 +751,16 @@ static PyMethodDef InitializeTurkeyMethods[] = {
      METH_VARARGS, 
      "Quit the game!!!"},
 
+    {"load_music", 
+     turkey_load_music, 
+     METH_VARARGS, 
+     "Load music from a file."},
+
+    {"play_music", 
+     turkey_play_music, 
+     METH_VARARGS, 
+     "Play a piece of music in a loop with a 2 second fade in.."},
+
     {"add_scenery", 
      turkey_add_scenery, 
      METH_VARARGS, 
@@ -745,7 +852,7 @@ Scripting::Scripting(Model * model, View * view) {
     //this->game_view = view->get_game_view();
     this->game_state = model->get_game_state();
     this->image_manager = view->get_image_manager();
-
+    this->sound_manager = view->get_sound_manager();
 }
 
 
@@ -794,7 +901,12 @@ int Scripting::init(char * program_fname) {
         return result;
     }
 
-    result = add_capsule(module, (void *)this->image_manager, MODULE DOT IMG_MGR, IMG_MGR);
+    result = add_capsule(module, (void *)image_manager, MODULE DOT IMG_MGR, IMG_MGR);
+    if (result != 0) {
+        return result;
+    }
+
+    result = add_capsule(module, (void *)sound_manager, MODULE DOT SOUND_MGR, SOUND_MGR);
     if (result != 0) {
         return result;
     }
@@ -832,10 +944,10 @@ int Scripting::run_initialize_levels_script() {
     if (py_module != NULL) {
 
         // create a global exception class
-        FailedToLoadTextureErr = PyErr_NewException(
-            (char*)"turkey.FailedToLoadTextureErr", NULL, NULL);
-        Py_INCREF(FailedToLoadTextureErr);
-        PyModule_AddObject(py_module, "error", FailedToLoadTextureErr);
+        FailedToLoadTextureError = PyErr_NewException(
+            (char*)"turkey.FailedToLoadTextureError", NULL, NULL);
+        Py_INCREF(FailedToLoadTextureError);
+        PyModule_AddObject(py_module, "error", FailedToLoadTextureError);
  
 
         // call the init function

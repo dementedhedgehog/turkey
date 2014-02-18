@@ -6,6 +6,7 @@
 #include <iostream>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL_mixer.h>
 
 #include "utils.h"
 
@@ -20,6 +21,10 @@ void log_sdl_error(const std::string &msg) {
 
 void log_ttf_error(const std::string &msg) {
     std::cerr << msg << " error: " << TTF_GetError() << std::endl;
+}
+
+void log_mix_error(const std::string &msg) {
+    std::cerr << msg << " error: " << Mix_GetError() << std::endl;
 }
 
 void log_msg(const std::string &msg) {

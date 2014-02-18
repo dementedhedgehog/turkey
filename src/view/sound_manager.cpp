@@ -9,7 +9,7 @@
 int SoundManager::init() {
 
     // play sound 
-    sound_enabled = false;
+    sound_enabled = true;
 
     // returns 0 on success, -1 on error
     int result = Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096) ;
@@ -23,30 +23,63 @@ int SoundManager::init() {
 }
 
 
-bool SoundManager::load() {
+Mix_Music * SoundManager::load_music(const std::string fname) {
+    Mix_Music * music = nullptr;
 
     // load the music 
     if (sound_enabled) {
-
-        music = Mix_LoadMUS("./res/beat.wav"); 
+        music = Mix_LoadMUS(fname.c_str()); 
         // if there was a problem loading the music 
         if (music == NULL) { 
-            return 8; 
+            log_msg("Problem loading music file: " + fname);
         } 
-        // load the sound effects 
-        scratch = Mix_LoadWAV("./res/scratch.wav"); 
-        high = Mix_LoadWAV("./res/high.wav"); 
-        med = Mix_LoadWAV("./res/medium.wav"); 
-        low = Mix_LoadWAV("./res/low.wav"); 
-        // if there was a problem loading the sound effects 
-        if ((scratch == NULL) || (high == NULL) || (med == NULL) || (low == NULL)) { 
-            return false; 
+        else {
+            // add it to our list of music to free
+            all_music.push_back(music);
         }
-
     }
 
-    return true;
+    return music;
 }
+
+
+void SoundManager::play_music(Mix_Music * music) {    
+    // play music forever, fading in over 2 seconds
+    if (sound_enabled) {
+        if(Mix_FadeInMusic(music, -1, 2000)==-1) {
+            // well, there's no music, but most games don't break without music
+            // so we'll carry on.
+            log_mix_error("Mix_FadeInMusic:\n");
+        }
+    }
+}
+
+// bool SoundManager::load() {
+
+//     // load the music 
+//     if (sound_enabled) {
+
+//         music = Mix_LoadMUS("./res/beat.wav"); 
+//         // if there was a problem loading the music 
+//         if (music == NULL) { 
+//             return 8; 
+//         } 
+//         // load the sound effects 
+//         scratch = Mix_LoadWAV("./res/scratch.wav"); 
+//         high = Mix_LoadWAV("./res/high.wav"); 
+//         med = Mix_LoadWAV("./res/medium.wav"); 
+//         low = Mix_LoadWAV("./res/low.wav"); 
+//         // if there was a problem loading the sound effects 
+//         if ((scratch == NULL) || (high == NULL) || (med == NULL) || (low == NULL)) { 
+//             return false; 
+//         }
+
+//     }
+
+//     return true;
+// }
+
+
 
 
 // bool SoundManager::load(std::string fname) {
@@ -141,17 +174,23 @@ bool SoundManager::load() {
 
 
 int SoundManager::clean_up() {
-    if (sound_enabled) {
-        Mix_FreeChunk(scratch); 
-        Mix_FreeChunk(high); 
-        Mix_FreeChunk(med); 
-        Mix_FreeChunk(low); 
-
-        // clean up the music 
-        Mix_FreeMusic(music); 
-
-        Mix_CloseAudio();
+    if (!sound_enabled) {
+        return 0;
     }
+        // Mix_FreeChunk(scratch); 
+        // Mix_FreeChunk(high); 
+        // Mix_FreeChunk(med); 
+        // Mix_FreeChunk(low); 
+
+        // // clean up the music 
+        // Mix_FreeMusic(music); 
+
+    // clean up all the textures we've allocated
+    for (std::vector<Mix_Music *>::iterator i = all_music.begin(); i != all_music.end(); i++) {
+        Mix_FreeMusic(*i); 
+    }
+
+    Mix_CloseAudio();
 
     return 0;
 }

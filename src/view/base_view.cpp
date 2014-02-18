@@ -26,3 +26,7 @@ BaseView::BaseView(Model * model,
 ImageManager * BaseView::get_image_manager() {
     return image_manager;
 }
+
+SoundManager * BaseView::get_sound_manager() {
+    return sound_manager;
+}

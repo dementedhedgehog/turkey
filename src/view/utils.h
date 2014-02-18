@@ -14,6 +14,7 @@
  */
 void log_sdl_error(const std::string &msg);
 void log_ttf_error(const std::string &msg);
+void log_mix_error(const std::string &msg);
 
 /**
  * Log an error message 
