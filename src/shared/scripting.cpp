@@ -8,8 +8,8 @@
 #include "model/particle_system.h"
 #include "view/utils.h"
 
-#define __STR(X) #X
-#define STR(X) __STR(X)
+#define ___STR___(X) #X
+#define STR(X) ___STR___(X)
 
 // capsule names
 #define MODULE "turkey"

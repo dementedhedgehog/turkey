@@ -8,7 +8,7 @@
 <Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
     <Product Name='Turkey' Id='6773ae8d-b604-44b9-9e61-2e92731db40e'
         UpgradeCode='0b859ef6-7906-42da-8fcd-27e3aebdfb93'
-        Language='1033' Version='0.0.0.2' Manufacturer='Unusual Suspects'>
+        Language='1033' Version='0.0.0.3' Manufacturer='Unusual Suspects'>
 
         <Package 
             Id='*' 
@@ -168,7 +168,8 @@
             </Component>            
 
             <Component Id="res_hobbiton_brush_hand.ttf" Guid="a69225ee-c745-4433-a21f-6d62e79c51a2">
-                <File Id="res_hobbiton_brush_hand.ttf" Source="bin\res\hobbiton_brush_hand.ttf" KeyPath="yes" Checksum="yes"/>
+                <File Id="res_hobbiton_brush_hand.ttf" Source="bin\res\hobbiton_brush_hand.ttf" KeyPath="yes" Checksum="yes" />
+                 <!-- adding this makes the installer error go away TrueType="yes" but then the game has to load the font from the fonts folder -->
             </Component>            
 
             <Component Id="res_intro_background.jpg" Guid="8acae9a8-28b0-4347-a447-57a5002c78cb">
