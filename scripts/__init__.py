@@ -20,16 +20,18 @@ def initialize_levels():
     #
 
     # y axis (+ve down)
-    turkey.set_default_gravity(0.6);
-    turkey.set_default_jump_velocity(8.0);
+    #turkey.set_default_gravity(0.0);
+    turkey.set_default_gravity(30.0);
+    turkey.set_default_jump_velocity(480.0);
 
     # velocity caps
-    turkey.set_default_max_x_velocity(5.0);
-    turkey.set_default_max_y_velocity(10.0);
+    turkey.set_default_max_x_velocity(300.0);
+    turkey.set_default_max_y_velocity(600.0);
 
     # delta x when you hit the left/right controls
-    turkey.set_default_x_acceleration(0.55)
-    turkey.set_default_x_deceleration(0.80)
+    turkey.set_default_x_acceleration(33)
+    #turkey.set_default_x_deceleration(48)
+    turkey.set_default_x_deceleration(28)
     
 
     #
@@ -46,20 +48,24 @@ def initialize_levels():
 
     # build some steps
     stone = turkey.load_texture("./res/stone.png")
-    turkey.add_game_obj(0.0, 0.0, stone)
+    #turkey.add_game_obj(0.0, 0.0, stone)
 
-    for i in range(2, 12):
+    ## turkey.add_game_obj(3 * CELL_WIDTH, 19 * CELL_HEIGHT, stone)
+    ## turkey.add_game_obj(3 * CELL_WIDTH, 9 * CELL_HEIGHT, stone)
+    ## turkey.add_game_obj(5 * CELL_WIDTH, 15 * CELL_HEIGHT, stone)
+    ## turkey.add_game_obj(0 * CELL_WIDTH, 15 * CELL_HEIGHT, stone)
+    #turkey.add_game_obj(4 * CELL_WIDTH, 19 * CELL_HEIGHT, stone)
+    for i in range(-20, 122):
         turkey.add_game_obj(i * CELL_WIDTH, 20 * CELL_HEIGHT, stone)
 
-    for i in range(15, 32):
-        turkey.add_game_obj(i * CELL_WIDTH, 20 * CELL_HEIGHT, stone)
+    ## for i in range(15, 32):
+    ##     turkey.add_game_obj(i * CELL_WIDTH, 20 * CELL_HEIGHT, stone)
 
-    turkey.add_game_obj(28 * CELL_WIDTH, 19 * CELL_HEIGHT, stone)
-    turkey.add_game_obj(27 * CELL_WIDTH, 19 * CELL_HEIGHT, stone)
+    ## turkey.add_game_obj(28 * CELL_WIDTH, 19 * CELL_HEIGHT, stone)
+    ## turkey.add_game_obj(27 * CELL_WIDTH, 19 * CELL_HEIGHT, stone)
 
-    for i in range(2,35):
-        turkey.add_game_obj(i * CELL_WIDTH, 40 * CELL_HEIGHT, stone)
-
+    ## for i in range(2,35):
+    ##     turkey.add_game_obj(i * CELL_WIDTH, 40 * CELL_HEIGHT, stone)
 
     #
     # Setup the main character
@@ -67,11 +73,17 @@ def initialize_levels():
     #
     
     # add the character
-    dwarf = turkey.load_texture("./res/dwarf.png")
-    print "add_game_obj " + str(turkey.add_character_game_obj(3 * CELL_WIDTH,
-                                                              15 * CELL_HEIGHT,
-                                                              dwarf))
+    ## dwarf = turkey.load_texture("./res/dwarf.png")
+    ## print "add_game_obj " + str(turkey.add_character_game_obj(3 * CELL_WIDTH,
+    ##                                                           15 * CELL_HEIGHT,
+    ##                                                           dwarf))
 
+    #
+    # Setup the particle system
+    #
+    # This gets used on mouse button down. It's hard-coded at the moment just to see
+    # whether the engine is not too slow.  Again early dev stuff.
+    #
     star = turkey.load_texture("./res/star.png")
     print "add_particle_system " + str(turkey.add_particle_system(star))
 

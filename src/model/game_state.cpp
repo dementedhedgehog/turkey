@@ -2,8 +2,12 @@
 #include <iostream>
 #include <cassert>
 
+#include "model/base_state.h"
 #include "model/game_state.h"
 #include "model/model.h"
+
+// level of resolution for our floats.. this is "good enough"
+const float EPSILON = 0.01f;
 
 //
 // Actions
@@ -119,11 +123,8 @@ class Jump: public IAction {
     }
 
     void do_action() {
-        //character->jump();
-
         if (!character->jumping && !jump_key_pressed) { 
             if (character) character->jump();
-            character->jumping = true;
             jump_key_pressed = true;
         }
     }
@@ -134,6 +135,25 @@ class Jump: public IAction {
         jump_key_pressed = false;
     };
 };
+
+
+// class Jump: public IDebouncedAction {
+//     GameObj * character;
+
+//  public:
+//     Jump(GameObj * character): IDebouncedAction() { 
+//         this->character = character; 
+//     }
+
+//     void do_action() {
+//         //if (character && !character->jumping & !is_pressed()) {             
+//         if (character && !character->jumping) {             
+//             character->jump();
+//             //pressed();
+//         }
+//     }
+// };
+
 
 
 class Pause: public IAction {
@@ -168,6 +188,35 @@ class Pause: public IAction {
 
 
 
+class DbgDumpGameObjects: public IAction {
+private:
+    GameState * const game_state;
+
+    // need this to avoid strobing the jump button (debounce).
+    bool dbg_dump_objects_key_pressed;
+    
+public:
+
+    DbgDumpGameObjects(GameState * const game_state): 
+        game_state(game_state),
+        dbg_dump_objects_key_pressed(false) {}
+
+    void do_action() {
+        if (!dbg_dump_objects_key_pressed) {
+            dbg_dump_objects_key_pressed = true;
+            game_state->dbg_dump_objects();
+        }
+    }
+
+    bool do_debounce() { return true; };
+    void undo_action() {
+        // pause key released (logic to avoid strobing the pause key)
+        dbg_dump_objects_key_pressed = false;
+    };
+};
+
+
+
 //
 // Game State
 //
@@ -186,6 +235,9 @@ GameState::GameState(Model * model) {
     // create a particle system
     particle_system = nullptr; //new ParticleSystem()
 
+    // we use this for working out the change in position with velocities
+    last_time_updated = SDL_GetTicks();
+
     // start timing movement... now (movement = velocity * time).
     last_time_updated = 0;
 
@@ -198,13 +250,23 @@ GameState::GameState(Model * model) {
     keyboard_handler->add_action(new PanDown(camera), SDL_SCANCODE_DOWN, SDL_SCANCODE_LALT);
     keyboard_handler->add_action(new PanDown(camera), SDL_SCANCODE_DOWN, SDL_SCANCODE_RALT);
 
+    // debugging
+    keyboard_handler->add_action(new DbgDumpGameObjects(this), SDL_SCANCODE_D);
+
     keyboard_handler->add_action(new Pause(this), SDL_SCANCODE_P);
 }
 
 
 void GameState::add_game_obj(GameObj * game_obj) {
+
+    // to keep things fast, rather than sorting through all the objects we just keep 
+    // a lot of special purpose lists.
+
+    // list that contains all the current game objects
     game_objs.push_back(game_obj);
-    if (game_obj->movable) {
+
+    // lists of moveable and immoveable objects
+    if (game_obj->is_moveable()) {
         movable_game_objs.push_back(game_obj);
     }
     else {
@@ -223,7 +285,7 @@ void GameState::add_particle_system(ParticleSystem * particle_system) {
 
 
 void GameState::add_character_game_obj(GameObj * game_obj) {
-    assert(game_obj->movable);
+    assert(game_obj->is_moveable());
     add_game_obj(game_obj);
     character = game_obj;
 
@@ -267,6 +329,7 @@ void GameState::remove_dead_game_objs() {
     std::list<GameObj*>::iterator i;
     GameObj * game_obj;
 
+    // remove dead game objects from the movable_game_objs list
     for (i = movable_game_objs.begin(); i != movable_game_objs.end();) {
         game_obj = *i;
         if (game_obj->dead) {
@@ -277,6 +340,7 @@ void GameState::remove_dead_game_objs() {
         }
     }
 
+    // remove dead game objects from the immovable_game_objs list
     for (i = immovable_game_objs.begin(); i != immovable_game_objs.end();) {
         game_obj = *i;
         if (game_obj->dead) {
@@ -287,12 +351,10 @@ void GameState::remove_dead_game_objs() {
         }
     }
 
-    // cull game objects whose time to live is over before worrying about collisions
+    // remove dead game objects from the game_objs list
     for (i = game_objs.begin(); i != game_objs.end();) {
         game_obj = *i;
         if (game_obj->dead) {
-
-            std::cout << "DEAD " << std::endl;
             i = game_objs.erase(i);
             delete game_obj;
         }
@@ -328,7 +390,6 @@ float GameState::get_time_since_last_update() {
 }
 
 
-//void GameState::update(const Uint8 * key_states) {
 void GameState::update() {
     std::list<GameObj*>::iterator i;
     GameObj * game_obj;
@@ -349,12 +410,10 @@ void GameState::update() {
     }
     
     // first time through don't bother doing anything (no way to get a meaningful delta time)
-    if (last_time_updated == 0) {
-        last_time_updated = SDL_GetTicks();
-        return;
-    }
-
-    // FIXME: use contact points?
+    // if (last_time_updated == 0) {
+    //     last_time_updated = SDL_GetTicks();
+    //     return;
+    // }
 
     // get the time elapsed since the last update 
     float delta_time = get_time_since_last_update();
@@ -363,17 +422,22 @@ void GameState::update() {
     age_ttl_game_objs(delta_time);
     remove_dead_game_objs();
 
-
     //
     // BROAD PHASE
     // determines which pairs of shapes need to be tested for collision
     //
     
     // calculate the positions that movable objects would be in after moving if nothing 
-    // effected their movement.  This method also calculates the AABB bounding boxes
+    // effected their movement.  This method also calculates the projected AABB bounding boxes
     // for all movable objects (aka aabb rects).   We use this information to optimize 
     // collision detection in an approach called the Bounding Box Optimization.
     float max_distance = calc_initial_projected_move(delta_time);
+    if (abs(max_distance) < EPSILON) {        
+        return; // nothing is moving..
+    }
+
+        
+
 
     // get a list of possible collisions (i.e. a list of objects whose aabb rects overlap)
     // all possible collisions will be in this list.. i.e. it might contain false positives 
@@ -382,29 +446,50 @@ void GameState::update() {
         game_objs, 
         potential_movable_collisions,
         potential_fixed_collisions);    
-       
-    // how many steps do we have to take to get per pixel testing?
-    float dt = delta_time / max_distance;
 
+
+    // FIXME: need to find
+    std::list<GameObj*>::iterator h;
+    GameObj * go;
+    for (h = movable_game_objs.begin(); h != movable_game_objs.end(); h++) {
+        go = *h;
+
+        if (!go->potential_collider and (go->by + delta_time * go->y_velocity) > 312.0) {
+            std::cout << "XXXXXXXXXXXXXXXXXXXX" << std::endl;
+            exit(5);
+        }
+    }
+
+       
     // any moving object that can't possibly be in a collision can be moved 
     // its entire movement straight away.. no need to take incremental steps
     // looking for a collision. (we don't step these so it's faster)
     for (i = movable_game_objs.begin(); i != movable_game_objs.end(); i++) {
         game_obj = *i;
         if (!game_obj->potential_collider) {
+
+            if ((game_obj->by + (game_obj->y_velocity * delta_time)) > 312.0) {
+                std::cout << "falling through the floor!!!! oxxxx" << std::endl;
+                std::cout << game_obj << std::endl;
+                exit(3);
+            }
+            
             game_obj->move(delta_time);
         }
     }
-        
+
+    // how many steps do we have to take to get per pixel testing?
+    float dt = delta_time / max_distance;
+
     //
     // NARROW PHASE
     // determines collision results for each pair of potential collisions identified in the 
     // previous broad phase
     //
-    
+
     // For each pairwise collision move the object as far as it can.
-    //                                            do this a number of times to avoid jitter.. XXXX
-    for (float t = 0.0f; t < delta_time; t += dt) {
+    // Do this a number of times iterating along the path of the object
+    for (float t = 0.0f; t <= delta_time; t += dt) {
 
         // calculate the projected positions of movable objects that might be in a collision
         for (i = movable_game_objs.begin(); i != movable_game_objs.end(); i++) {
@@ -416,47 +501,190 @@ void GameState::update() {
             }
         }
         
-        // find and resolve each *movable* collision 
-        // (collisions between two movable objects)
-        for (auto j = potential_movable_collisions.begin(); 
-                  j != potential_movable_collisions.end(); 
-                  j++) {
-            Collision * collision = *j;
+        // // find and resolve each *movable* collision 
+        // // (collisions between two movable objects)
+        // for (auto j = potential_movable_collisions.begin(); 
+        //           j != potential_movable_collisions.end(); 
+        //           j++) {
+        //     Collision * collision = *j;
 
-            // check for a collision..
-            if (collision->check_for_projected_movable_collision()) {
+        //     // check for a collision..
+        //     if (collision->check_for_projected_movable_collision() != CollisionType::NONE) {
 
-                // handle the collision
-                collision->resolve();
-            }
-        }       
+        //         // handle the collision
+        //         collision->resolve();
+        //     }
+        // }       
 
         // find and resolve each *fixed* collision 
         // (collisions between a movable object and a fixed object)
         for (auto j = potential_fixed_collisions.begin(); 
                   j != potential_fixed_collisions.end(); 
                   j++) {
-            Collision * collision = *j;            
+            Collision * c = *j;            
 
             // check for a collision..
-            if (collision->check_for_projected_fixed_collision()) {
+            if (c->has_projected_fixed_collision()) {                
 
+                //std::cout << "----------- " << collision << std::endl;
+                
+                // if (is_deferred(collision_type)) {
+                //     // std::cout << "deferred " << std::endl;
+                //     deferred_fixed_collisions.push_back(collision);
+                // }
+                // else {
                 // handle the collision
-                collision->resolve();
+                // std::cout << "resolve " << std::endl;
+                c->resolve();
+                // }
             }
-        }       
+
+
+            // if (c->a->y_velocity > 0 and c->a->by <= 312.0 and c->a->pby > 312.0) {
+            //     std::cout << "falling through the floor!!!! 1" << std::endl;
+
+            //     // print out all the collisions this object is involved in.
+            //     for (auto k = potential_fixed_collisions.begin(); 
+            //          k != potential_fixed_collisions.end(); 
+            //          k++) 
+            //     {
+            //         Collision * c2 = *k;
+            //         if (c2->a == c->a) {
+            //             std::cout << c2 << std::endl;
+            //         }
+            //     }
+            //     exit(3);
+            // }     
+
+            // if (c->a->by > 312.0) {
+            //     std::cout << "falling through the floor!!!! 2" << std::endl;
+            //     std::cout << c->a << std::endl;
+
+            //     // print out all the collisions this object is involved in.
+            //     for (auto k = potential_fixed_collisions.begin(); 
+            //          k != potential_fixed_collisions.end(); 
+            //          k++) 
+            //     {
+            //         Collision * c2 = *k;
+            //         if (c2->a == c->a) {
+            //             std::cout << c2 << std::endl;
+            //         }
+            //     }
+            //     exit(4);
+            // }
+        }
+
+
+        // sanity check!
+        for (auto j = potential_fixed_collisions.begin(); 
+             j != potential_fixed_collisions.end(); 
+             j++) 
+        {
+            Collision * c = *j;
+
+            //std::cout << c->a->y_velocity << ", " << c->a->by << std::endl;
+            
+            //if (c->a->y_velocity > 0 and c->a->by < 312.0 and c->a->pby > 312.0) {
+            //if (c->a->y_velocity >= 0 and c->a->by <= 312.0 and c->a->pby > 312.0) {
+            //if (c->a->y_velocity > 0 and c->a->by <= 312.0 and c->a->pby > 312.0) {
+
+            if ((c->a->by + (c->a->y_velocity * dt)) > 312.0) {
+                std::cout << "falling through the floor!!!! o" << std::endl;
+                // std::cout << c->a << " ---> " << c->b << std::endl;
+
+                // print out all the collisions this object is involved in.
+                for (auto k = potential_fixed_collisions.begin(); 
+                     k != potential_fixed_collisions.end(); 
+                     k++) 
+                {
+                    Collision * c2 = *k;
+
+                    if (c2->a == c->a) {
+                        // std::cout << c2->a << " --> " << c2->b 
+                        //           << ": " << c2 << std::endl;
+                        std::cout << c2 << std::endl;
+                    }
+                }
+
+                exit(3);
+            }
+        }
 
         // now move the objects to their projected position 
         // (unless they've been involved in a collision in which case the collision 
         // resolution might have changed stuff a bit).
         for (i = movable_game_objs.begin(); i != movable_game_objs.end(); i++) {
             game_obj = *i;
+
+            if ((game_obj->by + (game_obj->y_velocity * dt)) > 312.0) {
+                //
+                // FIXME: PROBLEM FOUND HERE!!!
+                //
+                // PROBLEM IS THE PROJECTED POSITION IS NOT BEING CALCULATED
+                // FOR THIS OBJECT!!!
+                std::cout << "falling through the floor!!!! ooo 2" << std::endl;
+                std::cout << game_obj << std::endl;
+                std::cout << "new y pos " << 
+                    (game_obj->by + (game_obj->y_velocity * dt)) << std::endl;
+                std::cout << "dt " << dt << std::endl;
+                std::cout << "y vel" << game_obj->y_velocity << std::endl;
+                std::cout << "by " << game_obj->by << std::endl;
+                std::cout << "dt " << (game_obj->y_velocity * dt) << std::endl;
+
+
+                bool potential_collision = false;
+                for (auto j = potential_fixed_collisions.begin(); 
+                     j != potential_fixed_collisions.end(); 
+                     j++) 
+                {
+                    Collision * c = *j;
+                    if (c->a == game_obj) {
+                        potential_collision = true;
+                        break;
+                    }
+                }
+                std::cout << "potential collider .. " << potential_collision << std::endl;
+
+
+                // std::cout << game_obj << " ---> " << c->b << std::endl;
+
+                // // print out all the collisions this object is involved in.
+                // for (auto k = potential_fixed_collisions.begin(); 
+                //      k != potential_fixed_collisions.end(); 
+                //      k++) 
+                // {
+                //     Collision * c2 = *k;
+
+                //     if (c2->a == game_obj) {
+                //         // std::cout << c2->a << " --> " << c2->b 
+                //         //           << ": " << c2 << std::endl;
+                //         std::cout << c2 << std::endl;
+                //     }
+                // }
+                exit(3);
+            }     
+
             
             if (game_obj->potential_collider) {
                 game_obj->move(dt);
             }
         }
     }
+
+    // // FIXME: use contact points?
+
+    // clean out the list of deferred collisions
+    //deferred_fixed_collisions.clear();
+    
+    // FIXME: remove this
+    // static int c = 1;
+    // if (potential_fixed_collisions.size() > 0) {
+    //     c -= 1;
+    //     if (c == 0) {
+    //         dbg_dump_objects();
+    //         model->change_state(State::QUITTING);
+    //     }
+    // }
 }    
 
 
@@ -524,7 +752,7 @@ void GameState::detect_potential_collisions_brute_force(
 
             // sanity checks
             assert(game_obj_i != game_obj_j);
-            assert(game_obj_j->movable);
+            assert(game_obj_j->is_moveable());
 
             // check for a collision..
             if (game_obj_i->potentially_collides_with(game_obj_j)) {
@@ -541,15 +769,22 @@ void GameState::detect_potential_collisions_brute_force(
 
             // sanity checks
             assert(game_obj_i != game_obj_j);
-            assert(!game_obj_j->movable);
+            assert(!game_obj_j->is_moveable());
+            //assert(!game_obj_j->);
             
             // check for a collision..
             if (game_obj_i->potentially_collides_with(game_obj_j)) {
+
+                //std::cout << "potential collision" << std::endl;
                 
                 // collision!
                 Collision * c = new Collision(game_obj_i, game_obj_j);
                 fixed_collisions.push_back(c);
             }
+            // else {
+            //     std::cout << "no potential collision" << std::endl;
+            //     std::cout << game_obj_i << ", " << game_obj_j << std::endl;
+            // }
         }
     }  
 }
@@ -564,4 +799,16 @@ void GameState::get_camera_position(float * camera_x, float * camera_y) const {
 // toggle game pause
 void GameState::toggle_pause() {
     paused = not paused;
+}
+
+
+void GameState::dbg_dump_objects() {
+    std::list<GameObj*>::iterator i;
+    GameObj * game_obj;
+        
+    // reduce the ttl for the game_obj.. 
+    for (i = game_objs.begin(); i != game_objs.end(); i++) {
+        game_obj = *i;
+        std::cout << "\t" << *game_obj << std::endl;
+    }
 }

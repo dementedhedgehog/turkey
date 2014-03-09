@@ -12,14 +12,6 @@
 #include "model/camera.h"
 
 
-class FatalErrorState : public BaseState {
- public:
-    State get_state() { return State::FATAL_ERROR; }    
-    //void update(const Uint8 * key_states) { }
-    void update() { }
-    void handle_mouse(const int x, const int y, const Uint8 mouse_button_state) {};
-};
-
 class IStateListener {
 public:
     //virtual state_changing(IState * from_state, IState * to_state) = 0;
@@ -29,8 +21,7 @@ public:
     // without exposing the concrete derived class. The destructor doesn't have to do 
     // anything, because the interface doesn't have any concrete members
     virtual ~IStateListener() {};
-};
-    
+};    
 
 
 /**
@@ -42,7 +33,7 @@ private:
     IntroState * intro_state;
     GameState * game_state;
     FatalErrorState * fatal_error_state;
-    
+    QuittingState * quitting_state;
     BaseState * current_state;
 
     // a list of things to notify when the game state changes

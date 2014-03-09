@@ -101,7 +101,7 @@ int GameView::render() {
     // for each game object
     std::list<GameObj*>::iterator i;
     for (i = game_objs.begin(); i != game_objs.end(); i++) {         
-        game_obj = (*i);
+        game_obj = *i;
         
         // draw the game object
         render_texture(game_obj->texture, renderer, 
@@ -119,7 +119,7 @@ int GameView::render() {
     SDL_Rect dest = { window_width - title_text->w - 30, 30, title_text->w, title_text->h};
     SDL_RenderCopy(renderer, title_texture, &src, &dest);    
 
-    // draw the pause button if we're paused
+    // draw the pause symbol if we're paused
     if (game_state->is_paused()) {
         render_texture(pause_symbol, renderer, window_width - 90, 30);
     }

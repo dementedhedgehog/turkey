@@ -5,19 +5,102 @@
  */
 #include <iostream>
 #include <string>
+#include <sstream> 
 
 #include <SDL2/SDL.h>
 
 #include "model/model.h"
 #include "model/keyboard_handler.h"
+#include "model/collision_resolution_manager.h"
 #include "view/view.h"
 #include "view/utils.h"
 #include "shared/scripting.h"
 #include "shared/actions.h"
 
 
+
+class NullCollisionResolver : CollisionResolver {
+public:
+    NullCollisionResolver() : CollisionResolver("NullCollisionResolver") {};
+
+    void resolve (
+        GameObj * moveable_game_obj, 
+        GameObj * other_game_obj, 
+        CollisionType collision) { };
+};
+
+
+
+
+class SolidFloorCollisionResolver : CollisionResolver {
+public:
+    SolidFloorCollisionResolver() : CollisionResolver("SolidFloorCollisionResolver") {};
+
+    void resolve (
+        GameObj * moveable_game_obj, 
+        GameObj * other_game_obj, 
+        CollisionType collision)
+    {
+        assert(collision == CollisionType::BOTTOM || collision == CollisionType::TOP);
+        assert(!other_game_obj->is_moveable());
+
+        moveable_game_obj->collision_set_y_velocity(0.0f);
+        moveable_game_obj->jumping = false;
+    }
+};
+
+// void solid_floor_collision_resolver (
+//     GameObj * moveable_game_obj, 
+//     GameObj * other_game_obj, 
+//     CollisionType collision)
+// {
+//     assert(collision == CollisionType::BOTTOM || collision == CollisionType::TOP);
+//     assert(!other_game_obj->is_moveable());
+
+//     moveable_game_obj->collision_set_y_velocity(0.0f);
+//     moveable_game_obj->jumping = false;
+// }
+
+
+class SolidWallCollisionResolver : CollisionResolver {
+public:
+    SolidWallCollisionResolver() : CollisionResolver("SolidWallCollisionResolver") {};
+
+    void resolve (
+        GameObj * moveable_game_obj, 
+        GameObj * other_game_obj, 
+        CollisionType collision)
+    {
+        assert(collision == CollisionType::LEFT || collision == CollisionType::RIGHT);
+        assert(!other_game_obj->is_moveable());
+
+        moveable_game_obj->collision_set_x_velocity(0.0f);
+        moveable_game_obj->jumping = false;
+    }
+
+};
+
+
+// void solid_wall_collision_resolver (
+//     GameObj * moveable_game_obj, 
+//     GameObj * other_game_obj, 
+//     CollisionType collision)
+// {
+//     assert(collision == CollisionType::LEFT || collision == CollisionType::RIGHT);
+//     assert(!other_game_obj->is_moveable());
+
+//     std::cout << "----------------------------_" << std::endl;
+
+//     moveable_game_obj->collision_set_x_velocity(0.0f);
+//     moveable_game_obj->jumping = false;
+// }
+
+
+
 int main(int argc, char **argv){
     int result;
+
+    GameObjType::initialize();
 
     // log some info about about the run context
     log_debug_info();
@@ -84,9 +167,6 @@ int main(int argc, char **argv){
     // seed the random number generator
     srand(SDL_GetTicks());
 
-
-    
-
     // create the model 
     Model * model = new Model();
 
@@ -101,6 +181,65 @@ int main(int argc, char **argv){
         log_msg("init view failed!");
         return result;
     }
+
+
+    CollisionResolver * solid_floor_collision_resolver = 
+        (CollisionResolver *) new SolidFloorCollisionResolver();
+    CollisionResolver * solid_wall_collision_resolver = 
+        (CollisionResolver *) new SolidWallCollisionResolver();
+    CollisionResolver * null_collision_resolver = 
+        (CollisionResolver *) new NullCollisionResolver();
+
+    CollisionResolutionManager::init();
+
+    // add the resolver
+    CollisionResolutionManager::add(CHARACTER, BLOCK, CollisionType::BOTTOM, 
+        solid_floor_collision_resolver);
+    CollisionResolutionManager::add(CHARACTER, BLOCK, CollisionType::TOP, 
+        solid_floor_collision_resolver);
+    CollisionResolutionManager::add(CHARACTER, BLOCK, CollisionType::LEFT,
+        solid_wall_collision_resolver);
+    CollisionResolutionManager::add(CHARACTER, BLOCK, CollisionType::RIGHT,
+        solid_wall_collision_resolver);
+    CollisionResolutionManager::add(CHARACTER, BLOCK, CollisionType::TOP_RIGHT,
+        null_collision_resolver);
+    CollisionResolutionManager::add(CHARACTER, BLOCK, CollisionType::TOP_LEFT,
+        null_collision_resolver);
+    CollisionResolutionManager::add(CHARACTER, BLOCK, CollisionType::BOTTOM_RIGHT,
+        null_collision_resolver);
+    CollisionResolutionManager::add(CHARACTER, BLOCK, CollisionType::BOTTOM_LEFT,
+        null_collision_resolver);
+
+
+    // add the resolver
+    // CollisionResolutionManager::add(FIREBALL, BLOCK, CollisionType::BOTTOM, 
+    //     &solid_floor_collision_resolver);
+    // CollisionResolutionManager::add(FIREBALL, BLOCK, CollisionType::TOP, 
+    //     &solid_floor_collision_resolver);
+    // CollisionResolutionManager::add(FIREBALL, BLOCK, CollisionType::LEFT,
+    //     &solid_wall_collision_resolver);
+    // CollisionResolutionManager::add(FIREBALL, BLOCK, CollisionType::RIGHT,
+    //     &solid_wall_collision_resolver);
+
+
+    // add the resolver
+    CollisionResolutionManager::add(FIREBALL, BLOCK, CollisionType::BOTTOM, 
+        solid_floor_collision_resolver);
+    CollisionResolutionManager::add(FIREBALL, BLOCK, CollisionType::TOP, 
+        solid_floor_collision_resolver);
+    CollisionResolutionManager::add(FIREBALL, BLOCK, CollisionType::LEFT,
+        solid_wall_collision_resolver);
+    CollisionResolutionManager::add(FIREBALL, BLOCK, CollisionType::RIGHT,
+        solid_wall_collision_resolver);
+    CollisionResolutionManager::add(FIREBALL, BLOCK, CollisionType::TOP_RIGHT,
+        null_collision_resolver);
+    CollisionResolutionManager::add(FIREBALL, BLOCK, CollisionType::TOP_LEFT,
+        null_collision_resolver);
+    CollisionResolutionManager::add(FIREBALL, BLOCK, CollisionType::BOTTOM_RIGHT,
+        null_collision_resolver);
+    CollisionResolutionManager::add(FIREBALL, BLOCK, CollisionType::BOTTOM_LEFT,
+        null_collision_resolver);
+
 
     // display the window or die
     if ((result = view->display_window()) != 0) { 
@@ -127,7 +266,38 @@ int main(int argc, char **argv){
     // 
     KeyboardHandler::add_global_action(new ToggleFullscreen(window), SDL_SCANCODE_F1);
     KeyboardHandler::add_global_action(new Quit(view), SDL_SCANCODE_ESCAPE);
-    
+
+
+    // check the binding from objects to collision resolution
+    CollisionResolver * resolver;
+    GameObjType * g, * g2;    
+    CollisionType ct;
+    for (int moveable = 0; moveable < GameObjType::get_last_moveable_id(); moveable++) {
+
+        g = GameObjType::get_moveable_type_for_id(moveable);
+        std::cout << g->get_name() << std::endl;
+
+        for (int other = 0; other < GameObjType::get_last_id(); other++) {                    
+            g2 = GameObjType::get_type_for_id(other);
+        
+            std::cout << "\t" << g2->get_name() << std::endl;
+
+            for (int c = 0; c < N_VALID_COLLISION_TYPES; c++) {
+                ct = ValidCollisionTypes[c];
+                resolver = CollisionResolutionManager::get(g, g2, ct);
+
+                std::cout << "\t\t" << g->get_name() << " -> " << g2->get_name() << ": " 
+                          << ct << " = ";
+                if (resolver == nullptr) {
+                    std::cout << "NULL!";
+                }
+                else {
+                    std::cout << resolver->get_name();
+                }
+                std::cout << std::endl;
+            }
+        }
+    }
 
     //
     // Main Message Loop!
@@ -141,6 +311,8 @@ int main(int argc, char **argv){
     //
     // Cleaning up..
     //
+
+    CollisionResolutionManager::clean_up();
 
     // clean up the model
     model->clean_up();

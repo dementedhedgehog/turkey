@@ -2,9 +2,34 @@
 tasks
 =====
 
-  * play sound?
+ PROBLEM!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    moveable objects that aren't potential colliders are falling through the floor!
+    projected position not calculated properly!!!
 
-  * fork for collisions
+
+
+  PROBLEMS:
+     doesn't do corner collisions in the right order?
+     fireball has collisions .. where are tjjhey defined?
+     need to check for all collisions there's a configured collision resolver
+     need to handle inheritance of collision resolvers
+
+  HIGH PRIORITY
+     - internal edges FUCK!  hmmm 
+     - passes through squares FUCK!
+     - abstract debounced buttons
+
+  - deferred corner collisions? defer using a FLAG rather than allocating collisions to a list!!
+
+
+  COLLISION PLAN
+
+    question ... how do I keep the ids for the movable objects separate from the others?
+    answer.. it's easier to just have two.
+
+
+  * MOVING OBJECT COLLISIONS
+  - detect relative velocity?
 
   * strip all the stupid manager classes out of the views.. make them globals,
     same with the view and the model???
@@ -14,11 +39,12 @@ tasks
 
   * move load_texture into the image manager
   * why does each view keep a reference to the image manager (can't I just make them globals?
-
   * render fps text on the GPU
   * gpu side static text class
   * load sprites in python
-  * load textures from file  
+  * expose game obj type to python
+  * expose map of collision resolutions between game object types to python.
+
 
   * return where collision occurred..  (collision internal?) BUGGY!   
 
@@ -53,6 +79,10 @@ tasks
    * resource cache  
    * widget library?
 
+   * keyboard handler
+       - handle overloaded keys alt-left and left trigger different actions
+       - jeremy has a delayed button behaviour that needs to be implemented
+
 later
 ====
    * ui widget library
@@ -86,4 +116,12 @@ done
   * set backgrounds/foregrounds from python
   * customizable keyboard handler (map keys to actions).
   * set gravity from python 
+  * play sound?
+  * sideways movement is slow
+  * collision: do fixed detection first
+  * collision: give game objects a type
+  * collision: sort out map from (movable game obj, fixed game obj, side) -> resolver pluggable collision resolvers
+  * load textures from file  
+  * fork for collisions
+  * print out list of resolvers
       

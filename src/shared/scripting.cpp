@@ -6,6 +6,7 @@
 
 #include "shared/scripting.h"
 #include "model/particle_system.h"
+#include "model/game_obj_type.h"
 #include "view/utils.h"
 
 #define ___STR___(X) #X
@@ -391,10 +392,11 @@ static PyObject* turkey_debug_set_draw_fps(PyObject *self, PyObject *args)
 static PyObject* turkey_add_game_obj(PyObject *self, PyObject *args)    
 {    
     float x, y;
-    int movable = FALSE;
+    //int movable = FALSE;
     PyObject * texture_object = nullptr;
 
-    if (!PyArg_ParseTuple(args, "ff|Oi:add_game_obj", &x, &y, &texture_object, &movable)) {
+    //if (!PyArg_ParseTuple(args, "ff|Oi:add_game_obj", &x, &y, &texture_object, &movable)) {
+    if (!PyArg_ParseTuple(args, "ff|Oi:add_game_obj", &x, &y, &texture_object)) {
         return NULL;
     }
        
@@ -419,7 +421,8 @@ static PyObject* turkey_add_game_obj(PyObject *self, PyObject *args)
     SDL_Texture * texture = nullptr;
     texture = (SDL_Texture *)PyCapsule_GetPointer(texture_object, TEXTURE);
 
-    GameObj * game_obj = new GameObj(x, y, texture, (bool)movable);
+    //GameObj * game_obj = new GameObj(x, y, BLOCK, texture, (bool)movable);
+    GameObj * game_obj = new GameObj(x, y, BLOCK, texture);
     GameState * game_state = model->get_game_state();
     game_state->add_game_obj(game_obj);
 
@@ -505,8 +508,8 @@ static PyObject* turkey_add_character_game_obj(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    const bool movable = true;
-    GameObj * game_obj = new GameObj(x, y, texture, movable);
+    //const bool movable = true;
+    GameObj * game_obj = new GameObj(x, y, CHARACTER, texture); //, movable);
     GameState * game_state = model->get_game_state();
     game_state->add_character_game_obj(game_obj);
 

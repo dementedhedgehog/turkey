@@ -41,6 +41,7 @@ class SkipIntro: public IAction {
 IntroState::IntroState(Model * model) {
     this->model = model;    
     keyboard_handler->add_action(new SkipIntro(model), SDL_SCANCODE_SPACE);
+    keyboard_handler->add_action(new SkipIntro(model), SDL_SCANCODE_X);
 }
 
 State IntroState::get_state() { return State::INTRO; };

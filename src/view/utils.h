@@ -49,12 +49,9 @@ SDL_Texture * load_texture(const std::string & fname, SDL_Renderer * renderer);
 void render_texture(SDL_Texture *tex, SDL_Renderer *renderer, int x, int y);
 
 
-
 /**
  * Toggle the window to full size.
  */
 void toggle_fullscreen(SDL_Window * window);
-
-
 
 #endif

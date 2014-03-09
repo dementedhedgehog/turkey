@@ -13,11 +13,47 @@
 
 class IAction {
  public:
+    inline void perform_action() { do_action(); };
     virtual void do_action() = 0;
 
     // overload these if you only want to receive a signal when the key is pressed
     virtual bool do_debounce() { return false; };
     virtual void undo_action() {};
+};
+
+
+//
+// Class that abstracts away the debounce logic
+// (just using it for jump at the moment).
+//
+class IDebouncedAction: public IAction {
+    // need this to avoid strobing the button
+    bool key_pressed;
+
+ protected:
+    /* bool is_pressed() { return key_pressed; }; */
+    /* void pressed() { key_pressed = true; }; */
+
+ public:
+
+    IDebouncedAction(): key_pressed(false) {};
+
+    inline void perform_action() { 
+        if (!key_pressed) {
+            do_action();
+            key_pressed = true;
+        }
+    }
+
+    virtual void do_action()  {} ;
+    //virtual bool xdo_action() = 0;
+
+    // overload these if you only want to receive a signal when the key is pressed
+    virtual bool do_debounce() { return true; };
+    void undo_action() {
+        // jump key released (logic to avoid strobing the jump key)
+        key_pressed = false;
+    };
 };
 
 
@@ -60,7 +96,7 @@ class KeyMap {
         }
         
         // action triggered
-        action->do_action();
+        action->perform_action();
     }
 
     void undo_action(const Uint8 * keys) {

@@ -42,6 +42,10 @@ class GameState : public BaseState, public IGameObjManager {
     // (returned by the first pass of the collision detector).
     std::list<Collision*> potential_fixed_collisions;
 
+    // deferred fixed collisions 
+    // deferred because they happen after any other collisions.
+    //std::list<Collision*> deferred_fixed_collisions;
+
     //
     // Keyboard state.
     //
@@ -88,15 +92,13 @@ class GameState : public BaseState, public IGameObjManager {
         const std::list<GameObj*> game_objs, 
         std::list<Collision*> & potential_movable_collisions,
         std::list<Collision*> & potential_fixed_collisions);
-    
-    
+        
     //
     // Camera
     //
     Camera * camera;
 
-
-    // Garbage Collection
+    // clean up old game objects
     inline void age_ttl_game_objs(float delta_time);
     inline void remove_dead_game_objs();
 
@@ -135,6 +137,9 @@ public:
 
     // turn pause on and off
     void toggle_pause();
+
+    // debugging: dump game object info to std out.
+    void dbg_dump_objects();
 
     // return the current camera position
     void get_camera_position(float * camera_x, float * camera_y) const;

@@ -9,6 +9,7 @@
 #include <SDL2/SDL.h>
 
 #include "model/collision_type.h"
+#include "model/game_obj_type.h"
 
 
 // FIXME: get rid of dx/dy duplicate data that stops us changing the velocities?
@@ -20,6 +21,8 @@
  */
 class GameObj {
  public:
+
+    GameObjType * type;
 
     //
     // Scripts can set this stuff
@@ -43,6 +46,7 @@ class GameObj {
     float x;
     float y;
 
+    // make this a function of the sprite (and calculate and store it),
     float half_height;
     float half_width;
 
@@ -52,11 +56,11 @@ class GameObj {
     // does the game object move?
     // if the game_obj is not movable then velocities, accleration etc are not used.
     // (we use this field to optimize collision detection).    
-    bool movable; 
+    //bool movable; 
 
-    // Axis Aligned Bounding Box *including* Move!! (used for collision detection)
-    // Note: not quite a bounding box for the object because it's really the box for the 
-    // object and the object if it were moved to where it wants to be (ignoring collisions).
+    inline bool is_moveable() const { return type->is_moveable(); };
+
+    // Axis Aligned Bounding Box 
     float ax, ay, bx, by;
 
     // is the player jumping (space held down?)
@@ -72,13 +76,13 @@ class GameObj {
     // FPS Invariant Movement Variables
     //
 
-    // current velocity
-    float x_vel_per_sec;
-    float y_vel_per_sec;
+    // current velocity, this is the delta position per second.
+    float x_velocity;
+    float y_velocity;
 
     // use these to clamp max velocity
-    float x_max_vel_per_sec;
-    float y_max_vel_per_sec;
+    float x_max_velocity;
+    float y_max_velocity;
 
     // acceleration when running
     float x_acc_per_sec; 
@@ -87,7 +91,7 @@ class GameObj {
 
     // acceleration up/down (due to gravity + jumping)
     float y_acc_per_sec; 
-    float y_jump_start_vel_per_sec;
+    float y_jump_start_velocity;
 
     // the time-to-live for the game object
     // if this is >= 0.0 then the ttl will be reduced every time the state is updated
@@ -95,7 +99,8 @@ class GameObj {
     float ttl_in_secs;
 
     //
-    // Scaled Movement Variables
+    // Stepped Movement Variables
+    // We use these to iterate objects towards their final positions
     // 
 
     // projected movement position (where we want to move in the next time step
@@ -103,9 +108,9 @@ class GameObj {
     float px;
     float py;
 
-    // stepped axis aligned bounding box..
-    // This is the bounding box of the object after we have stepped it.
-    // recalculate this after changing px or py
+    // Axis Aligned Bounding Box *including* Projected Move!! (used for collision detection)
+    // Note: not quite a bounding box for the object because it's really the box for the 
+    // object and the object if it were moved to where it wants to be (ignoring collisions).
     float pax, pay, pbx, pby;
 
    
@@ -118,7 +123,8 @@ class GameObj {
     bool potential_collider;
     
     // constructor
-    GameObj(float x, float y, SDL_Texture * texture = nullptr, bool movable = false); 
+    GameObj(float x, float y, GameObjType * type, 
+        SDL_Texture * texture = nullptr); //, bool movable = false); 
 
     
     //bool contains_point(float x, float y);
@@ -177,11 +183,41 @@ class GameObj {
 
     // set the velocity of the game object 
     // use these to slow or stop the object when colliding.    
-    void collision_set_x_velocity(float x_vel_per_sec);
-    void collision_set_y_velocity(float y_vel_per_sec);
+    void collision_set_x_velocity(float x_velocity);
+    void collision_set_y_velocity(float y_velocity);
 
     // set the gravity
     static void set_default_gravity(const float gravity);
+
+    void to_stream(std::ostream &strm) const {
+        strm << type->get_name() << " collider? " << potential_collider << ",";
+        /* strm << type->get_name() << " (" << self.id; */
+
+        /* if (is_moveable()) { */
+        /*     strm << ", " << self.moveable_id; */
+        /* } */
+        //strm << ") aabb: (" << ax << "," << ay << "," << bx << "," << by << ")";
+        strm << " aabb: (" << ax << "," << ay << "," << bx << "," << by << ")";
+
+        if (is_moveable()) {
+            strm << " vel(" << x_velocity << ", " << y_velocity << ")";
+            strm << " paabb: (" << pax << "," << pay << "," << pbx << "," << pby << ")";
+        }
+    }
+
+    const std::string get_type_name() const { return type->get_name(); };
 };
+
+
+inline std::ostream& operator<<(std::ostream &strm, const GameObj & g) {
+    g.to_stream(strm);
+    return strm;
+}
+
+inline std::ostream& operator<<(std::ostream &strm, const GameObj * g) {
+    g->to_stream(strm);
+    return strm;
+}
+
 
 #endif

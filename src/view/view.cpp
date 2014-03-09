@@ -254,6 +254,11 @@ void View::state_changed(State old_state, State current_state) {
             current_view = game_view;
             break;
 
+        case State::QUITTING:
+            std::cout << "quit!!" << std::endl;
+            quit();
+            break;
+
         case State::FATAL_ERROR:
         default:
             // log an error and bail

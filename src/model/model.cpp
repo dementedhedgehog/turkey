@@ -10,6 +10,7 @@ Model::Model() {
     intro_state = new IntroState(this);
     game_state = new GameState(this);
     fatal_error_state = new FatalErrorState();
+    quitting_state = new QuittingState();
     current_state = intro_state;
 
     game_has_keyboard_focus = true;
@@ -20,6 +21,7 @@ Model::Model() {
 Model::~Model() {
     delete intro_state;
     delete game_state;
+    delete quitting_state;
     delete fatal_error_state;
 }
 
@@ -43,8 +45,13 @@ void Model::change_state(State to_state) {
             current_state = game_state;
             break;
 
+        case State::QUITTING:
+            current_state = quitting_state;
+            break;
+
         case State::INTRO:
             // fall through .. we should never get here?
+
         default:
             current_state = fatal_error_state;
     }
