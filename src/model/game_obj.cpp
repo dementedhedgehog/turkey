@@ -28,8 +28,14 @@ float GameObj::default_x_deceleration = 0.8f * MOVEMENT_SCALE;
 // set jump and gravity forces
 float GameObj::default_jump_velocity = 8.f * MOVEMENT_SCALE;
 
+// give each game object a unique id.
+int GameObj::last_id = 0;
+
  
 GameObj::GameObj(float x, float y, GameObjType * type, SDL_Texture * texture) {
+
+    // unique id
+    this->id = last_id++;
 
     // init the position
     this->x = x;
@@ -47,7 +53,7 @@ GameObj::GameObj(float x, float y, GameObjType * type, SDL_Texture * texture) {
     this->do_decelerate = false;
 
     // a time to live value
-    this->ttl_in_secs = -1.0;
+    this->ttl = -1.0;
 
     // draw this
     this->texture = texture;
@@ -121,10 +127,6 @@ bool GameObj::potentially_collides_with(GameObj * other) {
     // then this object is totally to the left of the other object.
     if (pbx < other->pax) return false;
 
-    // assume all objects aren't going to be 
-    potential_collider = true;
-    other->potential_collider = true;
-
     // may be a collision!
     return true;
 }
@@ -135,23 +137,25 @@ bool GameObj::potentially_collides_with(GameObj * other) {
 // position of another movable object.  
 //
 CollisionType GameObj::check_for_projected_movable_collision(GameObj * other) {
-    assert(other->is_moveable());
+    assert(false);
 
-    // If this objects top edge is below the others bottom edge, then this object is totally 
-    // below the other object (remember that y increases downwards in sdl).
-    if (pay > other->pby) { return CollisionType::NONE; }
+    // assert(other->is_moveable());
+
+    // // If this objects top edge is below the others bottom edge, then this object is totally 
+    // // below the other object (remember that y increases downwards in sdl).
+    // if (pay > other->pby) { return CollisionType::NONE; }
         
-    // If this objects left edge is to the right of the others right edge,
-    // then this object is totally to the right of the other object.
-    if (pax > other->pbx) { return CollisionType::NONE; }
+    // // If this objects left edge is to the right of the others right edge,
+    // // then this object is totally to the right of the other object.
+    // if (pax > other->pbx) { return CollisionType::NONE; }
 
-    // If this objects bottom edge is above the others top edge,
-    // then this object is totally above the other object.
-    if (pby < other->pay) { return CollisionType::NONE; }
+    // // If this objects bottom edge is above the others top edge,
+    // // then this object is totally above the other object.
+    // if (pby < other->pay) { return CollisionType::NONE; }
 
-    // If this objects right edge is to the left of the others left edge,
-    // then this object is totally to the left of the other object.
-    if (pbx < other->pax) { return CollisionType::NONE; }
+    // // If this objects right edge is to the left of the others left edge,
+    // // then this object is totally to the left of the other object.
+    // if (pbx < other->pax) { return CollisionType::NONE; }
 
     // may be a collision!
     return CollisionType::POTENTIAL;  
@@ -196,31 +200,26 @@ CollisionType GameObj::check_for_projected_fixed_collision(GameObj * other) {
             // moving down collision is either BOTTOM, RIGHT or BOTTOM_RIGHT
             if (bx < other->ax) {      // this is left of other
                 if (by < other->ay) {  // this is above other
-                    std::cout << "moving right and down BR" << std::endl;
+                    //std::cout << "moving right and down BR" << std::endl;
             
                     return CollisionType::BOTTOM_RIGHT; 
                 }
                 else {                          // this is not above other
                     if (ay < other->by) {  // this is not below other
-
-        std::cout << "RIGHT X" << std::endl;
-        std::cout << this << " ---> " << other << std::endl;
-        //exit(3);
-
-                        std::cout << "moving right and down R" << std::endl;
+                        //std::cout << "moving right and down R" << std::endl;
                         return CollisionType::RIGHT; 
                     }
                 }
             }
             else {                              // this is right of other
                 if (by < other->ay) {  // this is above other
-                    std::cout << "moving right and down B" << std::endl;
+                    //std::cout << "moving right and down B" << std::endl;
                     return CollisionType::BOTTOM;                     
                 }
             }
         }
         else { // moving right and up
-            std::cout << "moving right and up, " << y_velocity << std::endl;
+            //std::cout << "moving right and up, " << y_velocity << std::endl;
 
             // moving right and up collision is either TOP, RIGHT or TOP_RIGHT
             if (bx < other->ax) {      // this is left of other 
@@ -230,21 +229,14 @@ CollisionType GameObj::check_for_projected_fixed_collision(GameObj * other) {
                 }
                 else {                          // this is not below other
                     if (by > other->ay) {  // this is not above other
-
-
-        std::cout << "RIGHT X2" << std::endl;
-        std::cout << this << " ---> " << other << std::endl;
-        //exit(3);
-
-                        std::cout << "moving right and up R" << std::endl;
-                        std::cout << "\t" << this  << " --> " << other << std::endl;
+                        //std::cout << "moving right and up R" << std::endl;
                         return CollisionType::RIGHT; 
                     }
                 }
             }
             else {                              // this is right of other
                 if (ay > other->by) {  // this is below other
-                    std::cout << "moving right and up TOP" << std::endl;
+                    //std::cout << "moving right and up TOP" << std::endl;
                     return CollisionType::TOP; 
                 }
             }
@@ -253,79 +245,52 @@ CollisionType GameObj::check_for_projected_fixed_collision(GameObj * other) {
     else { // moving left
 
         if (y_velocity > 0.0) { // moving left and down
-            std::cout << "moving left and down" << std::endl;
+            //std::cout << "moving left and down" << std::endl;
 
             // moving left and down collision is either BOTTOM, LEFT or BOTTOM_LEFT
             if (ax > other->bx) {       // this is right of other 
                 if (by < other->ay) {   // this is above other
-                    std::cout << "moving left and down BL" << std::endl;
+                    //std::cout << "moving left and down BL" << std::endl;
                     return CollisionType::BOTTOM_LEFT; 
                 }
                 else {                           // this is not above other
-
-
-        std::cout << "LEFT X" << std::endl;
-        std::cout << this << " ---> " << other << std::endl;
-        //exit(3);
-
                     if (ay < other->by) {  // this is not below other
-                        std::cout << "moving left and down L" << std::endl;
+                        //std::cout << "moving left and down L" << std::endl;
                         return CollisionType::LEFT; 
                     }                    
                 }
             }
             else {
                 if (by < other->ay) {   // this is above other
-                    std::cout << "moving left and down B" << std::endl;
+                    //std::cout << "moving left and down B" << std::endl;
                     return CollisionType::BOTTOM;                     
                 }
             }
-            // std::cout << "moving left and down NONE" << std::endl;
-            // std::cout << this << " --> " << other << std::endl;
         }
         else { 
-            std::cout << "moving left and up" << std::endl;
+            //std::cout << "moving left and up" << std::endl;
 
             // moving left and up collision is either TOP, LEFT or TOP_LEFT
             if (ax > other->bx) {       // this is right of other
                 if (ay > other->by) {   // this is below other
-
-
-                    std::cout << "moving left and up TL" << std::endl;
+                    //std::cout << "moving left and up TL" << std::endl;
                     return CollisionType::TOP_LEFT; 
                 }
                 else {                              // this is not below other
                     if (by > other->ay) {  // this is not above other
-                        std::cout << "moving left and up TL" << std::endl;
-
-        std::cout << "LEFT X2" << std::endl;
-        std::cout << this << " ---> " << other << std::endl;
-        //exit(3);
-
+                        //std::cout << "moving left and up TL" << std::endl;
                         return CollisionType::LEFT;  
                     }
                 }
             }
             else {
                 if (ay > other->by) {   // this is below other 
-                    std::cout << "moving left and up T" << std::endl;
+                    //std::cout << "moving left and up T" << std::endl;
                     return CollisionType::TOP; 
                 }
             }        
         }
     }
-
-
-    if (this->y_velocity > 0 and by < 312.0 and pby > 312.0) {
-    // if (ax >= other->bx and pax < other->pby and 
-    //         ((ay <= other->by and ay > other->ay) or (by <= other->by and by > other->ay))) {
-    //if (by <= 312.0 and pby > 312.0 and this->y_velocity > 0) {
-    //if (by >= 312.0) {
-        std::cout << "falling through the floor" << std::endl;
-        std::cout << this << " ---> " << other << std::endl;
-        exit(3);
-    }
-
     return CollisionType::NONE; 
 }
 
@@ -349,35 +314,8 @@ float GameObj::calc_initial_projected_move(float delta_time) {
     float dx = x_velocity * delta_time;
     float dy = y_velocity * delta_time; 
 
-    // if (!(ax < bx)) {
-    //     std::cout << "xxxxx---" << std::endl;
-    //     std::cout << "ax " << ax << std::endl;
-    //     std::cout << "bx " << bx << std::endl;
-    //     std::cout << "dx " << dx << std::endl;
-    // }
-
-    // calculate the move distanc
+    // calculate the move distance
     float move_distance = sqrt(dx*dx + dy*dy);
-
-    // assume all objects aren't going to be 
-    potential_collider = false;
-
-    // we need to recalculate this every time we move
-    // ax = x - half_width;
-    // ay = y - half_height;
-    // bx = x + half_width;
-    // by = y + half_height;
-
-    // if (!(ax < bx)) {
-    //     std::cout << "---" << std::endl;
-    //     std::cout << "x " << x << std::endl;
-    //     std::cout << "y " << y << std::endl;
-    //     std::cout << "half_height " << half_height << std::endl;
-    //     std::cout << "half_width " << half_width << std::endl;
-    //     std::cout << "ax " << ax << std::endl;
-    //     std::cout << "bx " << bx << std::endl;
-    //     std::cout << "dx " << dx << std::endl;
-    // }
 
     // now work out the new aabb box including the displacement in position
     // (used by the bounding boxes optimization for collision detection)
@@ -385,13 +323,6 @@ float GameObj::calc_initial_projected_move(float delta_time) {
     pay = fmin(ay, ay + dy);
     pbx = fmax(bx, bx + dx);
     pby = fmax(by, by + dy);
-
-    // if (!(ax < bx)) {
-    //     std::cout << "---oo" << std::endl;
-    //     std::cout << "ax " << ax << std::endl;
-    //     std::cout << "bx " << bx << std::endl;
-    //     std::cout << "dx " << dx << std::endl;
-    // }
 
     return move_distance;        
 }        
@@ -489,13 +420,6 @@ void GameObj::move(const float step_t) {
     // sanity checks
     assert(ax < bx);
     assert(ay < by);
-
-    // FIXME: remove this
-    if (is_moveable() and by > 312.0) {
-        std::cout << "move through the floor!!!!XXXXfgdfgd gdfg " << std::endl;
-        std::cout << this << std::endl;
-        exit(4);
-    }        
 }
 
 

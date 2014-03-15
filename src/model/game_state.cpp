@@ -267,14 +267,14 @@ void GameState::add_game_obj(GameObj * game_obj) {
 
     // lists of moveable and immoveable objects
     if (game_obj->is_moveable()) {
-        movable_game_objs.push_back(game_obj);
+        moveable_game_objs.push_back(game_obj);
     }
     else {
-        immovable_game_objs.push_back(game_obj);
+        immoveable_game_objs.push_back(game_obj);
     }
 
     // keep a special list of game objects which will be removed after a while
-    if (game_obj->ttl_in_secs >= 0.0f) {
+    if (game_obj->ttl >= 0.0f) {
         ttl_game_objs.push_back(game_obj);
     }
 }
@@ -305,9 +305,9 @@ void GameState::age_ttl_game_objs(float delta_time) {
     // reduce the ttl for the game_obj.. 
     for (i = ttl_game_objs.begin(); i != ttl_game_objs.end(); ) {
         game_obj = *i;
-        game_obj->ttl_in_secs -= delta_time;
+        game_obj->ttl -= delta_time;
 
-        if (game_obj->ttl_in_secs <= 0.0f) {
+        if (game_obj->ttl <= 0.0f) {
 
             // this object is dead jim..
             // the next time remove_dead_game_objs() is called it'll be erased from everywhere
@@ -329,22 +329,22 @@ void GameState::remove_dead_game_objs() {
     std::list<GameObj*>::iterator i;
     GameObj * game_obj;
 
-    // remove dead game objects from the movable_game_objs list
-    for (i = movable_game_objs.begin(); i != movable_game_objs.end();) {
+    // remove dead game objects from the moveable_game_objs list
+    for (i = moveable_game_objs.begin(); i != moveable_game_objs.end();) {
         game_obj = *i;
         if (game_obj->dead) {
-            i = movable_game_objs.erase(i);
+            i = moveable_game_objs.erase(i);
         }
         else {
             i++;
         }
     }
 
-    // remove dead game objects from the immovable_game_objs list
-    for (i = immovable_game_objs.begin(); i != immovable_game_objs.end();) {
+    // remove dead game objects from the immoveable_game_objs list
+    for (i = immoveable_game_objs.begin(); i != immoveable_game_objs.end();) {
         game_obj = *i;
         if (game_obj->dead) {
-            i = immovable_game_objs.erase(i);
+            i = immoveable_game_objs.erase(i);
         }
         else {
             i++;
@@ -394,6 +394,12 @@ void GameState::update() {
     std::list<GameObj*>::iterator i;
     GameObj * game_obj;
 
+
+    // std::cout << "============================" << std::endl;
+    // std::cout << "============================" << std::endl;
+    // std::cout << "============================" << std::endl;
+    // std::cout << "============================" << std::endl;
+
     // reset the character deceleration (we decelerate unless the player is pressing
     // the left/right keys).
     if (character) character->reset_decelerate_flag(); 
@@ -426,54 +432,40 @@ void GameState::update() {
     // BROAD PHASE
     // determines which pairs of shapes need to be tested for collision
     //
-    
-    // calculate the positions that movable objects would be in after moving if nothing 
-    // effected their movement.  This method also calculates the projected AABB bounding boxes
-    // for all movable objects (aka aabb rects).   We use this information to optimize 
-    // collision detection in an approach called the Bounding Box Optimization.
-    float max_distance = calc_initial_projected_move(delta_time);
-    if (abs(max_distance) < EPSILON) {        
-        return; // nothing is moving..
+
+    // Reset the potential collider flag
+    GameObj * g;
+    for (i = game_objs.begin(); i != game_objs.end(); i++) {
+        g = *i;
+        g->potential_collider = false;
     }
+    
+    // calculate the positions that moveable objects would be in after moving if nothing 
+    // effected their movement.  This method also calculates the projected AABB bounding boxes
+    // for all moveable objects (aka aabb rects).   We use this information to optimize 
+    // collision detection in an approach called the Bounding Box Optimization.
+    float max_distance_exact = calc_initial_projected_move(delta_time);
+    if (abs(max_distance_exact) < EPSILON) {        
+        return; // nothing is moving..
+    }        
 
-        
-
+    // we need a whole number here (we loop this many times).
+    int max_distance = ceil(max_distance_exact);
 
     // get a list of possible collisions (i.e. a list of objects whose aabb rects overlap)
     // all possible collisions will be in this list.. i.e. it might contain false positives 
     // but no false negatives.
-    detect_potential_collisions_brute_force(
+    detect_potential_collisions_brute_force( // PROBLEM HERE!!
         game_objs, 
-        potential_movable_collisions,
-        potential_fixed_collisions);    
-
-
-    // FIXME: need to find
-    std::list<GameObj*>::iterator h;
-    GameObj * go;
-    for (h = movable_game_objs.begin(); h != movable_game_objs.end(); h++) {
-        go = *h;
-
-        if (!go->potential_collider and (go->by + delta_time * go->y_velocity) > 312.0) {
-            std::cout << "XXXXXXXXXXXXXXXXXXXX" << std::endl;
-            exit(5);
-        }
-    }
-
+        potential_moveable_collisions,
+        potential_fixed_collisions);
        
     // any moving object that can't possibly be in a collision can be moved 
     // its entire movement straight away.. no need to take incremental steps
     // looking for a collision. (we don't step these so it's faster)
-    for (i = movable_game_objs.begin(); i != movable_game_objs.end(); i++) {
+    for (i = moveable_game_objs.begin(); i != moveable_game_objs.end(); i++) {
         game_obj = *i;
         if (!game_obj->potential_collider) {
-
-            if ((game_obj->by + (game_obj->y_velocity * delta_time)) > 312.0) {
-                std::cout << "falling through the floor!!!! oxxxx" << std::endl;
-                std::cout << game_obj << std::endl;
-                exit(3);
-            }
-            
             game_obj->move(delta_time);
         }
     }
@@ -487,29 +479,88 @@ void GameState::update() {
     // previous broad phase
     //
 
+
+    // std::cout << "==== " << std::endl;
+    // std::cout << "delta time " << delta_time << std::endl;
+    // std::cout << "dt " << dt << std::endl;
+    // std::cout << "max_distance " << max_distance << std::endl;
+    // int count = 0;
+    // for (float t = 0.0f; t <= delta_time; t += dt) {
+    //     std::cout << "t " << t << std::endl;
+    //     count += 1;
+    // }        
+    // std::cout << "t count " << count << std::endl;
+    // count = 0;
+    // for (float step = 0; step < max_distance; step += 1) {
+    //     count += 1;
+    // }
+    // std::cout << "step count " << count << std::endl;
+    // std::cout << "==== " << std::endl;
+
     // For each pairwise collision move the object as far as it can.
     // Do this a number of times iterating along the path of the object
-    for (float t = 0.0f; t <= delta_time; t += dt) {
+    for (float step = 0; step < max_distance; step += 1) {
 
-        // calculate the projected positions of movable objects that might be in a collision
-        for (i = movable_game_objs.begin(); i != movable_game_objs.end(); i++) {
-            game_obj = *i;
+        // calculate the projected positions of moveable objects that might be in a collision
+        GameObj * g;
+        for (i = moveable_game_objs.begin(); i != moveable_game_objs.end(); i++) {
+            g = *i;
             
             // this object might be in a collision so work out where it's going
-            if (game_obj->potential_collider) {
-                game_obj->calc_projected_delta_position(dt);
+            if (g->potential_collider) {
+                g->calc_projected_delta_position(dt);
             }
         }
-        
-        // // find and resolve each *movable* collision 
-        // // (collisions between two movable objects)
-        // for (auto j = potential_movable_collisions.begin(); 
-        //           j != potential_movable_collisions.end(); 
+
+
+        // // sanity check!
+        // for (auto j = game_objs.begin(); j != game_objs.end(); j++) 
+        // {
+        //     GameObj * g = *j;
+        //     if (not g->is_moveable()) {
+        //         continue;
+        //     }
+
+        //     if (g->potential_collider and (g->by + (g->y_velocity * dt)) > 312.0) {
+        //         std::cout << "falling through the floor!!!! sanity before resolve!" 
+        //                   << std::endl;
+        //         std::cout << g << std::endl;
+        //         std::cout << "new y pos " << (g->by + (g->y_velocity * dt)) << std::endl;
+        //         std::cout << "dt " << dt << std::endl;
+        //         std::cout << "y vel" << g->y_velocity << std::endl;
+        //         std::cout << "by " << g->by << std::endl;
+        //         std::cout << "dt " << (g->y_velocity * dt) << std::endl;
+
+        //         // print out all the collisions this object is involved in.
+        //         int count = 0;
+        //         for (auto k = potential_fixed_collisions.begin(); 
+        //              k != potential_fixed_collisions.end(); 
+        //              k++) 
+        //         {
+        //             Collision * c2 = *k;
+
+        //             std::cout << "  " << c2 << std::endl;
+
+        //             if (c2->a->id == g->id) {
+        //                 count += 1;
+        //                 std::cout << c2 << std::endl;
+        //             }
+        //         }
+
+        //         std::cout << "collision count " << count << std::endl;
+        //     }
+        // }
+
+
+        // // find and resolve each *moveable* collision 
+        // // (collisions between two moveable objects)
+        // for (auto j = potential_moveable_collisions.begin(); 
+        //           j != potential_moveable_collisions.end(); 
         //           j++) {
         //     Collision * collision = *j;
 
         //     // check for a collision..
-        //     if (collision->check_for_projected_movable_collision() != CollisionType::NONE) {
+        //     if (collision->check_for_projected_moveable_collision() != CollisionType::NONE) {
 
         //         // handle the collision
         //         collision->resolve();
@@ -517,16 +568,18 @@ void GameState::update() {
         // }       
 
         // find and resolve each *fixed* collision 
-        // (collisions between a movable object and a fixed object)
+        // (collisions between a moveable object and a fixed object)
         for (auto j = potential_fixed_collisions.begin(); 
                   j != potential_fixed_collisions.end(); 
                   j++) {
             Collision * c = *j;            
 
+            //std::cout << "    " << c << std::endl;
+
+
             // check for a collision..
             if (c->has_projected_fixed_collision()) {                
 
-                //std::cout << "----------- " << collision << std::endl;
                 
                 // if (is_deferred(collision_type)) {
                 //     // std::cout << "deferred " << std::endl;
@@ -536,133 +589,105 @@ void GameState::update() {
                 // handle the collision
                 // std::cout << "resolve " << std::endl;
                 c->resolve();
+                //std::cout << "RESOLVE: " << c << std::endl;
                 // }
             }
-
-
-            // if (c->a->y_velocity > 0 and c->a->by <= 312.0 and c->a->pby > 312.0) {
-            //     std::cout << "falling through the floor!!!! 1" << std::endl;
-
-            //     // print out all the collisions this object is involved in.
-            //     for (auto k = potential_fixed_collisions.begin(); 
-            //          k != potential_fixed_collisions.end(); 
-            //          k++) 
-            //     {
-            //         Collision * c2 = *k;
-            //         if (c2->a == c->a) {
-            //             std::cout << c2 << std::endl;
-            //         }
-            //     }
-            //     exit(3);
-            // }     
-
-            // if (c->a->by > 312.0) {
-            //     std::cout << "falling through the floor!!!! 2" << std::endl;
-            //     std::cout << c->a << std::endl;
-
-            //     // print out all the collisions this object is involved in.
-            //     for (auto k = potential_fixed_collisions.begin(); 
-            //          k != potential_fixed_collisions.end(); 
-            //          k++) 
-            //     {
-            //         Collision * c2 = *k;
-            //         if (c2->a == c->a) {
-            //             std::cout << c2 << std::endl;
-            //         }
-            //     }
-            //     exit(4);
-            // }
         }
 
 
         // sanity check!
-        for (auto j = potential_fixed_collisions.begin(); 
-             j != potential_fixed_collisions.end(); 
-             j++) 
-        {
-            Collision * c = *j;
+        // for (auto j = moveable_game_objs.begin(); j != moveable_game_objs.end(); j++) 
+        // {
+        //     GameObj * g = *j;
 
-            //std::cout << c->a->y_velocity << ", " << c->a->by << std::endl;
-            
-            //if (c->a->y_velocity > 0 and c->a->by < 312.0 and c->a->pby > 312.0) {
-            //if (c->a->y_velocity >= 0 and c->a->by <= 312.0 and c->a->pby > 312.0) {
-            //if (c->a->y_velocity > 0 and c->a->by <= 312.0 and c->a->pby > 312.0) {
+        //     if (g->potential_collider and (g->by + (g->y_velocity * dt)) > 312.0) {
+        //         std::cout << "falling through the floor!!!! sanity after resolve!" << std::endl;
+        //         std::cout << g << std::endl;
+        //         std::cout << "new y pos " << (g->by + (g->y_velocity * dt)) << std::endl;
+        //         std::cout << "dt " << dt << std::endl;
+        //         std::cout << "y vel" << g->y_velocity << std::endl;
+        //         std::cout << "by " << g->by << std::endl;
+        //         std::cout << "dt " << (g->y_velocity * dt) << std::endl;
 
-            if ((c->a->by + (c->a->y_velocity * dt)) > 312.0) {
-                std::cout << "falling through the floor!!!! o" << std::endl;
-                // std::cout << c->a << " ---> " << c->b << std::endl;
+        //         // print out all the collisions this object is involved in.
+        //         int count = 0;
+        //         for (auto k = potential_fixed_collisions.begin(); 
+        //              k != potential_fixed_collisions.end(); 
+        //              k++) 
+        //         {
+        //             Collision * c2 = *k;
 
-                // print out all the collisions this object is involved in.
-                for (auto k = potential_fixed_collisions.begin(); 
-                     k != potential_fixed_collisions.end(); 
-                     k++) 
-                {
-                    Collision * c2 = *k;
+        //             std::cout << "  " << c2 << std::endl;
 
-                    if (c2->a == c->a) {
-                        // std::cout << c2->a << " --> " << c2->b 
-                        //           << ": " << c2 << std::endl;
-                        std::cout << c2 << std::endl;
-                    }
-                }
+        //             if (c2->a->id == g->id) {
+        //                 count += 1;
+        //                 std::cout << c2 << std::endl;
+        //             }
+        //         }
 
-                exit(3);
-            }
-        }
+        //         std::cout << "collision count " << count << std::endl;
+        //         exit(3);
+        //     }
+        // }
+
+
+
+
+
 
         // now move the objects to their projected position 
         // (unless they've been involved in a collision in which case the collision 
         // resolution might have changed stuff a bit).
-        for (i = movable_game_objs.begin(); i != movable_game_objs.end(); i++) {
+        for (i = moveable_game_objs.begin(); i != moveable_game_objs.end(); i++) {
             game_obj = *i;
 
-            if ((game_obj->by + (game_obj->y_velocity * dt)) > 312.0) {
-                //
-                // FIXME: PROBLEM FOUND HERE!!!
-                //
-                // PROBLEM IS THE PROJECTED POSITION IS NOT BEING CALCULATED
-                // FOR THIS OBJECT!!!
-                std::cout << "falling through the floor!!!! ooo 2" << std::endl;
-                std::cout << game_obj << std::endl;
-                std::cout << "new y pos " << 
-                    (game_obj->by + (game_obj->y_velocity * dt)) << std::endl;
-                std::cout << "dt " << dt << std::endl;
-                std::cout << "y vel" << game_obj->y_velocity << std::endl;
-                std::cout << "by " << game_obj->by << std::endl;
-                std::cout << "dt " << (game_obj->y_velocity * dt) << std::endl;
+        //     if ((game_obj->by + (game_obj->y_velocity * dt)) > 312.0) {
+        //         //
+        //         // FIXME: PROBLEM FOUND HERE!!!
+        //         //
+        //         // PROBLEM IS THE PROJECTED POSITION IS NOT BEING CALCULATED
+        //         // FOR THIS OBJECT!!!
+        //         std::cout << "falling through the floor!!!! after resolution" << std::endl;
+        //         std::cout << game_obj << std::endl;
+        //         std::cout << "new y pos " << 
+        //             (game_obj->by + (game_obj->y_velocity * dt)) << std::endl;
+        //         std::cout << "dt " << dt << std::endl;
+        //         std::cout << "y vel" << game_obj->y_velocity << std::endl;
+        //         std::cout << "by " << game_obj->by << std::endl;
+        //         std::cout << "dt " << (game_obj->y_velocity * dt) << std::endl;
 
 
-                bool potential_collision = false;
-                for (auto j = potential_fixed_collisions.begin(); 
-                     j != potential_fixed_collisions.end(); 
-                     j++) 
-                {
-                    Collision * c = *j;
-                    if (c->a == game_obj) {
-                        potential_collision = true;
-                        break;
-                    }
-                }
-                std::cout << "potential collider .. " << potential_collision << std::endl;
+        //         bool potential_collision = false;
+        //         for (auto j = potential_fixed_collisions.begin(); 
+        //              j != potential_fixed_collisions.end(); 
+        //              j++) 
+        //         {
+        //             Collision * c = *j;
+        //             if (c->a == game_obj) {
+        //                 potential_collision = true;
+        //                 break;
+        //             }
+        //         }
+        //         std::cout << "potential collider .. " << potential_collision << std::endl;
 
 
-                // std::cout << game_obj << " ---> " << c->b << std::endl;
+        //         // std::cout << game_obj << " ---> " << c->b << std::endl;
 
-                // // print out all the collisions this object is involved in.
-                // for (auto k = potential_fixed_collisions.begin(); 
-                //      k != potential_fixed_collisions.end(); 
-                //      k++) 
-                // {
-                //     Collision * c2 = *k;
+        //         // // print out all the collisions this object is involved in.
+        //         // for (auto k = potential_fixed_collisions.begin(); 
+        //         //      k != potential_fixed_collisions.end(); 
+        //         //      k++) 
+        //         // {
+        //         //     Collision * c2 = *k;
 
-                //     if (c2->a == game_obj) {
-                //         // std::cout << c2->a << " --> " << c2->b 
-                //         //           << ": " << c2 << std::endl;
-                //         std::cout << c2 << std::endl;
-                //     }
-                // }
-                exit(3);
-            }     
+        //         //     if (c2->a == game_obj) {
+        //         //         // std::cout << c2->a << " --> " << c2->b 
+        //         //         //           << ": " << c2 << std::endl;
+        //         //         std::cout << c2 << std::endl;
+        //         //     }
+        //         // }
+        //         exit(3);
+        //     }     
 
             
             if (game_obj->potential_collider) {
@@ -674,39 +699,87 @@ void GameState::update() {
     // // FIXME: use contact points?
 
     // clean out the list of deferred collisions
-    //deferred_fixed_collisions.clear();
-    
-    // FIXME: remove this
-    // static int c = 1;
-    // if (potential_fixed_collisions.size() > 0) {
-    //     c -= 1;
-    //     if (c == 0) {
-    //         dbg_dump_objects();
-    //         model->change_state(State::QUITTING);
-    //     }
-    // }
+    //deferred_fixed_collisions.clear();    
 }    
 
 
-// calculate the positions that movable objects would be in after moving if nothing 
+// calculate the positions that moveable objects would be in after moving if nothing 
 // effected their movement.  This method also calculates the AABB bounding boxes
-// for all movable objects.
+// for all moveable objects.
 //
 // Returns the maximum possible distance moved which we use to determine the number
 // of iterations to make.
 float GameState::calc_initial_projected_move(const float delta_time) {
     
-    // for each movable game object
+    // for each moveable game object
     std::list<GameObj*>::iterator i;
     float max_distance = 0.0;
     float distance;
     GameObj * game_obj;
-    for (i = movable_game_objs.begin(); i != movable_game_objs.end(); i++) {
-        // calculate where the movable object would move to if collisions don't happen
+    for (i = moveable_game_objs.begin(); i != moveable_game_objs.end(); i++) {
+        // calculate where the moveable object would move to if collisions don't happen
         game_obj = *i;
+
+
+        // float initial_y = game_obj->y;
+        // float y_velocity = game_obj->y_velocity;
+        // float y = initial_y + y_velocity * delta_time;
+        // //float by = y + game_obj->half_height;        
+
         distance = game_obj->calc_initial_projected_move(delta_time);
         max_distance = fmax(max_distance, distance);
+
+        if (game_obj->by > 312.0) {
+            std::cout << "falling through the floor!!!! sanitycc-!" << std::endl;
+        }
     }
+
+        // // sanity check!
+        // for (auto j = game_objs.begin(); j != game_objs.end(); j++) 
+        // {
+        //     GameObj * g = *j;
+        //     if (not g->is_moveable()) {
+        //         continue;
+        //     }
+
+        //     float py = (g->by + (g->y_velocity * delta_time));
+
+        //     if (py == g->by) {
+        //         continue;
+        //     }
+
+        //     std::cout << "g->by = " << g->by << std::endl;
+        //     std::cout << "py = " << py << std::endl;
+
+        //     if (py > 312.0) {
+        //         std::cout << "falling through the floor!!!! sanitycc-!" << std::endl;
+        //         std::cout << g << std::endl;
+        //         std::cout << "new y pos " << (g->by + (g->y_velocity * delta_time)) << std::endl;
+        //         std::cout << "delta time " << delta_time << std::endl;
+        //         std::cout << "y vel" << g->y_velocity << std::endl;
+        //         std::cout << "by " << g->by << std::endl;
+        //         std::cout << "dt " << (g->y_velocity * delta_time) << std::endl;
+
+        //         // std::cout << c->a << " ---> " << c->b << std::endl;
+
+        //         // print out all the collisions this object is involved in.
+        //         int count = 0;
+        //         for (auto k = potential_fixed_collisions.begin(); 
+        //              k != potential_fixed_collisions.end(); 
+        //              k++) 
+        //         {
+        //             Collision * c2 = *k;
+        //             if (c2->a == g) {
+        //                 count += 1;
+        //                 std::cout << c2 << std::endl;
+        //             }
+        //         }
+
+        //         std::cout << "collision count " << count << std::endl;
+        //         exit(3);
+        //     }
+        // }
+
 
     return max_distance;
 }
@@ -736,54 +809,62 @@ void GameState::detect_potential_collisions_brute_force(
     fixed_collisions.clear();
 
     // make a collision object for each pair of things that might collide 
-    // (if two movable objs might collide there's still only one collision).
+    // (if two moveable objs might collide there's still only one collision).
     std::list<GameObj*>::const_iterator i;
     std::list<GameObj*>::const_iterator j;
-    GameObj * game_obj_i;
-    GameObj * game_obj_j;
-    for (i = movable_game_objs.begin(); i != movable_game_objs.end(); i++) {         
-        game_obj_i = *i;
+    GameObj * gi;
+    GameObj * gj;
+    for (i = moveable_game_objs.begin(); i != moveable_game_objs.end(); i++) {         
+        gi = *i;
 
-        // collisions of movable objects with other movable objects
+        // collisions of moveable objects with other moveable objects
         // (we handle collisions between a pair of moving objects differently from
         // a collision between a moving object and a fixed object).
-        for (j = std::next(i); j != movable_game_objs.end(); j++) {
-            game_obj_j = *j;
+        for (j = std::next(i); j != moveable_game_objs.end(); j++) {
+            gj = *j;
+
+            //
+            // FIXME: if we set the dynamic collider here then we get problems!
+            //
 
             // sanity checks
-            assert(game_obj_i != game_obj_j);
-            assert(game_obj_j->is_moveable());
+            assert(gi != gj);
+            assert(gj->is_moveable());
 
             // check for a collision..
-            if (game_obj_i->potentially_collides_with(game_obj_j)) {
-                
+            if (gi->potentially_collides_with(gj)) {
+
+                gi->potential_collider = true;
+                gj->potential_collider = true;
+
                 // collision!
-                Collision * c = new Collision(game_obj_i, game_obj_j);
+                Collision * c = new Collision(gi, gj);
                 moving_collisions.push_back(c);
             }
         }
 
-        // collisions of movable objects with immovable objects
-        for (j = immovable_game_objs.begin(); j != immovable_game_objs.end(); j++) {
-            game_obj_j = *j;
+        // collisions of moveable objects with immoveable objects
+        for (j = immoveable_game_objs.begin(); j != immoveable_game_objs.end(); j++) {
+            gj = *j;
 
             // sanity checks
-            assert(game_obj_i != game_obj_j);
-            assert(!game_obj_j->is_moveable());
-            //assert(!game_obj_j->);
+            assert(gi != gj);
+            assert(!gj->is_moveable());
             
             // check for a collision..
-            if (game_obj_i->potentially_collides_with(game_obj_j)) {
+            if (gi->potentially_collides_with(gj)) {
 
-                //std::cout << "potential collision" << std::endl;
-                
+                gi->potential_collider = true;
+                gj->potential_collider = true;
+
                 // collision!
-                Collision * c = new Collision(game_obj_i, game_obj_j);
+                Collision * c = new Collision(gi, gj);
                 fixed_collisions.push_back(c);
+
+                //std::cout << "adding " << c << std::endl;
             }
             // else {
-            //     std::cout << "no potential collision" << std::endl;
-            //     std::cout << game_obj_i << ", " << game_obj_j << std::endl;
+            //     std::cout << "NO COLLISION!!!! " << gi << " -> " << gj  << std::endl;
             // }
         }
     }  

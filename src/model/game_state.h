@@ -22,23 +22,23 @@ class GameState : public BaseState, public IGameObjManager {
     // this includes characters, monsters, and other stuff, 
     // but not game_objs with fixed_position = true.
     // (we use this in an optimization of the collision detection).
-    std::list<GameObj*> movable_game_objs;
+    std::list<GameObj*> moveable_game_objs;
 
     // and a list for game objs that don't move
-    std::list<GameObj*> immovable_game_objs;
+    std::list<GameObj*> immoveable_game_objs;
 
     // and a list for game objs that we check for a time to live
     std::list<GameObj*> ttl_game_objs;
     
     // the main dude that the player controls (he's also in the game_objs list).
-    // the character also appears in the list of game_objs and the movable_game_objs
+    // the character also appears in the list of game_objs and the moveable_game_objs
     GameObj * character;
 
-    // a list of potential collisions between two movable objects
+    // a list of potential collisions between two moveable objects
     // (returned by the first pass of the collision detector).
-    std::list<Collision*> potential_movable_collisions;
+    std::list<Collision*> potential_moveable_collisions;
 
-    // a list of potential collisions between a movable object and a fixed object
+    // a list of potential collisions between a moveable object and a fixed object
     // (returned by the first pass of the collision detector).
     std::list<Collision*> potential_fixed_collisions;
 
@@ -82,7 +82,7 @@ class GameState : public BaseState, public IGameObjManager {
     // Internal methods
     //
 
-    // work out where movable objects would move to without collisions 
+    // work out where moveable objects would move to without collisions 
     // and update the bounding boxes
     // scale movement to delta t
     float calc_initial_projected_move(const float delta_time);
@@ -90,7 +90,7 @@ class GameState : public BaseState, public IGameObjManager {
     // fast and stupid first stage of collision detection 
     void detect_potential_collisions_brute_force(
         const std::list<GameObj*> game_objs, 
-        std::list<Collision*> & potential_movable_collisions,
+        std::list<Collision*> & potential_moveable_collisions,
         std::list<Collision*> & potential_fixed_collisions);
         
     //

@@ -46,6 +46,9 @@ public:
 
         moveable_game_obj->collision_set_y_velocity(0.0f);
         moveable_game_obj->jumping = false;
+
+
+        assert(moveable_game_obj->y_velocity == 0.0f);
     }
 };
 

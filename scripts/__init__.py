@@ -50,22 +50,27 @@ def initialize_levels():
     stone = turkey.load_texture("./res/stone.png")
     #turkey.add_game_obj(0.0, 0.0, stone)
 
-    ## turkey.add_game_obj(3 * CELL_WIDTH, 19 * CELL_HEIGHT, stone)
-    ## turkey.add_game_obj(3 * CELL_WIDTH, 9 * CELL_HEIGHT, stone)
-    ## turkey.add_game_obj(5 * CELL_WIDTH, 15 * CELL_HEIGHT, stone)
-    ## turkey.add_game_obj(0 * CELL_WIDTH, 15 * CELL_HEIGHT, stone)
-    #turkey.add_game_obj(4 * CELL_WIDTH, 19 * CELL_HEIGHT, stone)
+    turkey.add_game_obj(3 * CELL_WIDTH, 19 * CELL_HEIGHT, stone)
+    turkey.add_game_obj(3 * CELL_WIDTH, 9 * CELL_HEIGHT, stone)
+    turkey.add_game_obj(5 * CELL_WIDTH, 15 * CELL_HEIGHT, stone)
+    turkey.add_game_obj(0 * CELL_WIDTH, 15 * CELL_HEIGHT, stone)
+    turkey.add_game_obj(4 * CELL_WIDTH, 19 * CELL_HEIGHT, stone)
     for i in range(-20, 122):
         turkey.add_game_obj(i * CELL_WIDTH, 20 * CELL_HEIGHT, stone)
 
-    ## for i in range(15, 32):
-    ##     turkey.add_game_obj(i * CELL_WIDTH, 20 * CELL_HEIGHT, stone)
+    for j in range(-20, 122):
+        turkey.add_game_obj(0, j * CELL_HEIGHT, stone)
+        turkey.add_game_obj(80 * CELL_WIDTH, j * CELL_HEIGHT, stone)
+        
 
-    ## turkey.add_game_obj(28 * CELL_WIDTH, 19 * CELL_HEIGHT, stone)
-    ## turkey.add_game_obj(27 * CELL_WIDTH, 19 * CELL_HEIGHT, stone)
+    for i in range(15, 32):
+        turkey.add_game_obj(i * CELL_WIDTH, 20 * CELL_HEIGHT, stone)
 
-    ## for i in range(2,35):
-    ##     turkey.add_game_obj(i * CELL_WIDTH, 40 * CELL_HEIGHT, stone)
+    turkey.add_game_obj(28 * CELL_WIDTH, 19 * CELL_HEIGHT, stone)
+    turkey.add_game_obj(27 * CELL_WIDTH, 19 * CELL_HEIGHT, stone)
+
+    for i in range(2,35):
+        turkey.add_game_obj(i * CELL_WIDTH, 40 * CELL_HEIGHT, stone)
 
     #
     # Setup the main character

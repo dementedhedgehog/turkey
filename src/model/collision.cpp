@@ -39,13 +39,10 @@ void Collision::resolve() {
     if (resolver != nullptr) {
         std::cout << a->type << " --> " << b->type << " " <<  collision 
                   << " = " << resolver->get_name() << std::endl;
-
     
         // resolve the collision
         //resolver(a, b, collision);
         resolver->resolve(a, b, collision);
-
-
 
     }
     else {
@@ -53,6 +50,6 @@ void Collision::resolve() {
                   << a->get_type_name() << " -> " << b->get_type_name() << " at " 
                   << collision << std::endl;
         exit(1);
-    }    
+    } 
 }
 

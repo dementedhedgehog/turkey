@@ -5,6 +5,19 @@ tasks
  PROBLEM!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     moveable objects that aren't potential colliders are falling through the floor!
     projected position not calculated properly!!!
+   
+    CAUSE: it's caused by the potential collider flag being set for moveable vs moveable 
+    objects and then the non-colliders move too far.
+    
+    This probably explains why the particles speed up when they hit.
+    
+
+
+
+
+
+
+
 
 
 
@@ -45,6 +58,7 @@ tasks
   * expose game obj type to python
   * expose map of collision resolutions between game object types to python.
 
+ 
 
   * return where collision occurred..  (collision internal?) BUGGY!   
 

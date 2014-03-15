@@ -24,6 +24,10 @@ class GameObj {
 
     GameObjType * type;
 
+    static int last_id;
+
+    int id;
+
     //
     // Scripts can set this stuff
     // 
@@ -96,7 +100,7 @@ class GameObj {
     // the time-to-live for the game object
     // if this is >= 0.0 then the ttl will be reduced every time the state is updated
     // when the ttl goes from being positive to negative it is removed for good.
-    float ttl_in_secs;
+    float ttl;
 
     //
     // Stepped Movement Variables
@@ -121,6 +125,8 @@ class GameObj {
     // movable objects that aren't potential colliders can just jump to their potential 
     // displacement. Immovable game objects are never colliders.
     bool potential_collider;
+
+    
     
     // constructor
     GameObj(float x, float y, GameObjType * type, 
@@ -190,7 +196,7 @@ class GameObj {
     static void set_default_gravity(const float gravity);
 
     void to_stream(std::ostream &strm) const {
-        strm << type->get_name() << " collider? " << potential_collider << ",";
+        strm << type->get_name()  << " " << id << " collider? " << potential_collider << ",";
         /* strm << type->get_name() << " (" << self.id; */
 
         /* if (is_moveable()) { */

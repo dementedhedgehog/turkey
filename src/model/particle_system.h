@@ -39,7 +39,7 @@ class ParticleSystem  {
             game_obj->y_acc_per_sec = 0.5 * game_obj->y_acc_per_sec;
 
             // set a time to live
-            game_obj->ttl_in_secs = 1.3f * (rand() % 100)/100.0f + 0.3f;
+            game_obj->ttl = 1.3f * (rand() % 100)/100.0f + 0.3f;
             
             // add it to the game
             i_game_obj_manager->add_game_obj(game_obj);
